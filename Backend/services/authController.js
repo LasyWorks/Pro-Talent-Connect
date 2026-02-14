@@ -96,4 +96,41 @@ const getProfile = async (req, res) => {
   }
 };
 
-module.exports = { loginAdmin, registerAdmin, getProfile };
+// @desc    Change password
+// @route   PUT /api/auth/change-password
+// @access  Private
+const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Please provide old and new password" });
+    }
+
+    const admin = await Admin.findById(req.admin._id);
+
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    // Verify old password
+    const isMatch = await admin.matchPassword(oldPassword);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: "Old password is incorrect" });
+    }
+
+    // Set new password (will be hashed by pre-save hook)
+    admin.password = newPassword;
+    await admin.save();
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Change password error:", error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { loginAdmin, registerAdmin, getProfile, changePassword };

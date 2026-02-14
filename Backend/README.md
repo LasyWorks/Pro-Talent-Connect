@@ -10,6 +10,9 @@
   - [Login](#1-login)
   - [Register Admin](#2-register-admin)
   - [Get Profile](#3-get-profile)
+  - [Change Password](#4-change-password)
+- [Dashboard API](#dashboard-api)
+  - [Get Stats](#1-get-stats)
 - [Players API](#players-api)
   - [Create Player](#1-create-player)
   - [Get All Players](#2-get-all-players)
@@ -230,6 +233,64 @@ Authorization: Bearer <token>
 
 ---
 
+### 4. Change Password
+
+Update the password for the current admin.
+
+- **URL:** `PUT /api/auth/change-password`
+- **Access:** Any authenticated admin
+
+**Request Body:**
+
+```json
+{
+  "oldPassword": "oldPassword123",
+  "newPassword": "newPassword123"
+}
+```
+
+**Success Response:** `200 OK`
+
+```json
+{
+  "message": "Password changed successfully"
+}
+```
+
+---
+
+## Dashboard API
+
+Base URL: `/api/dashboard`
+
+---
+
+### 1. Get Stats
+
+Retrieve summary statistics for the dashboard.
+
+- **URL:** `GET /api/dashboard/stats`
+- **Access:** Admin & Super Admin
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Success Response:** `200 OK`
+
+```json
+{
+  "totalPlayers": 50,
+  "totalAdmins": 5,
+  "activePlayers": 45,
+  "deletedPlayers": 5
+}
+```
+
+---
+
 ## Players API
 
 Base URL: `/api/players`
@@ -381,26 +442,12 @@ GET /api/players?preferredFoot=Left&page=1&limit=20
 
 ```json
 {
-  "players": [
-    {
-      "_id": "65a1b2c3d4e5f6a7b8c9d0e3",
-      "name": "Lionel Messi",
-      "playingPosition": "Forward",
-      "alternativePosition": "Attacking Midfielder",
-      "preferredFoot": "Left",
-      "playerId": "PLR-001",
-      "dateOfBirth": "1987-06-24T00:00:00.000Z",
-      "gender": "Male",
-      "mobileNumber": "+1234567890",
-      "email": "messi@example.com",
-      "clubsPlayed": [...],
-      "createdAt": "2026-02-14T10:30:00.000Z",
-      "updatedAt": "2026-02-14T10:30:00.000Z"
-    }
-  ],
-  "page": 1,
+  "players": [...],
+  "currentPage": 1,
   "totalPages": 1,
-  "totalPlayers": 1
+  "totalResults": 1,
+  "hasNextPage": false,
+  "hasPrevPage": false
 }
 ```
 
@@ -579,6 +626,9 @@ DELETE /api/players/65a1b2c3d4e5f6a7b8c9d0e3
   mobileNumber:       String   (required)
   email:              String   (required, unique, lowercase)
   clubsPlayed:        Array    [{ clubName: String, duration: String }]
+  createdBy:          ObjectId (ref: "Admin")
+  updatedBy:          ObjectId (ref: "Admin")
+  isDeleted:          Boolean  (default: false)
   createdAt:          Date     (auto)
   updatedAt:          Date     (auto)
 }
@@ -723,10 +773,12 @@ Backend/
 │   └── Players.js             # Player schema
 ├── Routes/
 │   ├── authRoutes.js          # /api/auth endpoints
-│   └── playerRoutes.js        # /api/players endpoints
+│   ├── playerRoutes.js        # /api/players endpoints
+│   └── dashboardRoutes.js     # /api/dashboard endpoints
 ├── services/
 │   ├── authController.js      # Login, Register, Profile logic
 │   ├── playerController.js    # CRUD for Players
+│   ├── dashboardController.js # Dashboard stats logic
 │   ├── generateToken.js       # JWT token generator
 │   └── seedSuperAdmin.js      # One-time Super Admin seed script
 ├── .env                       # Environment variables

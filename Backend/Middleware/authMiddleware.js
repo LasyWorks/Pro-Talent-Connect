@@ -20,6 +20,9 @@ const protect = async (req, res, next) => {
         return res.status(401).json({ message: "Admin not found" });
       }
 
+      // Also attach as req.user for convenience
+      req.user = req.admin;
+
       next();
     } catch (error) {
       console.error("Auth error:", error.message);

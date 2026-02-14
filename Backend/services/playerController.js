@@ -36,9 +36,10 @@ const createPlayer = async (req, res) => {
         .json({ message: "Please provide all required fields" });
     }
 
-    // Check for duplicate playerId or email
+    // Check for duplicate playerId or email (only among non-deleted players)
     const existingPlayer = await Player.findOne({
       $or: [{ playerId }, { email }],
+      isDeleted: false,
     });
 
     if (existingPlayer) {
@@ -61,7 +62,13 @@ const createPlayer = async (req, res) => {
       mobileNumber,
       email,
       clubsPlayed,
+      createdBy: req.user._id,
+      updatedBy: req.user._id,
     });
+
+    // Populate admin details before returning
+    await player.populate("createdBy", "name email role");
+    await player.populate("updatedBy", "name email role");
 
     res.status(201).json(player);
   } catch (error) {
@@ -79,8 +86,8 @@ const getAllPlayers = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Build filter from query params
-    const filter = {};
+    // Build filter from query params (exclude soft-deleted)
+    const filter = { isDeleted: false };
     if (req.query.name) {
       filter.name = { $regex: req.query.name, $options: "i" };
     }
@@ -97,17 +104,22 @@ const getAllPlayers = async (req, res) => {
       filter.preferredFoot = req.query.preferredFoot;
     }
 
-    const total = await Player.countDocuments(filter);
+    const totalResults = await Player.countDocuments(filter);
+    const totalPages = Math.ceil(totalResults / limit);
     const players = await Player.find(filter)
+      .populate("createdBy", "name email role")
+      .populate("updatedBy", "name email role")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
     res.status(200).json({
       players,
-      page,
-      totalPages: Math.ceil(total / limit),
-      totalPlayers: total,
+      currentPage: page,
+      totalPages,
+      totalResults,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
     });
   } catch (error) {
     console.error("Get players error:", error.message);
@@ -120,7 +132,12 @@ const getAllPlayers = async (req, res) => {
 // @access  Private / Admin & Super Admin
 const getPlayerById = async (req, res) => {
   try {
-    const player = await Player.findById(req.params.id);
+    const player = await Player.findOne({
+      _id: req.params.id,
+      isDeleted: false,
+    })
+      .populate("createdBy", "name email role")
+      .populate("updatedBy", "name email role");
 
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
@@ -141,7 +158,10 @@ const getPlayerById = async (req, res) => {
 // @access  Private / Admin & Super Admin
 const updatePlayer = async (req, res) => {
   try {
-    const player = await Player.findById(req.params.id);
+    const player = await Player.findOne({
+      _id: req.params.id,
+      isDeleted: false,
+    });
 
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
@@ -170,7 +190,12 @@ const updatePlayer = async (req, res) => {
       }
     });
 
+    // Track who updated
+    player.updatedBy = req.user._id;
+
     const updatedPlayer = await player.save();
+    await updatedPlayer.populate("createdBy", "name email role");
+    await updatedPlayer.populate("updatedBy", "name email role");
     res.status(200).json(updatedPlayer);
   } catch (error) {
     console.error("Update player error:", error.message);
@@ -186,13 +211,19 @@ const updatePlayer = async (req, res) => {
 // @access  Private / Admin & Super Admin
 const deletePlayer = async (req, res) => {
   try {
-    const player = await Player.findById(req.params.id);
+    const player = await Player.findOne({
+      _id: req.params.id,
+      isDeleted: false,
+    });
 
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
     }
 
-    await player.deleteOne();
+    // Soft delete
+    player.isDeleted = true;
+    player.updatedBy = req.user._id;
+    await player.save();
     res.status(200).json({ message: "Player deleted successfully" });
   } catch (error) {
     console.error("Delete player error:", error.message);

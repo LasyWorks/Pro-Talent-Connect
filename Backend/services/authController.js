@@ -80,16 +80,36 @@ const registerAdmin = async (req, res) => {
   }
 };
 
-// @desc    Get current admin profile
+// @desc    Get current admin profile and list all admins
 // @route   GET /api/auth/profile
 // @access  Private
 const getProfile = async (req, res) => {
   try {
+    // Get current admin profile
     const admin = await Admin.findById(req.admin._id).select("-password");
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     }
-    res.status(200).json(admin);
+
+    // Get all admins with their roles
+    const allAdmins = await Admin.find()
+      .select("name email role createdAt")
+      .sort({ createdAt: -1 });
+
+    // Separate admins by role
+    const superAdmins = allAdmins.filter((a) => a.role === "Super Admin");
+    const regularAdmins = allAdmins.filter((a) => a.role === "Admin");
+
+    res.status(200).json({
+      currentAdmin: admin,
+      adminsList: {
+        superAdmins: superAdmins,
+        admins: regularAdmins,
+        totalCount: allAdmins.length,
+        superAdminCount: superAdmins.length,
+        adminCount: regularAdmins.length,
+      },
+    });
   } catch (error) {
     console.error("Profile error:", error.message);
     res.status(500).json({ message: "Server error" });

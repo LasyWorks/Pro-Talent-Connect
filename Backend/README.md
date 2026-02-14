@@ -117,8 +117,8 @@ Authenticate an admin and receive a JWT token.
 
 ```json
 {
-  "email": "superadmin@protalent.com",
-  "password": "SuperAdmin@123"
+  "email": "charannaikcharan734@gmail.com",
+  "password": "123456"
 }
 ```
 

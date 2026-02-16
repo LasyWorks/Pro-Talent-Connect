@@ -52,6 +52,10 @@ const playerSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
     },
+    profileImage: {
+      type: String,
+      default: "",
+    },
     clubsPlayed: [
       {
         clubName: String,

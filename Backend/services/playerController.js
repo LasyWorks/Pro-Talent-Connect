@@ -18,6 +18,7 @@ const createPlayer = async (req, res) => {
       gender,
       mobileNumber,
       email,
+      profileImage,
       clubsPlayed,
     } = req.body;
 
@@ -45,7 +46,7 @@ const createPlayer = async (req, res) => {
     if (existingPlayer) {
       return res
         .status(400)
-        .json({ message: "Player with this playerId or email already exists" });
+        .json({ message: "Duplicate playerId or email" });
     }
 
     const player = await Player.create({
@@ -61,6 +62,7 @@ const createPlayer = async (req, res) => {
       gender,
       mobileNumber,
       email,
+      profileImage,
       clubsPlayed,
       createdBy: req.user._id,
       updatedBy: req.user._id,
@@ -73,6 +75,9 @@ const createPlayer = async (req, res) => {
     res.status(201).json(player);
   } catch (error) {
     console.error("Create player error:", error.message);
+    if (error.code === 11000) {
+      return res.status(400).json({ message: "Duplicate playerId or email" });
+    }
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -181,6 +186,7 @@ const updatePlayer = async (req, res) => {
       "gender",
       "mobileNumber",
       "email",
+      "profileImage",
       "clubsPlayed",
     ];
 

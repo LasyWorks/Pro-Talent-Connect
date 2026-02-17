@@ -9,6 +9,17 @@ dist/
 .env.test.local
 .env.production.local
 
+# Frontend app
+frontend/
+frontend/node_modules/
+frontend/dist/
+frontend/.env*
+
+# Backend app
+Backend/node_modules/
+Backend/dist/
+Backend/.env
+
 # Logs
 npm-debug.log*
 yarn-debug.log*

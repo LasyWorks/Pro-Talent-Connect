@@ -9,8 +9,7 @@ dist/
 .env.test.local
 .env.production.local
 
-# Frontend app
-frontend/
+# Frontend app (ignore build artifacts and env, but not source)
 frontend/node_modules/
 frontend/dist/
 frontend/.env*

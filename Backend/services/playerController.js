@@ -3,9 +3,14 @@ const { logAction } = require("../Middleware/auditLogger");
 
 // @desc    Create a new player
 // @route   POST /api/players
-// @access  Private / Admin & Super Admin
+// @access  Private / Super Admin Only
 const createPlayer = async (req, res) => {
   try {
+    // Only Super Admin can create players
+    if (req.user.role !== "Super Admin") {
+      return res.status(403).json({ message: "Access denied. Only Super Admin can create players." });
+    }
+
     const {
       name,
       age,

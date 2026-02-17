@@ -23,6 +23,12 @@ const logAction = async ({
   status = "SUCCESS",
 }) => {
   try {
+    // Skip logging if user object doesn't have required fields
+    if (!user || !user._id || !user.name || !user.role) {
+      console.warn("Skipping audit log: insufficient user information");
+      return null;
+    }
+
     const auditLog = await AuditLog.create({
       user_id: user._id,
       user_name: user.name,

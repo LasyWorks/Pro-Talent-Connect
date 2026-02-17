@@ -83,8 +83,8 @@ const playerSchema = new mongoose.Schema(
       lowercase: true,
     },
     profileImage: {
-      type: [String],
-      default: [],
+      type: String,
+      default: "",
     },
     scouting_notes: {
       type: String,

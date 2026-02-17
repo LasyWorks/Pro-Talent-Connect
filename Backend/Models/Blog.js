@@ -23,14 +23,31 @@ const blogSchema = new mongoose.Schema(
       maxlength: 300,
       trim: true,
     },
+    author: {
+      type: String,
+      trim: true,
+    },
     author_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
       required: true,
     },
+    category: {
+      type: String,
+      enum: ["Transfers", "Achievements", "Announcements", "News", "General"],
+      default: "General",
+    },
+    image: {
+      type: String,
+      default: "",
+    },
     cover_image: {
       type: String,
       default: "",
+    },
+    readTime: {
+      type: Number,
+      default: 5,
     },
     tags: {
       type: [String],

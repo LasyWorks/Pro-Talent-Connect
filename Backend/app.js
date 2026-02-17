@@ -7,6 +7,8 @@ const dashboardRoutes = require("./Routes/dashboardRoutes");
 const blogRoutes = require("./Routes/blogRoutes");
 const aboutRoutes = require("./Routes/aboutRoutes");
 const auditLogRoutes = require("./Routes/auditLogRoutes");
+const serviceRoutes = require("./Routes/serviceRoutes");
+const contactRoutes = require("./Routes/contactRoutes");
 
 const app = express();
 
@@ -45,5 +47,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/about", aboutRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
+app.use("/api", serviceRoutes);
+app.use("/api/contact", contactRoutes);
 
 module.exports = app;

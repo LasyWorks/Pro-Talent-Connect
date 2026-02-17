@@ -23,6 +23,18 @@ const adminSchema = new mongoose.Schema(
       enum: ["Admin", "Super Admin"],
       default: "Admin",
     },
+    profile_image: {
+      type: String,
+      default: "",
+    },
+    is_active: {
+      type: Boolean,
+      default: true,
+    },
+    last_login: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

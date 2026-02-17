@@ -7,6 +7,15 @@ const playerSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    age: {
+      type: Number,
+      min: 5,
+      max: 100,
+    },
+    age_group: {
+      type: String,
+      enum: ["U13", "U15", "U17", "U19", "Senior"],
+    },
     playingPosition: {
       type: String,
       required: true,
@@ -31,6 +40,10 @@ const playerSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    nationality: {
+      type: String,
+      trim: true,
+    },
     weight: {
       type: Number, // in kg
     },
@@ -41,6 +54,23 @@ const playerSchema = new mongoose.Schema(
       type: String,
       enum: ["Male", "Female", "Other"],
       required: true,
+    },
+    jersey_no: {
+      type: Number,
+      min: 0,
+      max: 99,
+    },
+    size: {
+      type: String,
+      enum: ["XS", "S", "M", "L", "XL", "XXL"],
+    },
+    city: {
+      type: String,
+      trim: true,
+    },
+    address: {
+      type: String,
+      trim: true,
     },
     mobileNumber: {
       type: String,
@@ -53,13 +83,34 @@ const playerSchema = new mongoose.Schema(
       lowercase: true,
     },
     profileImage: {
+      type: [String],
+      default: [],
+    },
+    scouting_notes: {
       type: String,
       default: "",
     },
+    career_history: {
+      type: String,
+      default: "",
+    },
+    media_links: {
+      type: [String],
+      default: [],
+    },
     clubsPlayed: [
       {
-        clubName: String,
-        duration: String,
+        clubName: {
+          type: String,
+          required: true,
+        },
+        clubLogo: {
+          type: String,
+          default: "",
+        },
+        duration: {
+          type: String,
+        },
       },
     ],
     createdBy: {

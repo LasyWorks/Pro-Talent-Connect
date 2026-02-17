@@ -1,0 +1,79 @@
+const mongoose = require("mongoose");
+
+const blogSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    content: {
+      type: String,
+      required: true,
+    },
+    excerpt: {
+      type: String,
+      maxlength: 300,
+      trim: true,
+    },
+    author_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      required: true,
+    },
+    cover_image: {
+      type: String,
+      default: "",
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
+    status: {
+      type: String,
+      enum: ["DRAFT", "PUBLISHED", "ARCHIVED"],
+      default: "DRAFT",
+    },
+    published_at: {
+      type: Date,
+      default: null,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true, // Automatically creates createdAt and updatedAt
+  }
+);
+
+// Auto-generate slug from title before saving
+blogSchema.pre("save", function (next) {
+  if (this.isModified("title") && !this.slug) {
+    this.slug = this.title
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+  next();
+});
+
+// Auto-set published_at when status changes to PUBLISHED
+blogSchema.pre("save", function (next) {
+  if (this.isModified("status") && this.status === "PUBLISHED" && !this.published_at) {
+    this.published_at = new Date();
+  }
+  next();
+});
+
+module.exports = mongoose.model("Blog", blogSchema);

@@ -1,24 +1,35 @@
 const Player = require("../Models/Players");
+const { logAction } = require("../Middleware/auditLogger");
 
 // @desc    Create a new player
 // @route   POST /api/players
-// @access  Private / Super Admin only
+// @access  Private / Admin & Super Admin
 const createPlayer = async (req, res) => {
   try {
     const {
       name,
+      age,
+      age_group,
       playingPosition,
       alternativePosition,
       preferredFoot,
       transferMarketLink,
       playerId,
       dateOfBirth,
+      nationality,
       weight,
       height,
       gender,
+      jersey_no,
+      size,
+      city,
+      address,
       mobileNumber,
       email,
       profileImage,
+      scouting_notes,
+      career_history,
+      media_links,
       clubsPlayed,
     } = req.body;
 
@@ -51,18 +62,28 @@ const createPlayer = async (req, res) => {
 
     const player = await Player.create({
       name,
+      age,
+      age_group,
       playingPosition,
       alternativePosition,
       preferredFoot,
       transferMarketLink,
       playerId,
       dateOfBirth,
+      nationality,
       weight,
       height,
       gender,
+      jersey_no,
+      size,
+      city,
+      address,
       mobileNumber,
       email,
       profileImage,
+      scouting_notes,
+      career_history,
+      media_links,
       clubsPlayed,
       createdBy: req.user._id,
       updatedBy: req.user._id,
@@ -71,6 +92,18 @@ const createPlayer = async (req, res) => {
     // Populate admin details before returning
     await player.populate("createdBy", "name email role");
     await player.populate("updatedBy", "name email role");
+
+    // Log player creation
+    await logAction({
+      user: req.user,
+      action: "CREATE",
+      resourceType: "Player",
+      resourceId: player._id.toString(),
+      description: `Player created: ${player.name} (ID: ${player.playerId})`,
+      req,
+      changes: { name, playerId, playingPosition, email },
+      status: "SUCCESS"
+    });
 
     res.status(201).json(player);
   } catch (error) {
@@ -82,7 +115,7 @@ const createPlayer = async (req, res) => {
   }
 };
 
-// @desc    Get all players (with optional search & pagination)
+// @desc    Get all players (with optional filters & pagination)
 // @route   GET /api/players
 // @access  Private / Admin & Super Admin
 const getAllPlayers = async (req, res) => {
@@ -104,6 +137,9 @@ const getAllPlayers = async (req, res) => {
     }
     if (req.query.gender) {
       filter.gender = req.query.gender;
+    }
+    if (req.query.age_group) {
+      filter.age_group = req.query.age_group;
     }
     if (req.query.preferredFoot) {
       filter.preferredFoot = req.query.preferredFoot;
@@ -128,6 +164,76 @@ const getAllPlayers = async (req, res) => {
     });
   } catch (error) {
     console.error("Get players error:", error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// @desc    Search players by multiple criteria
+// @route   GET /api/players/search
+// @access  Private / Admin & Super Admin
+const searchPlayers = async (req, res) => {
+  try {
+    const { name, city, age_group, position, gender } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Build dynamic search query
+    const filter = { isDeleted: false };
+    const orConditions = [];
+
+    if (name) {
+      orConditions.push({ name: { $regex: name, $options: "i" } });
+    }
+    if (city) {
+      orConditions.push({ city: { $regex: city, $options: "i" } });
+    }
+    if (position) {
+      orConditions.push(
+        { playingPosition: { $regex: position, $options: "i" } },
+        { alternativePosition: { $regex: position, $options: "i" } }
+      );
+    }
+
+    // Exact match filters
+    if (age_group) {
+      filter.age_group = age_group;
+    }
+    if (gender) {
+      filter.gender = gender;
+    }
+
+    // Combine OR conditions if any exist
+    if (orConditions.length > 0) {
+      filter.$or = orConditions;
+    }
+
+    // If no search criteria provided
+    if (!name && !city && !age_group && !position && !gender) {
+      return res.status(400).json({
+        message: "Please provide at least one search parameter: name, city, age_group, position, or gender",
+      });
+    }
+
+    const totalResults = await Player.countDocuments(filter);
+    const totalPages = Math.ceil(totalResults / limit);
+    const players = await Player.find(filter)
+      .populate("createdBy", "name email role")
+      .populate("updatedBy", "name email role")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      success: true,
+      count: players.length,
+      totalResults,
+      totalPages,
+      currentPage: page,
+      players,
+    });
+  } catch (error) {
+    console.error("Search players error:", error.message);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -175,18 +281,28 @@ const updatePlayer = async (req, res) => {
     // Update only provided fields
     const updatableFields = [
       "name",
+      "age",
+      "age_group",
       "playingPosition",
       "alternativePosition",
       "preferredFoot",
       "transferMarketLink",
       "playerId",
       "dateOfBirth",
+      "nationality",
       "weight",
       "height",
       "gender",
+      "jersey_no",
+      "size",
+      "city",
+      "address",
       "mobileNumber",
       "email",
       "profileImage",
+      "scouting_notes",
+      "career_history",
+      "media_links",
       "clubsPlayed",
     ];
 
@@ -202,6 +318,19 @@ const updatePlayer = async (req, res) => {
     const updatedPlayer = await player.save();
     await updatedPlayer.populate("createdBy", "name email role");
     await updatedPlayer.populate("updatedBy", "name email role");
+
+    // Log player update
+    await logAction({
+      user: req.user,
+      action: "UPDATE",
+      resourceType: "Player",
+      resourceId: player._id.toString(),
+      description: `Player updated: ${updatedPlayer.name} (ID: ${updatedPlayer.playerId})`,
+      req,
+      changes: req.body,
+      status: "SUCCESS"
+    });
+
     res.status(200).json(updatedPlayer);
   } catch (error) {
     console.error("Update player error:", error.message);
@@ -230,6 +359,19 @@ const deletePlayer = async (req, res) => {
     player.isDeleted = true;
     player.updatedBy = req.user._id;
     await player.save();
+
+    // Log player deletion
+    await logAction({
+      user: req.user,
+      action: "DELETE",
+      resourceType: "Player",
+      resourceId: player._id.toString(),
+      description: `Player deleted (soft): ${player.name} (ID: ${player.playerId})`,
+      req,
+      changes: { isDeleted: true },
+      status: "SUCCESS"
+    });
+
     res.status(200).json({ message: "Player deleted successfully" });
   } catch (error) {
     console.error("Delete player error:", error.message);
@@ -240,6 +382,7 @@ const deletePlayer = async (req, res) => {
 module.exports = {
   createPlayer,
   getAllPlayers,
+  searchPlayers,
   getPlayerById,
   updatePlayer,
   deletePlayer,

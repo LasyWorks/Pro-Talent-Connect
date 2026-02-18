@@ -1,45 +1,48 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   FunnelIcon,
   MagnifyingGlassIcon,
   MapPinIcon,
   PhoneIcon,
   EnvelopeIcon,
-  XMarkIcon,
+  ArrowTopRightOnSquareIcon,
   AdjustmentsHorizontalIcon,
   Squares2X2Icon,
-  ListBulletIcon
-} from '@heroicons/react/24/outline';
-import { 
-  LinkedInLogoIcon, 
-  InstagramLogoIcon 
-} from '@radix-ui/react-icons';
-import axios from 'axios';
-import FloatingShapes from '../components/common/FloatingShapes';
-import LoadingSkeleton from '../components/common/LoadingSkeleton';
-import EmptyState from '../components/common/EmptyState';
+  ListBulletIcon,
+} from "@heroicons/react/24/outline";
+import axios from "axios";
+import FloatingShapes from "../components/common/FloatingShapes";
+import LoadingSkeleton from "../components/common/LoadingSkeleton";
+import EmptyState from "../components/common/EmptyState";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
 const Players = () => {
   const [players, setPlayers] = useState([]);
   const [filteredPlayers, setFilteredPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState("grid");
   const [showFilters, setShowFilters] = useState(true);
-  const [sortBy, setSortBy] = useState('name');
+  const [sortBy, setSortBy] = useState("name");
 
-  // Filter states
   const [filters, setFilters] = useState({
-    position: '',
-    ageMin: '',
-    ageMax: '',
-    heightMin: '',
-    heightMax: '',
-    city: '',
-    minExperience: '',
-    searchQuery: ''
+    position: "",
+    ageMin: "",
+    ageMax: "",
+    heightMin: "",
+    heightMax: "",
+    city: "",
+    searchQuery: "",
   });
 
-  const positions = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward', 'Winger', 'Striker'];
+  const positions = [
+    "Goalkeeper",
+    "Defender",
+    "Midfielder",
+    "Forward",
+    "Winger",
+    "Striker",
+  ];
 
   useEffect(() => {
     fetchPlayers();
@@ -52,155 +55,73 @@ const Players = () => {
   const fetchPlayers = async () => {
     try {
       setLoading(true);
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-      const response = await axios.get(`${apiUrl}/api/players`);
+      const response = await axios.get(`${API_URL}/api/players?limit=100`);
       const playersList = response.data.players || response.data || [];
       setPlayers(playersList);
       setFilteredPlayers(playersList);
     } catch (err) {
-      console.error('Error fetching players:', err);
-      setMockData();
+      console.error("Error fetching players:", err);
+      setPlayers([]);
+      setFilteredPlayers([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const setMockData = () => {
-    const mockPlayers = [
-      {
-        _id: '1',
-        name: 'Alex Martinez',
-        playingPosition: 'Goalkeeper',
-        age: 25,
-        height: 188,
-        city: 'Madrid',
-        nationality: 'Spain',
-        profileImage: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400',
-        email: 'alex@example.com',
-        mobileNumber: '+34 123 456 789',
-        clubsPlayed: [{ clubName: 'Madrid FC Academy', duration: '2020-2024' }]
-      },
-      {
-        _id: '2',
-        name: 'Carlos Fernandez',
-        playingPosition: 'Midfielder',
-        age: 24,
-        height: 178,
-        city: 'Barcelona',
-        nationality: 'Spain',
-        profileImage: 'https://images.unsplash.com/photo-1606925797300-0b35e9d1794e?w=400',
-        email: 'carlos@example.com',
-        mobileNumber: '+34 123 456 790',
-        clubsPlayed: [{ clubName: 'Valencia Academy', duration: '2019-2024' }]
-      },
-      {
-        _id: '3',
-        name: 'David Thompson',
-        playingPosition: 'Defender',
-        age: 26,
-        height: 185,
-        city: 'New York',
-        nationality: 'USA',
-        profileImage: 'https://images.unsplash.com/photo-1577212017184-80cc0da11082?w=400',
-        email: 'david@example.com',
-        mobileNumber: '+1 555 123 4567',
-        clubsPlayed: [{ clubName: 'United Academy', duration: '2018-2024' }]
-      },
-      {
-        _id: '4',
-        name: 'James Rodriguez',
-        playingPosition: 'Midfielder',
-        age: 23,
-        height: 180,
-        city: 'London',
-        nationality: 'England',
-        profileImage: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=400',
-        email: 'james@example.com',
-        mobileNumber: '+44 20 1234 5678',
-        clubsPlayed: [{ clubName: 'Manchester Academy', duration: '2020-2024' }]
-      },
-      {
-        _id: '5',
-        name: 'Marcus Silva',
-        playingPosition: 'Forward',
-        age: 22,
-        height: 183,
-        city: 'Rio de Janeiro',
-        nationality: 'Brazil',
-        profileImage: 'https://images.unsplash.com/photo-1594649781961-5c56f04f6e7f?w=400',
-        email: 'marcus@example.com',
-        mobileNumber: '+55 21 98765 4321',
-        clubsPlayed: [{ clubName: 'Academy', duration: '2019-2024' }]
-      },
-      {
-        _id: '6',
-        name: 'Michael Brown',
-        playingPosition: 'Forward',
-        age: 27,
-        height: 182,
-        city: 'Los Angeles',
-        nationality: 'USA',
-        profileImage: 'https://images.unsplash.com/photo-1607627000458-210e8d2bdb1d?w=400',
-        email: 'michael@example.com',
-        mobileNumber: '+1 555 987 6543',
-        clubsPlayed: [{ clubName: 'LA Academy', duration: '2017-2024' }]
-      }
-    ];
-    setPlayers(mockPlayers);
-    setFilteredPlayers(mockPlayers);
-  };
-
   const applyFilters = () => {
     let filtered = [...players];
 
-    // Search query
     if (filters.searchQuery) {
-      filtered = filtered.filter(player =>
-        player.name.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
-        player.playingPosition?.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
-        player.city?.toLowerCase().includes(filters.searchQuery.toLowerCase())
+      const q = filters.searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (player) =>
+          player.name?.toLowerCase().includes(q) ||
+          player.playingPosition?.toLowerCase().includes(q) ||
+          player.city?.toLowerCase().includes(q) ||
+          player.nationality?.toLowerCase().includes(q),
       );
     }
 
-    // Position filter
     if (filters.position) {
-      filtered = filtered.filter(player =>
-        player.playingPosition?.toLowerCase().includes(filters.position.toLowerCase())
+      filtered = filtered.filter((player) =>
+        player.playingPosition
+          ?.toLowerCase()
+          .includes(filters.position.toLowerCase()),
       );
     }
 
-    // Age filter
     if (filters.ageMin) {
-      filtered = filtered.filter(player => player.age >= parseInt(filters.ageMin));
+      filtered = filtered.filter(
+        (player) => player.age >= parseInt(filters.ageMin),
+      );
     }
     if (filters.ageMax) {
-      filtered = filtered.filter(player => player.age <= parseInt(filters.ageMax));
-    }
-
-    // Height filter
-    if (filters.heightMin) {
-      filtered = filtered.filter(player => player.height >= parseInt(filters.heightMin));
-    }
-    if (filters.heightMax) {
-      filtered = filtered.filter(player => player.height <= parseInt(filters.heightMax));
-    }
-
-    // City filter
-    if (filters.city) {
-      filtered = filtered.filter(player =>
-        player.city?.toLowerCase().includes(filters.city.toLowerCase())
+      filtered = filtered.filter(
+        (player) => player.age <= parseInt(filters.ageMax),
       );
     }
 
-    // Sort
+    if (filters.heightMin) {
+      filtered = filtered.filter(
+        (player) => player.height >= parseInt(filters.heightMin),
+      );
+    }
+    if (filters.heightMax) {
+      filtered = filtered.filter(
+        (player) => player.height <= parseInt(filters.heightMax),
+      );
+    }
+
+    if (filters.city) {
+      filtered = filtered.filter((player) =>
+        player.city?.toLowerCase().includes(filters.city.toLowerCase()),
+      );
+    }
+
     filtered.sort((a, b) => {
-      if (sortBy === 'name') {
-        return a.name.localeCompare(b.name);
-      } else if (sortBy === 'age') {
-        return a.age - b.age;
-      } else if (sortBy === 'height') {
-        return (b.height || 0) - (a.height || 0);
-      }
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "age") return (a.age || 0) - (b.age || 0);
+      if (sortBy === "height") return (b.height || 0) - (a.height || 0);
       return 0;
     });
 
@@ -209,23 +130,22 @@ const Players = () => {
 
   const clearFilters = () => {
     setFilters({
-      position: '',
-      ageMin: '',
-      ageMax: '',
-      heightMin: '',
-      heightMax: '',
-      city: '',
-      minExperience: '',
-      searchQuery: ''
+      position: "",
+      ageMin: "",
+      ageMax: "",
+      heightMin: "",
+      heightMax: "",
+      city: "",
+      searchQuery: "",
     });
   };
 
   const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-950 text-white">
       <FloatingShapes />
 
       {/* Header Section */}
@@ -237,7 +157,8 @@ const Players = () => {
                 Player <span className="text-red-500">Database</span>
               </h1>
               <p className="text-gray-400 text-lg">
-                {filteredPlayers.length} player{filteredPlayers.length !== 1 ? 's' : ''} found
+                {filteredPlayers.length} player
+                {filteredPlayers.length !== 1 ? "s" : ""} found
               </p>
             </div>
 
@@ -249,7 +170,9 @@ const Players = () => {
                   type="text"
                   placeholder="Search players..."
                   value={filters.searchQuery}
-                  onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("searchQuery", e.target.value)
+                  }
                   className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 backdrop-blur-sm"
                 />
               </div>
@@ -260,29 +183,35 @@ const Players = () => {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 backdrop-blur-sm cursor-pointer"
               >
-                <option value="name" className="bg-gray-900">Name</option>
-                <option value="age" className="bg-gray-900">Age</option>
-                <option value="height" className="bg-gray-900">Height</option>
+                <option value="name" className="bg-gray-900">
+                  Name
+                </option>
+                <option value="age" className="bg-gray-900">
+                  Age
+                </option>
+                <option value="height" className="bg-gray-900">
+                  Height
+                </option>
               </select>
 
               {/* View Toggle */}
               <div className="flex gap-2 bg-white/5 border border-white/10 rounded-xl p-1 backdrop-blur-sm">
                 <button
-                  onClick={() => setViewMode('grid')}
+                  onClick={() => setViewMode("grid")}
                   className={`p-2 rounded-lg transition-all duration-300 ${
-                    viewMode === 'grid'
-                      ? 'bg-red-500 text-white'
-                      : 'text-gray-400 hover:text-white'
+                    viewMode === "grid"
+                      ? "bg-red-500 text-white"
+                      : "text-gray-400 hover:text-white"
                   }`}
                 >
                   <Squares2X2Icon className="w-5 h-5" />
                 </button>
                 <button
-                  onClick={() => setViewMode('list')}
+                  onClick={() => setViewMode("list")}
                   className={`p-2 rounded-lg transition-all duration-300 ${
-                    viewMode === 'list'
-                      ? 'bg-red-500 text-white'
-                      : 'text-gray-400 hover:text-white'
+                    viewMode === "list"
+                      ? "bg-red-500 text-white"
+                      : "text-gray-400 hover:text-white"
                   }`}
                 >
                   <ListBulletIcon className="w-5 h-5" />
@@ -308,8 +237,8 @@ const Players = () => {
             {/* Filters Sidebar */}
             <aside
               className={`${
-                showFilters ? 'block' : 'hidden'
-              } lg:block w-full lg:w-72 flex-shrink-0`}
+                showFilters ? "block" : "hidden"
+              } lg:block w-full lg:w-72 shrink-0`}
             >
               <div className="lg:sticky lg:top-24 bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 space-y-6 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                 <div className="flex items-center justify-between mb-4">
@@ -332,12 +261,18 @@ const Players = () => {
                   </label>
                   <select
                     value={filters.position}
-                    onChange={(e) => handleFilterChange('position', e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("position", e.target.value)
+                    }
                     className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500/50 cursor-pointer"
                   >
-                    <option value="" className="bg-gray-900">All Positions</option>
-                    {positions.map(pos => (
-                      <option key={pos} value={pos} className="bg-gray-900">{pos}</option>
+                    <option value="" className="bg-gray-900">
+                      All Positions
+                    </option>
+                    {positions.map((pos) => (
+                      <option key={pos} value={pos} className="bg-gray-900">
+                        {pos}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -352,14 +287,18 @@ const Players = () => {
                       type="number"
                       placeholder="Min"
                       value={filters.ageMin}
-                      onChange={(e) => handleFilterChange('ageMin', e.target.value)}
+                      onChange={(e) =>
+                        handleFilterChange("ageMin", e.target.value)
+                      }
                       className="w-1/2 px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50"
                     />
                     <input
                       type="number"
                       placeholder="Max"
                       value={filters.ageMax}
-                      onChange={(e) => handleFilterChange('ageMax', e.target.value)}
+                      onChange={(e) =>
+                        handleFilterChange("ageMax", e.target.value)
+                      }
                       className="w-1/2 px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50"
                     />
                   </div>
@@ -375,14 +314,18 @@ const Players = () => {
                       type="number"
                       placeholder="Min"
                       value={filters.heightMin}
-                      onChange={(e) => handleFilterChange('heightMin', e.target.value)}
+                      onChange={(e) =>
+                        handleFilterChange("heightMin", e.target.value)
+                      }
                       className="w-1/2 px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50"
                     />
                     <input
                       type="number"
                       placeholder="Max"
                       value={filters.heightMax}
-                      onChange={(e) => handleFilterChange('heightMax', e.target.value)}
+                      onChange={(e) =>
+                        handleFilterChange("heightMax", e.target.value)
+                      }
                       className="w-1/2 px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50"
                     />
                   </div>
@@ -395,23 +338,9 @@ const Players = () => {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g., Los Angeles"
+                    placeholder="e.g., London"
                     value={filters.city}
-                    onChange={(e) => handleFilterChange('city', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50"
-                  />
-                </div>
-
-                {/* Min Experience */}
-                <div>
-                  <label className="block text-sm font-semibold mb-2 text-gray-300">
-                    Min Experience (years)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={filters.minExperience}
-                    onChange={(e) => handleFilterChange('minExperience', e.target.value)}
+                    onChange={(e) => handleFilterChange("city", e.target.value)}
                     className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/50"
                   />
                 </div>
@@ -439,13 +368,17 @@ const Players = () => {
               ) : (
                 <div
                   className={
-                    viewMode === 'grid'
-                      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-                      : 'space-y-4'
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                      : "space-y-4"
                   }
                 >
                   {filteredPlayers.map((player) => (
-                    <PlayerCard key={player._id} player={player} viewMode={viewMode} />
+                    <PlayerCard
+                      key={player._id}
+                      player={player}
+                      viewMode={viewMode}
+                    />
                   ))}
                 </div>
               )}
@@ -457,89 +390,189 @@ const Players = () => {
   );
 };
 
+// Grade badge color helper
+const getGradeStyle = (grade) => {
+  switch (grade) {
+    case "A":
+      return { bg: "bg-emerald-500", text: "text-white", label: "Elite" };
+    case "B":
+      return { bg: "bg-blue-500", text: "text-white", label: "Professional" };
+    case "C":
+      return { bg: "bg-amber-500", text: "text-white", label: "Semi-Pro" };
+    case "D":
+      return { bg: "bg-orange-500", text: "text-white", label: "Amateur" };
+    case "E":
+      return { bg: "bg-red-500", text: "text-white", label: "Semi-Amateur" };
+    default:
+      return null;
+  }
+};
+
 // Player Card Component
 const PlayerCard = ({ player, viewMode }) => {
   const getPositionColor = (position) => {
     const colors = {
-      goalkeeper: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40',
-      defender: 'bg-blue-500/20 text-blue-400 border-blue-500/40',
-      midfielder: 'bg-green-500/20 text-green-400 border-green-500/40',
-      forward: 'bg-red-500/20 text-red-400 border-red-500/40',
-      winger: 'bg-purple-500/20 text-purple-400 border-purple-500/40',
-      striker: 'bg-red-500/20 text-red-400 border-red-500/40',
+      goalkeeper: "bg-yellow-500/20 text-yellow-400 border-yellow-500/40",
+      defender: "bg-blue-500/20 text-blue-400 border-blue-500/40",
+      midfielder: "bg-green-500/20 text-green-400 border-green-500/40",
+      forward: "bg-red-500/20 text-red-400 border-red-500/40",
+      winger: "bg-purple-500/20 text-purple-400 border-purple-500/40",
+      striker: "bg-red-500/20 text-red-400 border-red-500/40",
     };
-    const key = position?.toLowerCase() || '';
-    return colors[key] || 'bg-gray-500/20 text-gray-400 border-gray-500/40';
+    return (
+      colors[position?.toLowerCase()] ||
+      "bg-gray-500/20 text-gray-400 border-gray-500/40"
+    );
   };
 
-  if (viewMode === 'list') {
+  const currentClub = player.clubsPlayed?.[0]?.clubName;
+
+  if (viewMode === "list") {
+    // Calculate experience from career_history or clubsPlayed
+    const getExperience = () => {
+      if (
+        Array.isArray(player.career_history) &&
+        player.career_history.length > 0
+      ) {
+        const years = player.career_history.reduce((total, entry) => {
+          const start = entry.startYear || 0;
+          const end = entry.endYear || new Date().getFullYear();
+          return total + (end - start);
+        }, 0);
+        return `${years} yrs`;
+      }
+      if (player.clubsPlayed && player.clubsPlayed.length > 0) {
+        return `${player.clubsPlayed.length}+ yrs`;
+      }
+      return "N/A";
+    };
+
     return (
-      <div className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 hover:bg-white/10 hover:border-red-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-red-500/20">
+      <div className="group bg-[#1a1a1a] border border-white/10 rounded-2xl px-4 py-3 hover:border-white/20 transition-all duration-300">
         <div className="flex items-center gap-4">
-          {/* Image */}
-          <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border border-white/10">
+          {/* Thumbnail Image - Circular */}
+          <div className="w-[60px] h-[60px] rounded-full overflow-hidden shrink-0 bg-gray-800">
             <img
-              src={player.profileImage || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400'}
+              src={
+                player.profileImage ||
+                "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400"
+              }
               alt={player.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              className="w-full h-full object-cover"
             />
           </div>
 
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold text-white mb-1 truncate group-hover:text-red-500 transition-colors duration-300">
+          {/* Name + Position */}
+          <div className="w-36 shrink-0">
+            <h3 className="text-base font-bold text-white mb-1.5 truncate">
               {player.name}
             </h3>
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className={`text-xs px-3 py-1 rounded-full border font-semibold ${getPositionColor(player.playingPosition)}`}>
-                {player.playingPosition}
-              </span>
-              {player.age && (
-                <span className="text-xs text-gray-400">
-                  {player.age} years
-                </span>
-              )}
-            </div>
-            {player.clubsPlayed?.[0]?.clubName && (
-              <p className="text-sm text-gray-400 truncate">
-                {player.clubsPlayed[0].clubName}
-              </p>
-            )}
-            {player.city && (
-              <div className="flex items-center gap-1 text-sm text-gray-400 mt-1">
-                <MapPinIcon className="w-4 h-4" />
-                <span>{player.city}</span>
-              </div>
-            )}
+            <span
+              className={`text-xs px-2.5 py-1 rounded font-semibold ${
+                player.playingPosition?.toLowerCase() === "midfielder"
+                  ? "bg-green-600 text-white"
+                  : player.playingPosition?.toLowerCase() === "striker" ||
+                      player.playingPosition?.toLowerCase() === "forward"
+                    ? "bg-red-600 text-white"
+                    : player.playingPosition?.toLowerCase() === "defender"
+                      ? "bg-blue-600 text-white"
+                      : player.playingPosition?.toLowerCase() === "goalkeeper"
+                        ? "bg-yellow-600 text-white"
+                        : "bg-gray-600 text-white"
+              }`}
+            >
+              {player.playingPosition}
+            </span>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2">
+          {/* Club */}
+          <div className="w-40 shrink-0 hidden lg:block">
+            <p className="text-xs text-gray-500 mb-1">Club</p>
+            <p className="text-sm text-gray-200 truncate">
+              {currentClub || "—"}
+            </p>
+          </div>
+
+          {/* Location */}
+          <div className="w-36 shrink-0 hidden lg:block">
+            <p className="text-xs text-gray-500 mb-1">Location</p>
+            <p className="text-sm text-gray-200 truncate">
+              {player.city
+                ? `${player.city}${player.nationality ? `, ${player.nationality}` : ""}`
+                : "—"}
+            </p>
+          </div>
+
+          {/* Age */}
+          <div className="w-16 shrink-0 hidden md:block">
+            <p className="text-xs text-gray-500 mb-1">Age</p>
+            <p className="text-base text-white font-semibold">
+              {player.age || "—"}
+            </p>
+          </div>
+
+          {/* Experience */}
+          <div className="w-20 shrink-0 hidden md:block">
+            <p className="text-xs text-gray-500 mb-1">Experience</p>
+            <p className="text-base text-white font-semibold">
+              {getExperience()}
+            </p>
+          </div>
+
+          {/* Scout Grade */}
+          {player.scoutReport?.grade && (
+            <div className="w-20 shrink-0 hidden md:block text-center">
+              <p className="text-xs text-gray-500 mb-1">Grade</p>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={`inline-flex items-center justify-center w-7 h-7 rounded-md text-xs font-bold ${getGradeStyle(player.scoutReport.grade)?.bg} ${getGradeStyle(player.scoutReport.grade)?.text}`}
+                >
+                  {player.scoutReport.grade}
+                </span>
+                <span className="text-sm text-white font-semibold">
+                  {player.scoutReport.totalScore}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Action Icons */}
+          <div className="flex items-center gap-2 shrink-0 ml-auto">
+            {player.email && (
+              <a
+                href={`mailto:${player.email}`}
+                className="p-2 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200"
+                title={`Email ${player.name}`}
+              >
+                <EnvelopeIcon className="w-4 h-4 text-gray-400" />
+              </a>
+            )}
+            {player.mobileNumber && (
+              <a
+                href={`tel:${player.mobileNumber}`}
+                className="p-2 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200"
+                title={`Call ${player.name}`}
+              >
+                <PhoneIcon className="w-4 h-4 text-gray-400" />
+              </a>
+            )}
             <a
-              href={`https://linkedin.com`}
-              target="_blank"
+              href={player.transferMarketLink || "#"}
+              target={player.transferMarketLink ? "_blank" : undefined}
               rel="noopener noreferrer"
-              className="p-2 bg-white/5 border border-white/10 rounded-lg hover:bg-blue-500 hover:border-blue-500 transition-all duration-300 group/btn"
-              title="LinkedIn"
+              className="p-2 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200"
+              title="External Link"
             >
-              <LinkedInLogoIcon className="w-4 h-4 text-gray-400 group-hover/btn:text-white" />
+              <ArrowTopRightOnSquareIcon className="w-4 h-4 text-gray-400" />
             </a>
-            <a
-              href={`tel:${player.mobileNumber}`}
-              className="p-2 bg-white/5 border border-white/10 rounded-lg hover:bg-green-500 hover:border-green-500 transition-all duration-300 group/btn"
-              title="Call"
+
+            {/* View Profile Button */}
+            <button
+              className="ml-1 px-4 py-2 text-white text-sm font-semibold rounded-lg transition-all duration-200 hover:opacity-90 whitespace-nowrap"
+              style={{ backgroundColor: "#C4161C" }}
             >
-              <PhoneIcon className="w-4 h-4 text-gray-400 group-hover/btn:text-white" />
-            </a>
-            <a
-              href={`https://instagram.com`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 bg-white/5 border border-white/10 rounded-lg hover:bg-pink-500 hover:border-pink-500 transition-all duration-300 group/btn"
-              title="Instagram"
-            >
-              <InstagramLogoIcon className="w-4 h-4 text-gray-400 group-hover/btn:text-white" />
-            </a>
+              View Profile
+            </button>
           </div>
         </div>
       </div>
@@ -548,79 +581,125 @@ const PlayerCard = ({ player, viewMode }) => {
 
   // Grid View
   return (
-    <div className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden hover:bg-white/10 hover:border-red-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/20 hover:-translate-y-1">
+    <div className="group bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300">
       {/* Image */}
-      <div className="aspect-[4/5] overflow-hidden relative">
+      <div className="aspect-[4/3] overflow-hidden relative">
         <img
-          src={player.profileImage || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400'}
+          src={
+            player.profileImage ||
+            "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400"
+          }
           alt={player.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-        
+
         {/* Position Badge */}
-        <div className="absolute top-4 left-4">
-          <span className={`text-xs px-3 py-1.5 rounded-full border font-semibold backdrop-blur-md ${getPositionColor(player.playingPosition)}`}>
+        <div className="absolute top-3 left-3">
+          <span
+            className="text-xs px-3 py-1.5 rounded-md font-semibold text-white"
+            style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }}
+          >
             {player.playingPosition}
           </span>
         </div>
+
+        {/* Scout Grade Badge */}
+        {player.scoutReport?.grade && (
+          <div className="absolute top-3 right-3">
+            <div
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md ${getGradeStyle(player.scoutReport.grade)?.bg}`}
+            >
+              <span className="text-xs font-bold text-white">
+                {player.scoutReport.grade}
+              </span>
+              <span className="text-[10px] font-semibold text-white/80">
+                {player.scoutReport.totalScore}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="p-5">
-        <h3 className="text-xl font-bold text-white mb-2 group-hover:text-red-500 transition-colors duration-300">
-          {player.name}
-        </h3>
+        <h3 className="text-lg font-bold text-white mb-1">{player.name}</h3>
 
-        {player.clubsPlayed?.[0]?.clubName && (
-          <p className="text-sm text-gray-400 mb-3">
-            {player.clubsPlayed[0].clubName}
+        {currentClub && (
+          <p className="text-sm text-gray-400 mb-1">{currentClub}</p>
+        )}
+
+        {player.city && (
+          <p className="text-sm text-gray-500">
+            {player.city}
+            {player.nationality ? `, ${player.nationality}` : ""}
           </p>
         )}
 
-        <div className="space-y-2 mb-4">
-          {player.city && (
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <MapPinIcon className="w-4 h-4" />
-              <span>{player.city}, {player.nationality || 'Unknown'}</span>
+        {/* Scout Report Score Bar */}
+        {player.scoutReport?.totalScore > 0 && (
+          <div className="mt-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-gray-400">Scout Score</span>
+              <span className="text-xs font-semibold text-white">
+                {player.scoutReport.totalScore}/100
+              </span>
             </div>
-          )}
-          {player.age && player.height && (
-            <div className="flex items-center gap-4 text-sm text-gray-400">
-              <span>Age: {player.age}</span>
-              <span>•</span>
-              <span>Height: {player.height}cm</span>
+            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${getGradeStyle(player.scoutReport.grade)?.bg}`}
+                style={{ width: `${player.scoutReport.totalScore}%` }}
+              />
             </div>
-          )}
-        </div>
+            <p className="text-[10px] text-gray-500 mt-1">
+              {getGradeStyle(player.scoutReport.grade)?.label}
+            </p>
+          </div>
+        )}
 
-        {/* Action Buttons */}
-        <div className="flex gap-2 pt-4 border-t border-white/10">
-          <a
-            href={`https://linkedin.com`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 p-2.5 bg-white/5 border border-white/10 rounded-lg hover:bg-blue-500 hover:border-blue-500 transition-all duration-300 flex items-center justify-center group/btn"
-            title="LinkedIn"
+        {/* Bottom Row: Icons + View Profile */}
+        <div className="flex items-center justify-between pt-4 mt-4 border-t border-white/10">
+          <div className="flex items-center gap-2">
+            {player.email && (
+              <a
+                href={`mailto:${player.email}`}
+                className="p-2 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200"
+                title={`Email ${player.name}`}
+              >
+                <EnvelopeIcon className="w-4 h-4 text-gray-400" />
+              </a>
+            )}
+            {player.mobileNumber && (
+              <a
+                href={`tel:${player.mobileNumber}`}
+                className="p-2 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200"
+                title={`Call ${player.name}`}
+              >
+                <PhoneIcon className="w-4 h-4 text-gray-400" />
+              </a>
+            )}
+            {player.transferMarketLink && (
+              <a
+                href={player.transferMarketLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200"
+                title="Transfer Market"
+              >
+                <ArrowTopRightOnSquareIcon className="w-4 h-4 text-gray-400" />
+              </a>
+            )}
+            {!player.transferMarketLink && (
+              <span className="p-2 border border-white/10 rounded-lg">
+                <ArrowTopRightOnSquareIcon className="w-4 h-4 text-gray-500" />
+              </span>
+            )}
+          </div>
+          <button
+            className="px-4 py-2 text-white text-sm font-semibold rounded-lg transition-all duration-200 hover:opacity-90"
+            style={{ backgroundColor: "#C4161C" }}
           >
-            <LinkedInLogoIcon className="w-5 h-5 text-gray-400 group-hover/btn:text-white" />
-          </a>
-          <a
-            href={`tel:${player.mobileNumber}`}
-            className="flex-1 p-2.5 bg-white/5 border border-white/10 rounded-lg hover:bg-green-500 hover:border-green-500 transition-all duration-300 flex items-center justify-center group/btn"
-            title="Call"
-          >
-            <PhoneIcon className="w-5 h-5 text-gray-400 group-hover/btn:text-white" />
-          </a>
-          <a
-            href={`https://instagram.com`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 p-2.5 bg-white/5 border border-white/10 rounded-lg hover:bg-pink-500 hover:border-pink-500 transition-all duration-300 flex items-center justify-center group/btn"
-            title="Instagram"
-          >
-            <InstagramLogoIcon className="w-5 h-5 text-gray-400 group-hover/btn:text-white" />
-          </a>
+            View Profile
+          </button>
         </div>
       </div>
     </div>

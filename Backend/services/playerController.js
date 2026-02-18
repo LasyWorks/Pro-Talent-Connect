@@ -1,5 +1,6 @@
 const Player = require("../Models/Players");
 const { logAction } = require("../Middleware/auditLogger");
+const { calculateScoutReport } = require("./scoutReportCalculator");
 
 // @desc    Create a new player
 // @route   POST /api/players
@@ -8,7 +9,9 @@ const createPlayer = async (req, res) => {
   try {
     // Only Super Admin can create players
     if (req.user.role !== "Super Admin") {
-      return res.status(403).json({ message: "Access denied. Only Super Admin can create players." });
+      return res.status(403).json({
+        message: "Access denied. Only Super Admin can create players.",
+      });
     }
 
     const {
@@ -36,6 +39,13 @@ const createPlayer = async (req, res) => {
       career_history,
       media_links,
       clubsPlayed,
+      plId,
+      competitions,
+      stateLeague,
+      clubTier,
+      sprint30m,
+      sprint50m,
+      mentalityScore,
     } = req.body;
 
     // Check required fields
@@ -60,12 +70,11 @@ const createPlayer = async (req, res) => {
     });
 
     if (existingPlayer) {
-      return res
-        .status(400)
-        .json({ message: "Duplicate playerId or email" });
+      return res.status(400).json({ message: "Duplicate playerId or email" });
     }
 
-    const player = await Player.create({
+    // Build player data and auto-calculate Scout Report
+    const playerData = {
       name,
       age,
       age_group,
@@ -90,9 +99,50 @@ const createPlayer = async (req, res) => {
       career_history,
       media_links,
       clubsPlayed,
+      plId,
+      competitions,
+      stateLeague,
+      clubTier,
+      sprint30m,
+      sprint50m,
+      mentalityScore,
       createdBy: req.user._id,
       updatedBy: req.user._id,
-    });
+    };
+
+    // Auto-calculate scout report scores
+    try {
+      playerData.scoutReport = calculateScoutReport({
+        age,
+        height,
+        weight,
+        playingPosition,
+        transferMarketLink,
+        competitions,
+        stateLeague,
+        clubTier,
+        sprint30m,
+        mentalityScore,
+      });
+    } catch (error) {
+      console.error("Error calculating scout report:", error);
+      // Don't fail the creation if score calculation fails
+      playerData.scoutReport = {
+        ageScore: 0,
+        physicalScore: 0,
+        transferMarketScore: 0,
+        competitionScore: 0,
+        championshipBonus: 0,
+        stateLeagueBonus: 0,
+        clubReputationBonus: 0,
+        speedScore: 0,
+        mentalityAssessment: 0,
+        totalScore: 0,
+        grade: "",
+      };
+    }
+
+    const player = await Player.create(playerData);
 
     // Populate admin details before returning
     await player.populate("createdBy", "name email role");
@@ -107,7 +157,7 @@ const createPlayer = async (req, res) => {
       description: `Player created: ${player.name} (ID: ${player.playerId})`,
       req,
       changes: { name, playerId, playingPosition, email },
-      status: "SUCCESS"
+      status: "SUCCESS",
     });
 
     res.status(201).json(player);
@@ -196,7 +246,7 @@ const searchPlayers = async (req, res) => {
     if (position) {
       orConditions.push(
         { playingPosition: { $regex: position, $options: "i" } },
-        { alternativePosition: { $regex: position, $options: "i" } }
+        { alternativePosition: { $regex: position, $options: "i" } },
       );
     }
 
@@ -216,7 +266,8 @@ const searchPlayers = async (req, res) => {
     // If no search criteria provided
     if (!name && !city && !age_group && !position && !gender) {
       return res.status(400).json({
-        message: "Please provide at least one search parameter: name, city, age_group, position, or gender",
+        message:
+          "Please provide at least one search parameter: name, city, age_group, position, or gender",
       });
     }
 
@@ -309,6 +360,13 @@ const updatePlayer = async (req, res) => {
       "career_history",
       "media_links",
       "clubsPlayed",
+      "plId",
+      "competitions",
+      "stateLeague",
+      "clubTier",
+      "sprint30m",
+      "sprint50m",
+      "mentalityScore",
     ];
 
     updatableFields.forEach((field) => {
@@ -319,6 +377,25 @@ const updatePlayer = async (req, res) => {
 
     // Track who updated
     player.updatedBy = req.user._id;
+
+    // Auto-recalculate scout report on every update
+    try {
+      player.scoutReport = calculateScoutReport({
+        age: player.age,
+        height: player.height,
+        weight: player.weight,
+        playingPosition: player.playingPosition,
+        transferMarketLink: player.transferMarketLink,
+        competitions: player.competitions,
+        stateLeague: player.stateLeague,
+        clubTier: player.clubTier,
+        sprint30m: player.sprint30m,
+        mentalityScore: player.mentalityScore,
+      });
+    } catch (error) {
+      console.error("Error calculating scout report:", error);
+      // Don't fail the update if score calculation fails
+    }
 
     const updatedPlayer = await player.save();
     await updatedPlayer.populate("createdBy", "name email role");
@@ -333,7 +410,7 @@ const updatePlayer = async (req, res) => {
       description: `Player updated: ${updatedPlayer.name} (ID: ${updatedPlayer.playerId})`,
       req,
       changes: req.body,
-      status: "SUCCESS"
+      status: "SUCCESS",
     });
 
     res.status(200).json(updatedPlayer);
@@ -374,7 +451,7 @@ const deletePlayer = async (req, res) => {
       description: `Player deleted (soft): ${player.name} (ID: ${player.playerId})`,
       req,
       changes: { isDeleted: true },
-      status: "SUCCESS"
+      status: "SUCCESS",
     });
 
     res.status(200).json({ message: "Player deleted successfully" });

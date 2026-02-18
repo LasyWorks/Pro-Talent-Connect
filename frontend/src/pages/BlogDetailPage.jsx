@@ -1,27 +1,35 @@
-import { useState, useEffect } from 'react';
-import { CalendarIcon, UserIcon, ClockIcon, ArrowLeftIcon, TagIcon } from '@heroicons/react/24/outline';
-import axios from 'axios';
-import FloatingShapes from '../components/common/FloatingShapes';
-import LoadingSkeleton from '../components/common/LoadingSkeleton';
+import { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import {
+  CalendarIcon,
+  UserIcon,
+  ClockIcon,
+  ArrowLeftIcon,
+  TagIcon,
+} from "@heroicons/react/24/outline";
+import axios from "axios";
+import FloatingShapes from "../components/common/FloatingShapes";
+import LoadingSkeleton from "../components/common/LoadingSkeleton";
 
-const BlogDetailPage = ({ blogId }) => {
+const BlogDetailPage = () => {
+  const { id } = useParams();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchBlog();
-  }, [blogId]);
+  }, [id]);
 
   const fetchBlog = async () => {
     try {
       setLoading(true);
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-      const response = await axios.get(`${apiUrl}/api/blogs/${blogId}`);
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
+      const response = await axios.get(`${apiUrl}/api/blogs/${id}`);
       setBlog(response.data.blog || response.data);
       setError(null);
     } catch (err) {
-      console.error('Error fetching blog:', err);
+      console.error("Error fetching blog:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -30,24 +38,26 @@ const BlogDetailPage = ({ blogId }) => {
 
   const getCategoryColor = (category) => {
     const colors = {
-      Transfers: 'bg-blue-500/20 text-blue-400 border-blue-500/40',
-      Achievements: 'bg-green-500/20 text-green-400 border-green-500/40',
-      Announcements: 'bg-purple-500/20 text-purple-400 border-purple-500/40',
+      Transfers: "bg-blue-500/20 text-blue-400 border-blue-500/40",
+      Achievements: "bg-green-500/20 text-green-400 border-green-500/40",
+      Announcements: "bg-purple-500/20 text-purple-400 border-purple-500/40",
     };
-    return colors[category] || 'bg-gray-500/20 text-gray-400 border-gray-500/40';
+    return (
+      colors[category] || "bg-gray-500/20 text-gray-400 border-gray-500/40"
+    );
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 pt-32 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-950 pt-32 px-4">
         <FloatingShapes />
         <div className="max-w-7xl mx-auto">
           <LoadingSkeleton count={1} type="article" />
@@ -58,12 +68,15 @@ const BlogDetailPage = ({ blogId }) => {
 
   if (error || !blog) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 pt-32 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-950 pt-32 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <div className="bg-red-500/10 border border-red-500/20 rounded-3xl p-12">
-            <h2 className="text-3xl font-bold text-white mb-4">Article Not Found</h2>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Article Not Found
+            </h2>
             <p className="text-gray-400 mb-8">
-              {error || "The article you're looking for doesn't exist or has been removed."}
+              {error ||
+                "The article you're looking for doesn't exist or has been removed."}
             </p>
             <a
               href="#blog"
@@ -79,27 +92,30 @@ const BlogDetailPage = ({ blogId }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-950">
       {/* Back Button */}
       <div className="pt-32 pb-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <a
-            href="#blog"
+          <Link
+            to="/blog"
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-300 group"
           >
-            <ArrowLeftIcon className="w-5 h-5 group-hover:-translate-x-1 transition-tran
-      <FloatingShapes />sform duration-300" />
+            <ArrowLeftIcon className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
             Back to Blog
-          </a>
+          </Link>
         </div>
       </div>
+
+      <FloatingShapes />
 
       {/* Article Content */}
       <article className="px-4 pb-20">
         <div className="max-w-4xl mx-auto">
           {/* Category Badge */}
           <div className="mb-6">
-            <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md border ${getCategoryColor(blog.category)}`}>
+            <span
+              className={`inline-block px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md border ${getCategoryColor(blog.category)}`}
+            >
               {blog.category}
             </span>
           </div>
@@ -114,7 +130,11 @@ const BlogDetailPage = ({ blogId }) => {
             {blog.author && (
               <div className="flex items-center gap-2">
                 <UserIcon className="w-5 h-5" />
-                <span>{typeof blog.author === 'string' ? blog.author : blog.author.name || 'Admin'}</span>
+                <span>
+                  {typeof blog.author === "string"
+                    ? blog.author
+                    : blog.author.name || "Admin"}
+                </span>
               </div>
             )}
             <div className="flex items-center gap-2">
@@ -166,13 +186,13 @@ const BlogDetailPage = ({ blogId }) => {
 
           {/* Back to Blog CTA */}
           <div className="mt-16 pt-16 border-t border-white/10 text-center">
-            <a
-              href="#blog"
+            <Link
+              to="/blog"
               className="inline-flex items-center gap-2 px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-red-500/50"
             >
               <ArrowLeftIcon className="w-5 h-5" />
               Explore More Articles
-            </a>
+            </Link>
           </div>
         </div>
       </article>

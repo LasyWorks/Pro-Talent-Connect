@@ -1,38 +1,50 @@
-import { CalendarIcon, UserIcon, ClockIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import {
+  CalendarIcon,
+  UserIcon,
+  ClockIcon,
+  ArrowRightIcon,
+} from "@heroicons/react/24/outline";
 
 const BlogCard = ({ blog }) => {
   const getCategoryColor = (category) => {
     const colors = {
-      Transfers: 'bg-blue-500/20 text-blue-400 border-blue-500/40',
-      Achievements: 'bg-green-500/20 text-green-400 border-green-500/40',
-      Announcements: 'bg-purple-500/20 text-purple-400 border-purple-500/40',
+      Transfers: "bg-blue-500/20 text-blue-400 border-blue-500/40",
+      Achievements: "bg-green-500/20 text-green-400 border-green-500/40",
+      Announcements: "bg-purple-500/20 text-purple-400 border-purple-500/40",
     };
-    return colors[category] || 'bg-gray-500/20 text-gray-400 border-gray-500/40';
+    return (
+      colors[category] || "bg-gray-500/20 text-gray-400 border-gray-500/40"
+    );
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
   return (
-    <article className="group bg-white/5 backdrop-blur-sm rounded-3xl overflow-hidden border border-white/10 hover:border-red-500/50 shadow-lg hover:shadow-2xl hover:shadow-red-500/20 transition-all duration-500 transform hover:-translate-y-2">
+    <article className="group bg-white/5 backdrop-blur-sm rounded-3xl overflow-hidden border border-white/10 hover:border-white/30 shadow-lg hover:shadow-2xl hover:shadow-black/20 transition-all duration-500 transform hover:-translate-y-2">
       {/* Image with gradient overlay */}
       <div className="relative aspect-[16/10] overflow-hidden">
         <img
-          src={blog.image || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800'}
+          src={
+            blog.image ||
+            "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800"
+          }
           alt={blog.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-        
+
         {/* Floating category badge */}
         <div className="absolute top-4 left-4">
-          <span className={`px-4 py-2 rounded-full text-xs font-semibold backdrop-blur-md border ${getCategoryColor(blog.category)}`}>
+          <span
+            className={`px-4 py-2 rounded-full text-xs font-semibold backdrop-blur-md border ${getCategoryColor(blog.category)}`}
+          >
             {blog.category}
           </span>
         </div>
@@ -68,7 +80,11 @@ const BlogCard = ({ blog }) => {
         {blog.author && (
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
             <UserIcon className="w-4 h-4" />
-            <span>{typeof blog.author === 'string' ? blog.author : (blog.author.name || 'Admin')}</span>
+            <span>
+              {typeof blog.author === "string"
+                ? blog.author
+                : blog.author.name || "Admin"}
+            </span>
           </div>
         )}
 

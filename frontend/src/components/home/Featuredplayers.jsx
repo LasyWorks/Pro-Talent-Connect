@@ -14,6 +14,10 @@ const getGradeStyle = (grade) => {
       return { bg: "#f97316", label: "Amateur" };
     case "E":
       return { bg: "#ef4444", label: "Semi-Amateur" };
+    case "INCOMPLETE":
+      return { bg: "#ca8a04", label: "Incomplete Data" };
+    case "N/A":
+      return { bg: "#6b7280", label: "No Rating" };
     default:
       return null;
   }
@@ -180,7 +184,7 @@ const FeaturedPlayers = () => {
               className="group flex w-[280px] flex-shrink-0 flex-col overflow-hidden rounded border border-white/10 no-underline transition-all duration-200 hover:border-white/20 md:w-[300px] cursor-pointer"
               style={{ backgroundColor: "#111111" }}
               role="listitem"
-              aria-label={`${player.name}, ${player.playingPosition} at ${player.clubsPlayed?.[0]?.clubName || "N/A"}`}
+              aria-label={`${player.name}, ${player.playingPosition} at ${player.clubsPlayed?.[player.clubsPlayed.length - 1]?.clubName || "N/A"}`}
             >
               <div className="relative aspect-[4/3] overflow-hidden">
                 <ImageWithFallback
@@ -233,7 +237,7 @@ const FeaturedPlayers = () => {
                   className="m-0 mt-1 text-white/60"
                   style={{ fontSize: "13px" }}
                 >
-                  {player.clubsPlayed?.[0]?.clubName || "No club"}
+                  {player.clubsPlayed?.[player.clubsPlayed.length - 1]?.clubName || "No club"}
                 </p>
                 <p
                   className="m-0 mt-0.5 text-white/40"

@@ -145,8 +145,8 @@ const createPlayer = async (req, res) => {
     const player = await Player.create(playerData);
 
     // Populate admin details before returning
-    await player.populate("createdBy", "name email role");
-    await player.populate("updatedBy", "name email role");
+    await player.populate({ path: "createdBy", select: "name email role", strictPopulate: false });
+    await player.populate({ path: "updatedBy", select: "name email role", strictPopulate: false });
 
     // Log player creation
     await logAction({
@@ -203,8 +203,8 @@ const getAllPlayers = async (req, res) => {
     const totalResults = await Player.countDocuments(filter);
     const totalPages = Math.ceil(totalResults / limit);
     const players = await Player.find(filter)
-      .populate("createdBy", "name email role")
-      .populate("updatedBy", "name email role")
+      .populate({ path: "createdBy", select: "name email role", strictPopulate: false })
+      .populate({ path: "updatedBy", select: "name email role", strictPopulate: false })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -274,8 +274,8 @@ const searchPlayers = async (req, res) => {
     const totalResults = await Player.countDocuments(filter);
     const totalPages = Math.ceil(totalResults / limit);
     const players = await Player.find(filter)
-      .populate("createdBy", "name email role")
-      .populate("updatedBy", "name email role")
+      .populate({ path: "createdBy", select: "name email role", strictPopulate: false })
+      .populate({ path: "updatedBy", select: "name email role", strictPopulate: false })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -303,8 +303,8 @@ const getPlayerById = async (req, res) => {
       _id: req.params.id,
       isDeleted: false,
     })
-      .populate("createdBy", "name email role")
-      .populate("updatedBy", "name email role");
+      .populate({ path: "createdBy", select: "name email role", strictPopulate: false })
+      .populate({ path: "updatedBy", select: "name email role", strictPopulate: false });
 
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
@@ -398,8 +398,8 @@ const updatePlayer = async (req, res) => {
     }
 
     const updatedPlayer = await player.save();
-    await updatedPlayer.populate("createdBy", "name email role");
-    await updatedPlayer.populate("updatedBy", "name email role");
+    await updatedPlayer.populate({ path: "createdBy", select: "name email role", strictPopulate: false });
+    await updatedPlayer.populate({ path: "updatedBy", select: "name email role", strictPopulate: false });
 
     // Log player update
     await logAction({

@@ -175,10 +175,11 @@ const playerSchema = new mongoose.Schema(
       min: 0,
     },
 
-    // Mentality assessment score (1 or 2)
+    // Mentality assessment score (0 = no data, 1 or 2)
     mentalityScore: {
       type: Number,
-      enum: [1, 2],
+      enum: [0, 1, 2],
+      default: 0,
     },
 
     // Computed Scout Friendly Report™ scores (auto-calculated)
@@ -195,8 +196,8 @@ const playerSchema = new mongoose.Schema(
       totalScore: { type: Number, default: 0, max: 100 },
       grade: {
         type: String,
-        enum: ["A", "B", "C", "D", "E", ""],
-        default: "",
+        enum: ["A", "B", "C", "D", "E", "N/A", "INCOMPLETE", ""],
+        default: "N/A",
       },
     },
     clubsPlayed: [
@@ -235,5 +236,13 @@ const playerSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+// Indexes for faster queries (email and playerId already indexed by unique: true)
+playerSchema.index({ isDeleted: 1 });
+playerSchema.index({ playingPosition: 1 });
+playerSchema.index({ age_group: 1 });
+playerSchema.index({ gender: 1 });
+playerSchema.index({ featured: 1 });
+playerSchema.index({ name: 'text', city: 'text', nationality: 'text' }); // Text search
 
 module.exports = mongoose.model("Player", playerSchema);

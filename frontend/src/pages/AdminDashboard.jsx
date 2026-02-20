@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import { api } from "../services/api";
 import {
   ChartBarIcon,
   UserGroupIcon,
@@ -17,10 +17,10 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import FloatingShapes from "../components/common/FloatingShapes";
+import BlogManagement from "../components/blogs/BlogManagement";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
   const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState(null);
   const [adminData, setAdminData] = useState(null);
@@ -28,6 +28,7 @@ const AdminDashboard = () => {
   const [enquiries, setEnquiries] = useState([]);
   const [profileRequests, setProfileRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Check if admin is logged in
@@ -41,87 +42,97 @@ const AdminDashboard = () => {
 
     try {
       setAdminData(JSON.parse(admin));
-      fetchDashboardData(token);
     } catch (error) {
       console.error("Error parsing admin data:", error);
       localStorage.removeItem("adminToken");
       localStorage.removeItem("adminData");
       navigate("/login");
     }
-  }, []);
+  }, [navigate]);
 
-  const fetchDashboardData = async (token) => {
+  const fetchDashboardData = useCallback(async (signal) => {
     try {
+      setLoading(true);
+      setError(null);
+      
       const [statsRes, servicesRes, enquiriesRes, profilesRes] =
         await Promise.all([
-          axios.get(`${API_URL}/api/dashboard/stats`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/api/services`),
-          axios.get(`${API_URL}/api/contact/enquiries`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/api/contact/profile-requests`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
+          api.getDashboardStats({ signal }),
+          api.getServices({ signal }),
+          api.getEnquiries({ signal }),
+          api.getProfileRequests({ signal }),
         ]);
 
-      setStats(statsRes.data || {});
-      setServices(Array.isArray(servicesRes.data) ? servicesRes.data : []);
-      setEnquiries(Array.isArray(enquiriesRes.data) ? enquiriesRes.data : []);
-      setProfileRequests(
-        Array.isArray(profilesRes.data) ? profilesRes.data : [],
-      );
+      if (!signal.aborted) {
+        setStats(statsRes.data || {});
+        setServices(Array.isArray(servicesRes.data) ? servicesRes.data : []);
+        setEnquiries(Array.isArray(enquiriesRes.data) ? enquiriesRes.data : []);
+        setProfileRequests(
+          Array.isArray(profilesRes.data) ? profilesRes.data : [],
+        );
+      }
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      // Set default empty arrays on error
-      setServices([]);
-      setEnquiries([]);
-      setProfileRequests([]);
+      if (!signal.aborted) {
+        console.error("Error fetching dashboard data:", error);
+        setError("Failed to load dashboard data");
+        // Set default empty arrays on error
+        setServices([]);
+        setEnquiries([]);
+        setProfileRequests([]);
+      }
     } finally {
-      setLoading(false);
+      if (!signal.aborted) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const abortController = new AbortController();
+    
+    if (adminData) {
+      fetchDashboardData(abortController.signal);
+    }
+
+    // Cleanup function
+    return () => {
+      abortController.abort();
+    };
+  }, [adminData, fetchDashboardData]);
+
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminData");
+      navigate("/login");
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminData");
-    navigate("/login");
-  };
-
   const updateEnquiryStatus = async (id, status) => {
-    const token = localStorage.getItem("adminToken");
     try {
-      await axios.put(
-        `${API_URL}/api/contact/enquiries/${id}`,
-        { status },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      await api.updateEnquiryStatus(id, status);
       // Refresh enquiries
-      const res = await axios.get(`${API_URL}/api/contact/enquiries`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.getEnquiries();
       setEnquiries(res.data);
     } catch (error) {
       console.error("Error updating enquiry:", error);
+      setError("Failed to update enquiry status");
     }
   };
 
   const updateProfileStatus = async (id, status) => {
-    const token = localStorage.getItem("adminToken");
     try {
-      await axios.put(
-        `${API_URL}/api/contact/profile-requests/${id}`,
-        { status },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      await api.updateProfileStatus(id, status);
       // Refresh profile requests
-      const res = await axios.get(`${API_URL}/api/contact/profile-requests`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.getProfileRequests();
       setProfileRequests(res.data);
     } catch (error) {
       console.error("Error updating profile request:", error);
+      setError("Failed to update profile request status");
     }
   };
 
@@ -143,7 +154,7 @@ const AdminDashboard = () => {
       <div className="relative z-10">
         {/* Header */}
         <div className="border-b border-white/10 bg-black/40 backdrop-blur-sm sticky top-0 z-20">
-          <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="max-w-5xl mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold">Admin Dashboard</h1>
@@ -172,10 +183,11 @@ const AdminDashboard = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-5xl mx-auto px-4 py-6">
           <div className="flex gap-2 overflow-x-auto pb-2">
             {[
               { id: "overview", label: "Overview", icon: ChartBarIcon },
+              { id: "blogs", label: "Blog Posts", icon: DocumentTextIcon },
               { id: "services", label: "Services", icon: Cog6ToothIcon },
               { id: "enquiries", label: "Enquiries", icon: EnvelopeIcon },
               {
@@ -204,7 +216,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Content */}
-        <div className="max-w-7xl mx-auto px-4 pb-20">
+        <div className="max-w-5xl mx-auto px-4 pb-20">
           {/* Overview Tab */}
           {activeTab === "overview" && stats && (
             <div className="space-y-6">
@@ -268,6 +280,13 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Blog Management Tab */}
+          {activeTab === "blogs" && (
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+              <BlogManagement />
             </div>
           )}
 

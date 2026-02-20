@@ -41,12 +41,28 @@ const adminSchema = new mongoose.Schema(
   },
 );
 
+// Validate password strength before saving
+adminSchema.pre("validate", function () {
+  if (this.isModified("password") && this.password) {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    
+    if (!passwordRegex.test(this.password)) {
+      this.invalidate(
+        "password",
+        "Password must be at least 8 characters and contain uppercase, lowercase, number, and special character"
+      );
+    }
+  }
+});
+
 // Method to hash password before saving
 adminSchema.pre("save", async function () {
   if (!this.isModified("password")) {
     return;
   }
-  const salt = await bcrypt.genSalt(10);
+  
+  // Use 12 rounds for stronger security
+  const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
@@ -54,5 +70,8 @@ adminSchema.pre("save", async function () {
 adminSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// Add index for faster lookups (email index already created by unique: true)
+adminSchema.index({ is_active: 1 });
 
 module.exports = mongoose.model("Admin", adminSchema);

@@ -7,7 +7,7 @@ import {
   ArrowLeftIcon,
   TagIcon,
 } from "@heroicons/react/24/outline";
-import axios from "axios";
+import { api } from "../services/api";
 import FloatingShapes from "../components/common/FloatingShapes";
 import LoadingSkeleton from "../components/common/LoadingSkeleton";
 
@@ -24,8 +24,7 @@ const BlogDetailPage = () => {
   const fetchBlog = async () => {
     try {
       setLoading(true);
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
-      const response = await axios.get(`${apiUrl}/api/blogs/${id}`);
+      const response = await api.getBlog(id);
       setBlog(response.data.blog || response.data);
       setError(null);
     } catch (err) {
@@ -59,7 +58,7 @@ const BlogDetailPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-950 pt-32 px-4">
         <FloatingShapes />
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <LoadingSkeleton count={1} type="article" />
         </div>
       </div>
@@ -69,7 +68,7 @@ const BlogDetailPage = () => {
   if (error || !blog) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-950 pt-32 px-4">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-2xl mx-auto text-center">
           <div className="bg-red-500/10 border border-red-500/20 rounded-3xl p-12">
             <h2 className="text-3xl font-bold text-white mb-4">
               Article Not Found
@@ -78,13 +77,13 @@ const BlogDetailPage = () => {
               {error ||
                 "The article you're looking for doesn't exist or has been removed."}
             </p>
-            <a
-              href="#blog"
+            <Link
+              to="/blog"
               className="inline-flex items-center gap-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300"
             >
               <ArrowLeftIcon className="w-5 h-5" />
               Back to Blog
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -95,7 +94,7 @@ const BlogDetailPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-950">
       {/* Back Button */}
       <div className="pt-32 pb-8 px-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           <Link
             to="/blog"
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-300 group"
@@ -110,7 +109,7 @@ const BlogDetailPage = () => {
 
       {/* Article Content */}
       <article className="px-4 pb-20">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           {/* Category Badge */}
           <div className="mb-6">
             <span

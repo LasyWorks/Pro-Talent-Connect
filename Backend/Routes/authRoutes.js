@@ -10,16 +10,24 @@ const {
   refreshToken,
 } = require("../services/authController");
 const { protect, authorize } = require("../Middleware/authMiddleware");
+const { authLimiter } = require("../Middleware/rateLimiter");
+const { validate, loginSchema, registerAdminSchema } = require("../Middleware/validator");
 
-// Public
-router.post("/login", loginAdmin);
+// Public - with strict rate limiting
+router.post("/login", authLimiter, validate(loginSchema), loginAdmin);
 
 // Protected routes
 router.post("/logout", protect, logoutAdmin);
 router.post("/refresh", protect, refreshToken);
 
 // Super Admin only — register new admins
-router.post("/register", protect, authorize("Super Admin"), registerAdmin);
+router.post(
+  "/register",
+  protect,
+  authorize("Super Admin"),
+  validate(registerAdminSchema),
+  registerAdmin
+);
 
 // Any authenticated admin
 router.get("/profile", protect, getProfile);

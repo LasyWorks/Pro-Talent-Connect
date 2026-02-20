@@ -4,6 +4,7 @@ import {
   ClockIcon,
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
+import { Link } from "react-router-dom";
 
 const BlogCard = ({ blog }) => {
   const getCategoryColor = (category) => {
@@ -89,13 +90,13 @@ const BlogCard = ({ blog }) => {
         )}
 
         {/* Read more link */}
-        <a
-          href={`#blog/${blog._id}`}
+        <Link
+          to={`/blog/${blog._id}`}
           className="inline-flex items-center gap-2 text-red-500 font-semibold group/link hover:text-red-400"
         >
           Read More
           <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-        </a>
+        </Link>
       </div>
     </article>
   );

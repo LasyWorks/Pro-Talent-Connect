@@ -1,0 +1,167 @@
+/**
+ * Input Validation Schemas
+ * Using Joi for request validation to prevent injection attacks
+ */
+
+const Joi = require('joi');
+
+// Authentication Schemas
+const loginSchema = Joi.object({
+  email: Joi.string().email().required().trim().lowercase(),
+  password: Joi.string().min(8).required(),
+});
+
+const registerAdminSchema = Joi.object({
+  name: Joi.string().min(2).max(100).required().trim(),
+  email: Joi.string().email().required().trim().lowercase(),
+  password: Joi.string()
+    .min(8)
+    .max(128)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Password must contain uppercase, lowercase, number, and special character',
+      'string.min': 'Password must be at least 8 characters long',
+    }),
+  role: Joi.string().valid('Admin', 'Super Admin').default('Admin'),
+});
+
+// Player Schemas
+const createPlayerSchema = Joi.object({
+  name: Joi.string().min(2).max(100).required().trim(),
+  age: Joi.number().integer().min(5).max(100).required(),
+  age_group: Joi.string().valid('U13', 'U15', 'U17', 'U19', 'Senior').required(),
+  playingPosition: Joi.string().required().trim(),
+  alternativePosition: Joi.string().allow('').trim(),
+  preferredFoot: Joi.string().valid('Left', 'Right', 'Both').required(),
+  transferMarketLink: Joi.string().uri().allow('').trim(),
+  playerId: Joi.string().required().trim(),
+  dateOfBirth: Joi.date().required(),
+  nationality: Joi.string().required().trim(),
+  weight: Joi.number().min(30).max(150),
+  height: Joi.number().min(100).max(250),
+  gender: Joi.string().valid('Male', 'Female', 'Other').required(),
+  jersey_no: Joi.number().integer().min(0).max(99),
+  size: Joi.string().valid('XS', 'S', 'M', 'L', 'XL', 'XXL'),
+  city: Joi.string().trim(),
+  address: Joi.string().max(500).trim(),
+  mobileNumber: Joi.string().pattern(/^[0-9+\-\s()]+$/).required(),
+  email: Joi.string().email().required().trim().lowercase(),
+  profileImage: Joi.string().allow('').trim(),
+  scouting_notes: Joi.string().max(2000).allow('').trim(),
+  career_history: Joi.string().max(2000).allow('').trim(),
+  media_links: Joi.array().items(Joi.string().uri()),
+  plId: Joi.string().allow('').trim(),
+  competitions: Joi.array().items(
+    Joi.object({
+      name: Joi.string().required().trim(),
+      type: Joi.string().valid(
+        'National Team',
+        'Santosh Trophy',
+        'I-League Senior',
+        'I-League 2',
+        'I-League 3',
+        'State Franchise League',
+        'Elite Youth I-League',
+        'National Youth Championships',
+        'Foreign Exposure',
+        'RFDL',
+        'State League',
+        'State Youth League',
+        'District League',
+        'Other'
+      ).required(),
+      year: Joi.number().integer().min(1900).max(2100),
+      result: Joi.string().valid('Champion', 'Runner-up', 'Third', 'Participant', '').allow(''),
+    })
+  ),
+  stateLeague: Joi.string().allow('').trim(),
+  clubTier: Joi.string().valid('', 'Tier 1', 'Tier 2', 'Tier 3').allow(''),
+  sprint30m: Joi.number().min(0).max(10),
+  sprint50m: Joi.number().min(0).max(15),
+  mentalityScore: Joi.number().valid(1, 2),
+  clubsPlayed: Joi.array().items(
+    Joi.object({
+      clubName: Joi.string().required().trim(),
+      clubLogo: Joi.string().allow('').trim(),
+      duration: Joi.string().trim(),
+    })
+  ),
+  featured: Joi.boolean(),
+});
+
+// Contact Schemas
+const enquirySchema = Joi.object({
+  name: Joi.string().min(2).max(100).required().trim(),
+  email: Joi.string().email().required().trim().lowercase(),
+  phone: Joi.string().pattern(/^[0-9+\-\s()]+$/).allow(''),
+  subject: Joi.string().min(3).max(200).required().trim(),
+  message: Joi.string().min(10).max(2000).required().trim(),
+});
+
+const profileRequestSchema = Joi.object({
+  fullName: Joi.string().min(2).max(100).required().trim(),
+  email: Joi.string().email().required().trim().lowercase(),
+  phone: Joi.string().pattern(/^[0-9+\-\s()]+$/).required(),
+  dateOfBirth: Joi.date().required(),
+  nationality: Joi.string().required().trim(),
+  city: Joi.string().required().trim(),
+  playingPosition: Joi.string().required().trim(),
+  preferredFoot: Joi.string().valid('Left', 'Right', 'Both').required(),
+  height: Joi.number().min(100).max(250).required(),
+  weight: Joi.number().min(30).max(150).required(),
+  currentClub: Joi.string().allow('').trim(),
+  yearsOfExperience: Joi.number().integer().min(0).max(50).required(),
+  achievements: Joi.string().max(1000).allow('').trim(),
+  videoLink: Joi.string().uri().allow('').trim(),
+});
+
+// Blog Schemas
+const blogSchema = Joi.object({
+  title: Joi.string().min(5).max(200).required().trim(),
+  slug: Joi.string().pattern(/^[a-z0-9-]+$/).required(),
+  excerpt: Joi.string().min(20).max(500).required().trim(),
+  content: Joi.string().min(100).required().trim(),
+  author: Joi.string().required().trim(),
+  category: Joi.string().required().trim(),
+  tags: Joi.array().items(Joi.string().trim()),
+  featured_image: Joi.string().allow('').trim(),
+  published: Joi.boolean(),
+});
+
+// Validation middleware generator
+const validate = (schema) => {
+  return (req, res, next) => {
+    const { error, value } = schema.validate(req.body, {
+      abortEarly: false, // Return all errors
+      stripUnknown: true, // Remove unknown fields
+    });
+
+    if (error) {
+      const errors = error.details.map((detail) => ({
+        field: detail.path.join('.'),
+        message: detail.message,
+      }));
+
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors,
+      });
+    }
+
+    // Replace req.body with sanitized value
+    req.body = value;
+    next();
+  };
+};
+
+module.exports = {
+  validate,
+  loginSchema,
+  registerAdminSchema,
+  createPlayerSchema,
+  enquirySchema,
+  profileRequestSchema,
+  blogSchema,
+};

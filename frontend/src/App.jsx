@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop";
 import {
   HeroSection,
   StatsSection,
@@ -27,6 +28,7 @@ function App() {
 
   return (
     <div className="min-h-screen">
+      <ScrollToTop />
       {showLayout && <NavBar />}
       <Routes>
         <Route

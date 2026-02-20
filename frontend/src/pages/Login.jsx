@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import { api } from "../services/api";
 import {
   EnvelopeIcon,
   LockClosedIcon,
@@ -26,15 +26,14 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
-      const response = await axios.post(`${apiUrl}/api/auth/login`, formData);
+      const response = await api.login(formData);
 
       // Validate response data
       if (!response.data || !response.data.token) {
         throw new Error("Invalid response from server");
       }
 
-      // Store token in localStorage
+      // Store token in localStorage (TODO: Move to httpOnly cookies in future)
       localStorage.setItem("adminToken", response.data.token);
 
       // Store admin data (excluding token)
@@ -44,11 +43,19 @@ const Login = () => {
       // Redirect to admin dashboard
       navigate("/admin");
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Login failed. Please try again.",
-      );
+      // Handle validation errors
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        const errorMessages = err.response.data.errors
+          .map(e => e.message)
+          .join(', ');
+        setError(errorMessages);
+      } else {
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            "Login failed. Please try again.",
+        );
+      }
     } finally {
       setIsLoading(false);
     }

@@ -85,12 +85,11 @@ aboutSchema.statics.getSingleton = async function () {
 };
 
 // Prevent multiple documents
-aboutSchema.pre("save", async function (next) {
+aboutSchema.pre("save", async function () {
   const docCount = await this.constructor.countDocuments();
   if (docCount > 0 && this.isNew) {
     throw new Error("Only one About document can exist. Use update instead.");
   }
-  next();
 });
 
 module.exports = mongoose.model("About", aboutSchema);

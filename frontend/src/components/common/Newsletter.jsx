@@ -6,7 +6,7 @@ const Newsletter = () => {
 
   return (
     <section className="relative py-24 px-4 mt-20">
-      <div className="max-w-4xl mx-auto text-center">
+      <div className="max-w-2xl mx-auto text-center">
         <div className="bg-red-500 rounded-3xl p-12 md:p-16 shadow-2xl shadow-red-500/50 relative overflow-hidden">
           {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>

@@ -7,184 +7,198 @@ const Player = require("../Models/Players");
 const Admin = require("../Models/Admin");
 const connectDB = require("../config/DB");
 
+// Pre-seeded sample data
 const samplePlayers = [
   {
-    name: "Lionel Messi",
-    age: 36,
+    name: "Rahul Kumar",
+    playerId: "PTL2026001",
+    email: "rahul.kumar@example.com",
+    mobileNumber: "+91-9876543210",
+    dateOfBirth: new Date("2006-03-15"),
+    age: 19,
+    age_group: "U19",
+    gender: "Male",
+    nationality: "Indian",
+    city: "Mumbai",
+    address: "Andheri West, Mumbai, Maharashtra",
+    playingPosition: "Forward",
+    alternativePosition: "Winger",
+    preferredFoot: "Right",
+    height: 178,
+    weight: 72,
+    jersey_no: 10,
+    size: "M",
+    transferMarketLink: "",
+    profileImage: "https://images.unsplash.com/photo-1552346154-21d32810aba3?w=400",
+    scouting_notes: "Quick striker with excellent finishing ability. Shows maturity beyond his years.",
+    career_history: "Started at Mumbai FC youth academy, moved to senior team in 2024.",
+    plId: "",
+    competitions: [
+      { name: "Mumbai District League", type: "District League", year: 2024, result: "Champion" },
+      { name: "State Youth League", type: "State Youth League", year: 2025, result: "Runner-up" }
+    ],
+    stateLeague: "Mumbai Elite",
+    clubTier: "Tier 2",
+    sprint30m: 4.2,
+    sprint50m: 6.8,
+    mentalityScore: 2,
+    clubsPlayed: [
+      { clubName: "Mumbai FC", clubLogo: "", duration: "2022-Present" }
+    ],
+    featured: true,
+  },
+  {
+    name: "Arjun Singh",
+    playerId: "PTL2026002",
+    email: "arjun.singh@example.com",
+    mobileNumber: "+91-9876543211",
+    dateOfBirth: new Date("2005-07-22"),
+    age: 20,
     age_group: "Senior",
+    gender: "Male",
+    nationality: "Indian",
+    city: "Delhi",
+    address: "Rohini, New Delhi",
+    playingPosition: "Midfielder",
+    alternativePosition: "Defensive Midfielder",
+    preferredFoot: "Both",
+    height: 175,
+    weight: 70,
+    jersey_no: 8,
+    size: "M",
+    transferMarketLink: "",
+    profileImage: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=400",
+    scouting_notes: "Excellent vision and passing range. Strong defensive work rate.",
+    career_history: "Delhi FC youth academy graduate, promoted to senior squad in 2023.",
+    plId: "",
+    competitions: [
+      { name: "I-League 3", type: "I-League 3", year: 2024, result: "Third" },
+      { name: "National Youth Championships", type: "National Youth Championships", year: 2023, result: "Participant" }
+    ],
+    stateLeague: "Delhi PL",
+    clubTier: "Tier 2",
+    sprint30m: 4.5,
+    sprint50m: 7.1,
+    mentalityScore: 2,
+    clubsPlayed: [
+      { clubName: "Delhi FC", clubLogo: "", duration: "2021-Present" }
+    ],
+    featured: true,
+  },
+  {
+    name: "Vikram Reddy",
+    playerId: "PTL2026003",
+    email: "vikram.reddy@example.com",
+    mobileNumber: "+91-9876543212",
+    dateOfBirth: new Date("2007-11-08"),
+    age: 18,
+    age_group: "U19",
+    gender: "Male",
+    nationality: "Indian",
+    city: "Hyderabad",
+    address: "Banjara Hills, Hyderabad, Telangana",
+    playingPosition: "Defender",
+    alternativePosition: "Center Back",
+    preferredFoot: "Right",
+    height: 183,
+    weight: 76,
+    jersey_no: 4,
+    size: "L",
+    transferMarketLink: "",
+    profileImage: "https://images.unsplash.com/photo-1544717301-9cdcb1f5940f?w=400",
+    scouting_notes: "Solid defender with good aerial ability. Natural leader on the pitch.",
+    career_history: "Hyderabad Youth Academy, consistently strong performances.",
+    plId: "",
+    competitions: [
+      { name: "State Youth League", type: "State Youth League", year: 2025, result: "Champion" },
+      { name: "Santosh Trophy", type: "Santosh Trophy", year: 2024, result: "Participant" }
+    ],
+    stateLeague: "",
+    clubTier: "Tier 3",
+    sprint30m: 4.8,
+    sprint50m: 7.5,
+    mentalityScore: 2,
+    clubsPlayed: [
+      { clubName: "Hyderabad FC Youth", clubLogo: "", duration: "2023-Present" }
+    ],
+    featured: false,
+  },
+  {
+    name: "Priya Sharma",
+    playerId: "PTL2026004",
+    email: "priya.sharma@example.com",
+    mobileNumber: "+91-9876543213",
+    dateOfBirth: new Date("2006-05-19"),
+    age: 19,
+    age_group: "U19",
+    gender: "Female",
+    nationality: "Indian",
+    city: "Bangalore",
+    address: "Indiranagar, Bangalore, Karnataka",
     playingPosition: "Forward",
     alternativePosition: "Attacking Midfielder",
     preferredFoot: "Left",
-    transferMarketLink: "https://www.transfermarkt.com/lionel-messi/profil/spieler/28003",
-    playerId: "LM10-2024",
-    dateOfBirth: "1987-06-24",
-    nationality: "Argentina",
-    weight: 72,
-    height: 170,
-    gender: "Male",
-    jersey_no: 10,
-    size: "M",
-    city: "Miami",
-    address: "Inter Miami CF Stadium, Fort Lauderdale, FL",
-    mobileNumber: "+1305123456",
-    email: "lmessi@example.com",
-    profileImage: [
-      "https://example.com/images/messi-profile.jpg",
-      "https://example.com/images/messi-dribble.jpg",
-      "https://example.com/images/messi-celebration.jpg"
-    ],
-    scouting_notes: "Greatest playmaker of all time. Exceptional dribbling, vision, and finishing. 8 Ballon d'Or winner. World Cup champion 2022.",
-    career_history: "Started at Newell's Old Boys youth system, joined Barcelona's La Masia academy (2000), first team debut (2004), Paris Saint-Germain (2021), Inter Miami (2023).",
-    media_links: [
-      "https://youtube.com/messi-highlights-2024",
-      "https://example.com/messi-world-cup-journey.mp4",
-      "https://example.com/messi-stats-report.pdf"
-    ],
-    clubsPlayed: [
-      {
-        clubName: "Barcelona",
-        clubLogo: "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg",
-        duration: "2004-2021"
-      },
-      {
-        clubName: "Paris Saint-Germain",
-        clubLogo: "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg",
-        duration: "2021-2023"
-      },
-      {
-        clubName: "Inter Miami",
-        clubLogo: "https://upload.wikimedia.org/wikipedia/en/9/9b/Inter_Miami_CF_logo.svg",
-        duration: "2023-Present"
-      }
-    ]
-  },
-  {
-    name: "Kylian Mbappé",
-    age: 25,
-    age_group: "Senior",
-    playingPosition: "Forward",
-    alternativePosition: "Winger",
-    preferredFoot: "Right",
-    transferMarketLink: "https://www.transfermarkt.com/kylian-mbappe/profil/spieler/342229",
-    playerId: "KM7-2024",
-    dateOfBirth: "1998-12-20",
-    nationality: "France",
-    weight: 73,
-    height: 178,
-    gender: "Male",
-    jersey_no: 7,
-    size: "M",
-    city: "Paris",
-    address: "Parc des Princes, Paris, France",
-    mobileNumber: "+33612345678",
-    email: "kmbappe@example.com",
-    profileImage: [
-      "https://example.com/images/mbappe-profile.jpg",
-      "https://example.com/images/mbappe-sprint.jpg"
-    ],
-    scouting_notes: "Lightning speed and clinical finishing. World Cup winner at 19. One of the fastest players in world football with exceptional movement off the ball.",
-    career_history: "Monaco youth academy graduate, first team breakthrough (2015), PSG (2017-2024), Real Madrid (2024).",
-    media_links: [
-      "https://youtube.com/mbappe-speed-analysis",
-      "https://example.com/mbappe-world-cup-goals.mp4"
-    ],
-    clubsPlayed: [
-      {
-        clubName: "AS Monaco",
-        clubLogo: "https://upload.wikimedia.org/wikipedia/en/3/34/AS_Monaco_FC.svg",
-        duration: "2015-2017"
-      },
-      {
-        clubName: "Paris Saint-Germain",
-        clubLogo: "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg",
-        duration: "2017-2024"
-      },
-      {
-        clubName: "Real Madrid",
-        clubLogo: "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg",
-        duration: "2024-Present"
-      }
-    ]
-  },
-  {
-    name: "Emma Hayes",
-    age: 17,
-    age_group: "U17",
-    playingPosition: "Midfielder",
-    alternativePosition: "Defensive Midfielder",
-    preferredFoot: "Right",
-    transferMarketLink: "",
-    playerId: "EH8-2024",
-    dateOfBirth: "2007-03-15",
-    nationality: "England",
-    weight: 58,
     height: 165,
-    gender: "Female",
-    jersey_no: 8,
+    weight: 58,
+    jersey_no: 11,
     size: "S",
-    city: "London",
-    address: "Youth Academy Training Grounds, London, UK",
-    mobileNumber: "+442071234567",
-    email: "ehayes@example.com",
-    profileImage: [
-      "https://example.com/images/emma-profile.jpg"
+    transferMarketLink: "",
+    profileImage: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400",
+    scouting_notes: "Dynamic attacker with exceptional dribbling skills. High football IQ.",
+    career_history: "Bangalore Women's FC, top scorer in youth category for 2 consecutive years.",
+    plId: "",
+    competitions: [
+      { name: "National Youth Championships", type: "National Youth Championships", year: 2025, result: "Runner-up" },
+      { name: "State Youth League", type: "State Youth League", year: 2024, result: "Champion" }
     ],
-    scouting_notes: "Promising young talent with excellent passing range and tactical awareness. Strong work rate and leadership qualities. Captain of U17 national team.",
-    career_history: "Chelsea FC Academy (2015-Present). England U15, U16, U17 international.",
-    media_links: [
-      "https://youtube.com/emma-youth-tournament-highlights"
-    ],
+    stateLeague: "BDFA Super Division",
+    clubTier: "Tier 2",
+    sprint30m: 4.3,
+    sprint50m: 6.9,
+    mentalityScore: 2,
     clubsPlayed: [
-      {
-        clubName: "Chelsea FC Women Academy",
-        clubLogo: "https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg",
-        duration: "2015-Present"
-      }
-    ]
+      { clubName: "Bangalore Women's FC", clubLogo: "", duration: "2022-Present" }
+    ],
+    featured: true,
   },
   {
-    name: "João Silva",
-    age: 15,
-    age_group: "U15",
-    playingPosition: "Striker",
-    alternativePosition: "Winger",
-    preferredFoot: "Both",
-    transferMarketLink: "",
-    playerId: "JS9-2024",
-    dateOfBirth: "2009-08-22",
-    nationality: "Brazil",
-    weight: 62,
-    height: 172,
+    name: "Aditya Patel",
+    playerId: "PTL2026005",
+    email: "aditya.patel@example.com",
+    mobileNumber: "+91-9876543214",
+    dateOfBirth: new Date("2008-01-30"),
+    age: 18,
+    age_group: "U19",
     gender: "Male",
-    jersey_no: 9,
-    size: "M",
-    city: "São Paulo",
-    address: "São Paulo FC Youth Academy, Brazil",
-    mobileNumber: "+5511987654321",
-    email: "jsilva@example.com",
-    profileImage: [
-      "https://example.com/images/joao-profile.jpg",
-      "https://example.com/images/joao-training.jpg"
+    nationality: "Indian",
+    city: "Ahmedabad",
+    address: "Vastrapur, Ahmedabad, Gujarat",
+    playingPosition: "Goalkeeper",
+    alternativePosition: "",
+    preferredFoot: "Right",
+    height: 186,
+    weight: 78,
+    jersey_no: 1,
+    size: "L",
+    transferMarketLink: "",
+    profileImage: "https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827?w=400",
+    scouting_notes: "Commanding presence in goal. Excellent reflexes and distribution.",
+    career_history: "Gujarat United youth system, captained U17 team.",
+    plId: "",
+    competitions: [
+      { name: "State Youth League", type: "State Youth League", year: 2025, result: "Third" },
+      { name: "District League", type: "District League", year: 2024, result: "Champion" }
     ],
-    scouting_notes: "Exciting prospect with natural goal-scoring instinct. Quick feet, good balance, and ability to use both feet effectively. Top scorer in U15 regional league.",
-    career_history: "Started at local club Palmeiras youth system (2017-2022), moved to São Paulo FC Academy (2022-Present).",
-    media_links: [
-      "https://youtube.com/joao-goals-compilation",
-      "https://example.com/joao-skills-assessment.pdf"
-    ],
+    stateLeague: "",
+    clubTier: "Tier 3",
+    sprint30m: 5.1,
+    sprint50m: 7.8,
+    mentalityScore: 2,
     clubsPlayed: [
-      {
-        clubName: "Palmeiras Youth",
-        clubLogo: "https://upload.wikimedia.org/wikipedia/commons/1/10/Palmeiras_logo.svg",
-        duration: "2017-2022"
-      },
-      {
-        clubName: "São Paulo FC Academy",
-        clubLogo: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Brasao_do_Sao_Paulo_Futebol_Clube.svg",
-        duration: "2022-Present"
-      }
-    ]
-  }
+      { clubName: "Gujarat United", clubLogo: "", duration: "2021-Present" }
+    ],
+    featured: false,
+  },
 ];
 
 const seedPlayers = async () => {

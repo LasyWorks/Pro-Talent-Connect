@@ -1,7 +1,7 @@
 const LoadingSkeleton = ({ count = 6, type = 'card' }) => {
   if (type === 'article') {
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-2xl mx-auto">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-700 rounded w-3/4 mb-6"></div>
           <div className="h-4 bg-gray-700 rounded w-1/4 mb-8"></div>

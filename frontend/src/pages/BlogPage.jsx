@@ -5,7 +5,7 @@ import {
   UserGroupIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
-import axios from "axios";
+import { api } from "../services/api";
 import BlogCard from "../components/blogs/Blogcard";
 import FloatingShapes from "../components/common/FloatingShapes";
 import PageHeader from "../components/common/PageHeader";
@@ -33,8 +33,7 @@ const BlogPage = () => {
   const fetchBlogs = async () => {
     try {
       setLoading(true);
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
-      const response = await axios.get(`${apiUrl}/api/blogs`);
+      const response = await api.getBlogs();
 
       let blogsList = response.data.blogs || response.data || [];
 
@@ -149,7 +148,7 @@ const BlogPage = () => {
 
       {/* Filter Tabs */}
       <section className="relative pb-12 px-4">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="flex flex-wrap justify-center gap-3">
             {categories.map((category) => {
               const Icon = category.icon;
@@ -187,7 +186,7 @@ const BlogPage = () => {
 
       {/* Blog Grid */}
       <section className="relative py-12 px-4">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {loading ? (
             <LoadingSkeleton count={6} type="card" />
           ) : error && blogs.length === 0 ? (

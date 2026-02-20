@@ -8,13 +8,14 @@ import {
   UserPlusIcon,
   CheckBadgeIcon,
   RocketLaunchIcon,
-  ArrowRightIcon,
   LifebuoyIcon,
 } from "@heroicons/react/24/outline";
-import axios from "axios";
+import { api } from "../services/api";
 import FloatingShapes from "../components/common/FloatingShapes";
 import PageHeader from "../components/common/PageHeader";
-import LoadingSkeleton from "../components/common/LoadingSkeleton";
+import ServiceCard from "../components/services/ServiceCard";
+import HowItWorksCard from "../components/services/HowItWorksCard";
+import CardSkeleton from "../components/skeletons/CardSkeleton";
 
 const Services = () => {
   const [services, setServices] = useState([]);
@@ -47,18 +48,13 @@ const Services = () => {
 
   useEffect(() => {
     fetchData();
-    // Set up polling for real-time updates every 5 seconds
-    const interval = setInterval(fetchData, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   const fetchData = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
-
       const [servicesRes, stepsRes] = await Promise.all([
-        axios.get(`${apiUrl}/api/services`),
-        axios.get(`${apiUrl}/api/how-it-works`),
+        api.getServices(),
+        api.getHowItWorks(),
       ]);
 
       setServices(servicesRes.data.services || []);
@@ -68,7 +64,7 @@ const Services = () => {
       // Set default data if API fails
       setDefaultData();
     } finally {
-      setLoading(false);
+ setLoading(false);
     }
   };
 
@@ -172,19 +168,11 @@ const Services = () => {
 
       {/* Services Section */}
       <section className="relative py-20 px-4">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div
-                  key={i}
-                  className="bg-white/5 rounded-3xl p-8 animate-pulse"
-                >
-                  <div className="w-16 h-16 bg-gray-700 rounded-2xl mb-6"></div>
-                  <div className="h-6 bg-gray-700 rounded mb-4"></div>
-                  <div className="h-4 bg-gray-700 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-700 rounded w-3/4"></div>
-                </div>
+                <CardSkeleton key={i} />
               ))}
             </div>
           ) : (
@@ -213,12 +201,12 @@ const Services = () => {
 
       {/* How It Works Section */}
       <section className="relative py-20 px-4">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               How It <span className="text-red-500">Works</span>
             </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-400 max-w-xl mx-auto">
               Join thousands of professional players showcasing their talent on
               our platform
             </p>
@@ -227,15 +215,7 @@ const Services = () => {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="bg-white/5 rounded-3xl p-8 animate-pulse"
-                >
-                  <div className="w-20 h-20 bg-gray-700 rounded-full mb-6 mx-auto"></div>
-                  <div className="h-6 bg-gray-700 rounded mb-4"></div>
-                  <div className="h-4 bg-gray-700 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-700 rounded"></div>
-                </div>
+                <CardSkeleton key={i} />
               ))}
             </div>
           ) : (
@@ -265,72 +245,6 @@ const Services = () => {
           )}
         </div>
       </section>
-    </div>
-  );
-};
-
-// Service Card Component
-const ServiceCard = ({ icon: Icon, title, description, bgColor }) => {
-  return (
-    <div className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 hover:bg-white/10 hover:border-white/30 transition-all duration-300 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-2">
-      {/* Icon */}
-      <div
-        className={`inline-flex items-center justify-center w-16 h-16 ${bgColor} rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}
-      >
-        <Icon className="w-8 h-8 text-white" />
-      </div>
-
-      {/* Title */}
-      <h3 className="text-xl font-bold mb-4 group-hover:text-white transition-colors duration-300">
-        {title}
-      </h3>
-
-      {/* Description */}
-      <p className="text-gray-400 leading-relaxed">{description}</p>
-
-      {/* Decorative corner */}
-      <div className="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-    </div>
-  );
-};
-
-// How It Works Card Component
-const HowItWorksCard = ({
-  stepNumber,
-  icon: Icon,
-  title,
-  description,
-  bgColor,
-}) => {
-  return (
-    <div className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 text-center hover:bg-white/10 hover:border-white/30 transition-all duration-300 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-2">
-      {/* Step number badge */}
-      <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-        <div
-          className={`w-12 h-12 ${bgColor} rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg border-4 border-gray-900`}
-        >
-          {stepNumber}
-        </div>
-      </div>
-
-      {/* Icon */}
-      <div
-        className={`inline-flex items-center justify-center w-20 h-20 ${bgColor}/20 border-2 border-current rounded-full mb-6 mt-4 group-hover:scale-110 transition-transform duration-300`}
-        style={{ color: bgColor.replace("bg-", "") }}
-      >
-        <Icon
-          className="w-10 h-10"
-          style={{ color: bgColor.replace("bg-", "rgb(var(--color-") + "))" }}
-        />
-      </div>
-
-      {/* Title */}
-      <h3 className="text-2xl font-bold mb-4 group-hover:text-white transition-colors duration-300">
-        {title}
-      </h3>
-
-      {/* Description */}
-      <p className="text-gray-400 leading-relaxed">{description}</p>
     </div>
   );
 };

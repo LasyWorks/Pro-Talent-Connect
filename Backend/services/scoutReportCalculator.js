@@ -240,7 +240,16 @@ function calculateScoutReport(player) {
       Math.max(Math.round(rawTotal * 10) / 10, 0),
       100,
     );
-    const grade = totalScore > 0 ? getGrade(totalScore) : "";
+    
+    // Grade logic: if score is 0 or very low (< 5), mark as insufficient data
+    let grade = "";
+    if (totalScore === 0) {
+      grade = "N/A";
+    } else if (totalScore < 5) {
+      grade = "INCOMPLETE";
+    } else {
+      grade = getGrade(totalScore);
+    }
 
     return {
       ageScore: ageScore || 0,
@@ -268,7 +277,7 @@ function calculateScoutReport(player) {
       speedScore: 0,
       mentalityAssessment: 0,
       totalScore: 0,
-      grade: "",
+      grade: "N/A",
     };
   }
 }

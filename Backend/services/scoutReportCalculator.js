@@ -4,6 +4,17 @@
  *
  * Official Grading & Evaluation Framework
  * Total Score: 100 Maximum | Grades: A–E
+ *
+ * Score Breakdown (max 100):
+ *   Age Prospect         : 5
+ *   Physical Profile     : 5
+ *   Transfer Market      : 7.5
+ *   Competition Level    : 50
+ *   Championship Bonus   : uncapped
+ *   State League         : 2
+ *   Club Reputation      : 3  ← auto-detected from clubsPlayed names
+ *   Speed (Sprint 30m)   : 2
+ *   Mentality            : 2
  */
 
 // ─── 4.1 Age – Future Prospect Weightage (max 5) ───
@@ -25,39 +36,25 @@ function calcPhysicalScore(height, weight, position) {
   if (height && weight && !isNaN(height) && !isNaN(weight)) {
     const heightM = parseFloat(height) / 100;
     const bmi = parseFloat(weight) / (heightM * heightM);
-
-    if (bmi >= 18.5 && bmi <= 24.9) {
-      score += 3; // Healthy
-    } else if ((bmi >= 17 && bmi < 18.5) || (bmi > 24.9 && bmi <= 27)) {
-      score += 2; // Near healthy
-    } else if (bmi > 0) {
-      score += 1; // Unhealthy / red zone
-    }
+    if (bmi >= 18.5 && bmi <= 24.9) score += 3;       // Healthy
+    else if ((bmi >= 17 && bmi < 18.5) || (bmi > 24.9 && bmi <= 27)) score += 2; // Near healthy
+    else if (bmi > 0) score += 1;                       // Red zone
   }
 
-  // Height sub-score (max 2)
+  // Height sub-score (max 2) — position-adjusted
   if (height && !isNaN(height)) {
-    const heightVal = parseFloat(height);
+    const h = parseFloat(height);
     const pos = (position || "").toLowerCase();
-    const isExempt =
-      pos.includes("winger") ||
-      pos.includes("midfielder") ||
-      pos.includes("mid");
-
-    if (heightVal >= 180) {
-      score += 2;
-    } else if (heightVal >= 170) {
-      score += 1;
-    } else {
-      // Position-adjusted: wingers/midfielders below 170 get +1 instead of 0
-      score += isExempt ? 1 : 0;
-    }
+    const isExempt = pos.includes("winger") || pos.includes("midfielder") || pos.includes("mid");
+    if (h >= 180) score += 2;
+    else if (h >= 170) score += 1;
+    else score += isExempt ? 1 : 0;
   }
 
-  return Math.min(score, 5); // Cap at 5
+  return Math.min(score, 5);
 }
 
-// ─── 4.3 Transfer Market Presence (7.5) ───
+// ─── 4.3 Transfer Market Presence (max 7.5) ───
 function calcTransferMarketScore(transferMarketLink) {
   return transferMarketLink && transferMarketLink.trim().length > 0 ? 7.5 : 0;
 }
@@ -81,12 +78,7 @@ const COMPETITION_POINTS = {
 };
 
 function calcCompetitionScore(competitions) {
-  if (
-    !competitions ||
-    !Array.isArray(competitions) ||
-    competitions.length === 0
-  )
-    return 0;
+  if (!competitions || !Array.isArray(competitions) || competitions.length === 0) return 0;
   let total = 0;
   try {
     for (const comp of competitions) {
@@ -98,17 +90,12 @@ function calcCompetitionScore(competitions) {
     console.error("Error calculating competition score:", e);
     return 0;
   }
-  return Math.min(total, 50); // Capped at 50
+  return Math.min(total, 50);
 }
 
 // ─── 4.5 Championship Bonus ───
 function calcChampionshipBonus(competitions) {
-  if (
-    !competitions ||
-    !Array.isArray(competitions) ||
-    competitions.length === 0
-  )
-    return 0;
+  if (!competitions || !Array.isArray(competitions) || competitions.length === 0) return 0;
   let bonus = 0;
   try {
     for (const comp of competitions) {
@@ -124,7 +111,7 @@ function calcChampionshipBonus(competitions) {
   return bonus;
 }
 
-// ─── 4.6 State League Recognition Bonus ───
+// ─── 4.6 State League Recognition (max 2) ───
 const STATE_LEAGUE_POINTS = {
   "Calcutta Premier Division": 2,
   "Mizoram PL": 2,
@@ -143,33 +130,116 @@ function calcStateLeagueBonus(stateLeague) {
   return STATE_LEAGUE_POINTS[stateLeague] || 0;
 }
 
-// ─── 4.7 Club Reputation Bonus ───
-const CLUB_TIER_POINTS = {
-  "Tier 1": 3, // ISL clubs
-  "Tier 2": 2, // I-League clubs
-  "Tier 3": 1, // I-League 2 qualified
-};
+// ─── 4.7 Club Reputation — Auto-detected from clubsPlayed (max 12) ───
+// Tier 1: ISL clubs (top flight)
+const TIER1_CLUBS = [
+  "bengaluru fc", "mumbai city fc", "mumbai city",
+  "atk mohun bagan", "mohun bagan super giant", "mohun bagan",
+  "kerala blasters fc", "kerala blasters", "kbfc",
+  "hyderabad fc", "hfc",
+  "odisha fc", "ofc",
+  "fc goa", "goa fc",
+  "jamshedpur fc", "jfc",
+  "northeast united fc", "northeast united", "northeastunited", "neufc",
+  "chennaiyin fc", "cfc",
+  "east bengal fc", "east bengal",
+  "punjab fc",
+  "mumbai fc",
+  "minerva punjab fc", "minerva punjab",
+];
 
-function calcClubReputationBonus(clubTier) {
-  if (!clubTier || typeof clubTier !== "string") return 0;
-  return CLUB_TIER_POINTS[clubTier] || 0;
+// Tier 2: I-League clubs
+const TIER2_CLUBS = [
+  "mohammedan sc", "mohammedan sporting",
+  "gokulam kerala fc", "gokulam kerala",
+  "sreenidi deccan fc", "sreenidi deccan",
+  "roundglass punjab fc", "roundglass punjab",
+  "sudeva delhi fc", "sudeva delhi", "sudeva",
+  "trau fc", "trau",
+  "churchill brothers sc", "churchill brothers",
+  "aizawl fc", "aizawl",
+  "rajasthan united fc", "rajasthan united",
+  "real kashmir fc", "real kashmir",
+  "neroca fc", "neroca",
+  "shillong lajong fc", "shillong lajong",
+  "chennai city fc",
+  "bhawanipore fc",
+  "salgaocar fc", "salgaocar",
+  "dempo sc", "dempo",
+  "sporting club de goa",
+  "fc bengaluru united",
+  "delhi fc", "delhi dynamos",
+  "waterford fc",
+];
+
+// Tier 3: I-League 2 / state-level clubs
+const TIER3_CLUBS = [
+  "delhi united fc", "delhi united",
+  "kenkre fc", "kenkre",
+  "fc bengaluru",
+  "ozone fc",
+  "decan clue",
+  "garhwal fc",
+  "young mizo",
+  "rntc",
+];
+
+const CLUB_TIER_SCORES = { 1: 3, 2: 2, 3: 1 };
+
+/**
+ * Determines the best club tier from the clubsPlayed array by matching
+ * club names against known Indian football club lists.
+ * Falls back to manually set clubTier field if no matches found.
+ */
+function detectClubTier(clubsPlayed, manualClubTier) {
+  let bestTier = null;
+
+  if (Array.isArray(clubsPlayed) && clubsPlayed.length > 0) {
+    for (const entry of clubsPlayed) {
+      if (!entry || !entry.clubName) continue;
+      const name = entry.clubName.toLowerCase().trim();
+
+      if (TIER1_CLUBS.some((c) => name.includes(c) || c.includes(name))) {
+        bestTier = 1;
+        break; // Can't go higher
+      } else if (TIER2_CLUBS.some((c) => name.includes(c) || c.includes(name))) {
+        if (bestTier === null || bestTier > 2) bestTier = 2;
+      } else if (TIER3_CLUBS.some((c) => name.includes(c) || c.includes(name))) {
+        if (bestTier === null || bestTier > 3) bestTier = 3;
+      }
+    }
+  }
+
+  // If no auto match, fall back to manually set field
+  if (bestTier === null && manualClubTier) {
+    if (manualClubTier === "Tier 1") bestTier = 1;
+    else if (manualClubTier === "Tier 2") bestTier = 2;
+    else if (manualClubTier === "Tier 3") bestTier = 3;
+  }
+
+  return bestTier;
 }
 
-// ─── 4.8 Speed Metrics (max 2) ───
+function calcClubReputationBonus(clubsPlayed, manualClubTier) {
+  const tier = detectClubTier(clubsPlayed, manualClubTier);
+  return tier ? CLUB_TIER_SCORES[tier] : 0;
+}
+
+// ─── 4.8 Speed Metrics / Sprint 30m (max 2) ───
 function calcSpeedScore(sprint30m) {
   if (!sprint30m || isNaN(sprint30m)) return 0;
-  const time = parseFloat(sprint30m);
-  if (time < 4.1) return 2; // Elite
-  if (time <= 4.4) return 1; // Above average
-  return 0; // Below benchmark
+  const t = parseFloat(sprint30m);
+  if (t < 4.1) return 2;  // Elite
+  if (t <= 4.4) return 1; // Above average
+  return 0;               // Below benchmark
 }
 
 // ─── 4.9 Mentality Assessment (max 2) ───
 function calcMentalityScore(mentalityScore) {
   if (!mentalityScore || isNaN(mentalityScore)) return 0;
-  const score = parseInt(mentalityScore);
-  if (score === 2) return 2; // Strong
-  if (score === 1) return 1; // Good
+  const s = parseInt(mentalityScore);
+  if (s === 2) return 2; // Strong mentality
+  if (s === 1) return 1; // Good mentality
   return 0;
 }
 
@@ -179,7 +249,7 @@ function getGrade(total) {
   if (total >= 70) return "B"; // Professional
   if (total >= 50) return "C"; // Semi-Professional
   if (total >= 35) return "D"; // Amateur
-  return "E"; // Semi-Amateur
+  return "E";                  // Semi-Amateur
 }
 
 // ─── Master calculator ───
@@ -188,37 +258,23 @@ function calculateScoutReport(player) {
     if (!player || typeof player !== "object") {
       console.error("Invalid player object for scout report calculation");
       return {
-        ageScore: 0,
-        physicalScore: 0,
-        transferMarketScore: 0,
-        competitionScore: 0,
-        championshipBonus: 0,
-        stateLeagueBonus: 0,
-        clubReputationBonus: 0,
-        speedScore: 0,
-        mentalityAssessment: 0,
-        totalScore: 0,
-        grade: "",
+        ageScore: 0, physicalScore: 0, transferMarketScore: 0,
+        competitionScore: 0, championshipBonus: 0, stateLeagueBonus: 0,
+        clubReputationBonus: 0, speedScore: 0, mentalityAssessment: 0,
+        totalScore: 0, grade: "",
       };
     }
 
-    const ageScore = calcAgeScore(player.age);
-    const physicalScore = calcPhysicalScore(
-      player.height,
-      player.weight,
-      player.playingPosition,
-    );
-    const transferMarketScore = calcTransferMarketScore(
-      player.transferMarketLink,
-    );
-    const competitionScore = calcCompetitionScore(player.competitions);
-    const championshipBonus = calcChampionshipBonus(player.competitions);
-    const stateLeagueBonus = calcStateLeagueBonus(player.stateLeague);
-    const clubReputationBonus = calcClubReputationBonus(player.clubTier);
-    const speedScore = calcSpeedScore(player.sprint30m);
+    const ageScore            = calcAgeScore(player.age);
+    const physicalScore       = calcPhysicalScore(player.height, player.weight, player.playingPosition);
+    const transferMarketScore = calcTransferMarketScore(player.transferMarketLink);
+    const competitionScore    = calcCompetitionScore(player.competitions);
+    const championshipBonus   = calcChampionshipBonus(player.competitions);
+    const stateLeagueBonus    = calcStateLeagueBonus(player.stateLeague);
+    const clubReputationBonus = calcClubReputationBonus(player.clubsPlayed, player.clubTier);
+    const speedScore          = calcSpeedScore(player.sprint30m);
     const mentalityAssessment = calcMentalityScore(player.mentalityScore);
 
-    // Sum all scores
     let rawTotal =
       (ageScore || 0) +
       (physicalScore || 0) +
@@ -230,54 +286,28 @@ function calculateScoutReport(player) {
       (speedScore || 0) +
       (mentalityAssessment || 0);
 
-    // Ensure rawTotal is a valid number
-    if (isNaN(rawTotal)) {
-      rawTotal = 0;
-    }
+    if (isNaN(rawTotal)) rawTotal = 0;
 
-    // Max score is 100
-    const totalScore = Math.min(
-      Math.max(Math.round(rawTotal * 10) / 10, 0),
-      100,
-    );
-    
-    // Grade logic: if score is 0 or very low (< 5), mark as insufficient data
-    let grade = "";
-    if (totalScore === 0) {
-      grade = "N/A";
-    } else if (totalScore < 5) {
-      grade = "INCOMPLETE";
-    } else {
-      grade = getGrade(totalScore);
-    }
+    const totalScore = Math.min(Math.max(Math.round(rawTotal * 10) / 10, 0), 100);
+
+    let grade;
+    if (totalScore === 0)    grade = "N/A";
+    else if (totalScore < 5) grade = "INCOMPLETE";
+    else                     grade = getGrade(totalScore);
 
     return {
-      ageScore: ageScore || 0,
-      physicalScore: physicalScore || 0,
-      transferMarketScore: transferMarketScore || 0,
-      competitionScore: competitionScore || 0,
-      championshipBonus: championshipBonus || 0,
-      stateLeagueBonus: stateLeagueBonus || 0,
-      clubReputationBonus: clubReputationBonus || 0,
-      speedScore: speedScore || 0,
-      mentalityAssessment: mentalityAssessment || 0,
-      totalScore,
-      grade,
+      ageScore, physicalScore, transferMarketScore,
+      competitionScore, championshipBonus, stateLeagueBonus,
+      clubReputationBonus, speedScore, mentalityAssessment,
+      totalScore, grade,
     };
   } catch (err) {
     console.error("Error calculating scout report:", err);
     return {
-      ageScore: 0,
-      physicalScore: 0,
-      transferMarketScore: 0,
-      competitionScore: 0,
-      championshipBonus: 0,
-      stateLeagueBonus: 0,
-      clubReputationBonus: 0,
-      speedScore: 0,
-      mentalityAssessment: 0,
-      totalScore: 0,
-      grade: "N/A",
+      ageScore: 0, physicalScore: 0, transferMarketScore: 0,
+      competitionScore: 0, championshipBonus: 0, stateLeagueBonus: 0,
+      clubReputationBonus: 0, speedScore: 0, mentalityAssessment: 0,
+      totalScore: 0, grade: "N/A",
     };
   }
 }
@@ -285,4 +315,5 @@ function calculateScoutReport(player) {
 module.exports = {
   calculateScoutReport,
   getGrade,
+  detectClubTier,
 };

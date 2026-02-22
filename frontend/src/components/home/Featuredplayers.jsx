@@ -44,13 +44,65 @@ const ImageWithFallback = ({ src, alt, className, loading }) => {
   );
 };
 
+// ─── Random player generator ───
+const RANDOM_FIRST = ["Lucas", "Aryan", "Kai", "Omar", "Renzo", "Dante", "Yuki", "Mateo", "Soren", "Ellis", "Niko", "Zain", "Pavel", "Hugo", "Rafael", "Leo", "Marco", "Andre", "Jonas", "Felix"];
+const RANDOM_LAST = ["Silva", "Tanaka", "Eriksen", "Mbeki", "Rossi", "Fernandez", "Okonkwo", "Petrov", "Kim", "Alvarez", "Herrera", "Jansen", "Okoro", "Cruz", "Amir", "Diouf", "Novak", "Rodrigues", "Sato", "Werner"];
+const RANDOM_POSITIONS = ["FORWARD", "MIDFIELD", "DEFENDER", "GOALKEEPER", "WINGER"];
+const RANDOM_CLUBS = ["FC Barcelona Academy", "Ajax Youth", "Sporting CP B", "Borussia Dortmund II", "Santos FC Youth", "Flamengo Academy", "River Plate Youth", "PSV Academy", "Lyon Academy", "Benfica B"];
+const RANDOM_CITIES = ["São Paulo", "Lagos", "Amsterdam", "Mumbai", "Tokyo", "Buenos Aires", "Berlin", "Casablanca", "Seoul", "Lisbon"];
+const RANDOM_NATIONALITIES = ["Brazilian", "Nigerian", "Dutch", "Indian", "Japanese", "Argentine", "German", "Moroccan", "Korean", "Portuguese"];
+const RANDOM_GRADES = ["A", "B", "C"];
+
+function generateRandomPlayers(count = 3) {
+  const players = [];
+  const usedNames = new Set();
+  for (let i = 0; i < count; i++) {
+    let first, last, fullName;
+    do {
+      first = RANDOM_FIRST[Math.floor(Math.random() * RANDOM_FIRST.length)];
+      last = RANDOM_LAST[Math.floor(Math.random() * RANDOM_LAST.length)];
+      fullName = `${first} ${last}`;
+    } while (usedNames.has(fullName));
+    usedNames.add(fullName);
+
+    const grade = RANDOM_GRADES[Math.floor(Math.random() * RANDOM_GRADES.length)];
+    const score = grade === "A" ? 80 + Math.floor(Math.random() * 15)
+                : grade === "B" ? 70 + Math.floor(Math.random() * 10)
+                : 50 + Math.floor(Math.random() * 20);
+    const idx = Math.floor(Math.random() * RANDOM_CITIES.length);
+
+    players.push({
+      _id: `random-${Date.now()}-${i}`,
+      _isRandom: true,
+      name: fullName,
+      playingPosition: RANDOM_POSITIONS[Math.floor(Math.random() * RANDOM_POSITIONS.length)],
+      profileImage: "",
+      city: RANDOM_CITIES[idx],
+      nationality: RANDOM_NATIONALITIES[idx],
+      clubsPlayed: [{ clubName: RANDOM_CLUBS[Math.floor(Math.random() * RANDOM_CLUBS.length)] }],
+      scoutReport: { totalScore: score, grade },
+    });
+  }
+  return players;
+}
+
 const FeaturedPlayers = () => {
   const scrollRef = useRef(null);
   const [players, setPlayers] = useState([]);
+  const [randomPlayers, setRandomPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPlayers();
+  }, []);
+
+  // Rotate random players every 30 seconds
+  useEffect(() => {
+    setRandomPlayers(generateRandomPlayers(3));
+    const interval = setInterval(() => {
+      setRandomPlayers(generateRandomPlayers(3));
+    }, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchPlayers = async () => {
@@ -62,48 +114,19 @@ const FeaturedPlayers = () => {
       setPlayers(playersList);
     } catch (err) {
       console.error("Error fetching players:", err);
-      // Set mock data as fallback
-      setPlayers([
-        {
-          _id: "1",
-          name: "Alex Martinez",
-          playingPosition: "Forward",
-          profileImage:
-            "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400",
-          clubsPlayed: [{ clubName: "Manchester United" }],
-          city: "Manchester",
-          nationality: "Spain",
-          featured: true,
-        },
-        {
-          _id: "2",
-          name: "Carlos Fernandez",
-          playingPosition: "Midfielder",
-          profileImage:
-            "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400",
-          clubsPlayed: [{ clubName: "Barcelona FC" }],
-          city: "Barcelona",
-          nationality: "Brazil",
-          featured: true,
-        },
-        {
-          _id: "3",
-          name: "David Thompson",
-          playingPosition: "Defender",
-          profileImage:
-            "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=400",
-          clubsPlayed: [{ clubName: "Liverpool FC" }],
-          city: "Liverpool",
-          nationality: "England",
-          featured: true,
-        },
-      ]);
+      setPlayers([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const featured = players.filter((p) => p.featured);
+  // Top 3 real players by scout report score
+  const topReal = [...players]
+    .filter((p) => p.scoutReport?.totalScore > 0)
+    .sort((a, b) => (b.scoutReport?.totalScore || 0) - (a.scoutReport?.totalScore || 0))
+    .slice(0, 3);
+
+  const featured = [...topReal, ...randomPlayers];
 
   if (loading) {
     return (
@@ -130,7 +153,7 @@ const FeaturedPlayers = () => {
     );
   }
 
-  if (featured.length === 0) {
+  if (topReal.length === 0 && randomPlayers.length === 0) {
     return null;
   }
 
@@ -154,7 +177,7 @@ const FeaturedPlayers = () => {
               Featured Players
             </h2>
             <p className="m-0 mt-2 text-white/50" style={{ fontSize: "15px" }}>
-              Highlighted talent from our database
+              Top rated talent & sample profiles
             </p>
           </div>
           <div className="hidden items-center gap-2 md:flex">
@@ -203,6 +226,18 @@ const FeaturedPlayers = () => {
                 >
                   {player.playingPosition}
                 </span>
+                {player._isRandom && (
+                  <span
+                    className="absolute left-3 bottom-3 rounded px-2 py-1 text-white"
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: 600,
+                      backgroundColor: "rgba(99,102,241,0.85)",
+                    }}
+                  >
+                    Sample Profile
+                  </span>
+                )}
                 {player.scoutReport?.grade && (
                   <span
                     className="absolute right-3 top-3 rounded px-2 py-1 text-white flex items-center gap-1"
@@ -282,16 +317,30 @@ const FeaturedPlayers = () => {
                   </div>
                 )}
                 <div className="mt-4 flex items-center justify-end border-t border-white/5 pt-3">
-                  <span
-                    className="rounded px-3 py-1.5 text-white"
-                    style={{
-                      backgroundColor: "#C4161C",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                    }}
-                  >
-                    View Profile
-                  </span>
+                  {player._isRandom ? (
+                    <span
+                      className="rounded px-3 py-1.5 text-white/50"
+                      style={{
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Sample
+                    </span>
+                  ) : (
+                    <Link
+                      to="/players"
+                      className="rounded px-3 py-1.5 text-white no-underline"
+                      style={{
+                        backgroundColor: "#C4161C",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      View Profile
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

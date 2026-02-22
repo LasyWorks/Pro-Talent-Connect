@@ -121,6 +121,7 @@ const createPlayer = async (req, res) => {
         competitions,
         stateLeague,
         clubTier,
+        clubsPlayed,
         sprint30m,
         mentalityScore,
       });
@@ -389,6 +390,7 @@ const updatePlayer = async (req, res) => {
         competitions: player.competitions,
         stateLeague: player.stateLeague,
         clubTier: player.clubTier,
+        clubsPlayed: player.clubsPlayed,
         sprint30m: player.sprint30m,
         mentalityScore: player.mentalityScore,
       });

@@ -15,6 +15,11 @@ import FloatingShapes from "../components/common/FloatingShapes";
 import LoadingSkeleton from "../components/common/LoadingSkeleton";
 import EmptyState from "../components/common/EmptyState";
 
+const formatPlayerId = (id) => {
+  if (!id || id.toString().toUpperCase().startsWith("TEMP")) return "Player has no ID";
+  return id;
+};
+
 const Players = () => {
   const [players, setPlayers] = useState([]);
   const [filteredPlayers, setFilteredPlayers] = useState([]);
@@ -518,7 +523,7 @@ const PlayerCard = ({ player, viewMode, onViewProfile }) => {
               {player.playingPosition}
             </span>
             <p className="text-xs text-gray-500 mt-1">
-              ID: {player.playerId || "No Player ID"}
+              ID: {formatPlayerId(player.playerId)}
             </p>
           </div>
 
@@ -663,7 +668,7 @@ const PlayerCard = ({ player, viewMode, onViewProfile }) => {
         <h3 className="text-lg font-bold text-white mb-1">{player.name}</h3>
 
         <p className="text-xs text-gray-500 mb-2">
-          ID: {player.playerId || "No Player ID"}
+          ID: {formatPlayerId(player.playerId)}
         </p>
 
         {currentClub && (
@@ -783,7 +788,7 @@ const PlayerDetailModal = ({ player, onClose }) => {
             <div>
               <h2 className="text-3xl font-bold text-white mb-2">{player.name}</h2>
               <p className="text-gray-400 mb-1">{player.playingPosition}</p>
-              <p className="text-sm text-gray-500">ID: {player.playerId || "No Player ID"}</p>
+              <p className="text-sm text-gray-500">ID: {formatPlayerId(player.playerId)}</p>
             </div>
           </div>
         </div>
@@ -825,7 +830,8 @@ const PlayerDetailModal = ({ player, onClose }) => {
           {player.scoutReport && (
             <div>
               <h3 className="text-xl font-bold text-white mb-3">Scout Report</h3>
-              <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              {/* Overall Score */}
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10 mb-3">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-gray-400">Overall Score</span>
                   <div className="flex items-center gap-2">
@@ -842,6 +848,78 @@ const PlayerDetailModal = ({ player, onClose }) => {
                   />
                 </div>
                 <p className="text-sm text-gray-400">{getGradeStyle(player.scoutReport.grade)?.label}</p>
+              </div>
+              {/* Score Breakdown */}
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-2">
+                <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">Score Breakdown</p>
+                {[
+                  {
+                    label: "Age Prospect",
+                    max: 5,
+                    score: player.scoutReport.ageScore,
+                    missing: !player.age,
+                  },
+                  {
+                    label: "Physical Profile",
+                    max: 5,
+                    score: player.scoutReport.physicalScore,
+                    missing: !player.height || !player.weight,
+                  },
+                  {
+                    label: "Transfer Market",
+                    max: 7.5,
+                    score: player.scoutReport.transferMarketScore,
+                    missing: !player.transferMarketLink,
+                  },
+                  {
+                    label: "Competition Level",
+                    max: 50,
+                    score: player.scoutReport.competitionScore,
+                    missing: !player.competitions || player.competitions.length === 0,
+                  },
+                  {
+                    label: "Championship Bonus",
+                    max: "—",
+                    score: player.scoutReport.championshipBonus,
+                    missing: !player.competitions || player.competitions.length === 0,
+                  },
+                  {
+                    label: "State League",
+                    max: 2,
+                    score: player.scoutReport.stateLeagueBonus,
+                    missing: !player.stateLeague,
+                  },
+                  {
+                    label: "Club Reputation",
+                    max: 3,
+                    score: player.scoutReport.clubReputationBonus,
+                    missing: (!player.clubsPlayed || player.clubsPlayed.length === 0) && !player.clubTier,
+                  },
+                  {
+                    label: "Speed (Sprint 30m)",
+                    max: 2,
+                    score: player.scoutReport.speedScore,
+                    missing: player.sprint30m == null || player.sprint30m === "" || player.sprint30m === 0,
+                  },
+                  {
+                    label: "Mentality",
+                    max: 2,
+                    score: player.scoutReport.mentalityAssessment,
+                    missing: player.mentalityScore == null || player.mentalityScore === "",
+                  },
+                ].map(({ label, max, score, missing }) => (
+                  <div key={label} className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
+                    <span className="text-sm text-gray-400">{label}</span>
+                    {missing ? (
+                      <span className="text-xs italic text-gray-600">Data not given</span>
+                    ) : (
+                      <span className="text-sm font-semibold text-white">
+                        {score}
+                        {max !== "—" && <span className="text-gray-600 font-normal">/{max}</span>}
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}

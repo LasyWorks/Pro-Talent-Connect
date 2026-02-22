@@ -1,5 +1,36 @@
 @import "tailwindcss";
 
+/*
+ * Dropdown styling for dark theme
+ * WCAG AA: contrast ratio ≥ 4.5:1
+ * #e2e8f0 on #111827 = ~13.5:1 (AAA compliant)
+ * Hover: #f1f5f9 on #1f2937 = ~11.8:1 (AAA compliant)
+ */
+select {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+select option {
+  background-color: #111827;
+  color: #e2e8f0;
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+select option:hover,
+select option:focus {
+  background-color: #1f2937;
+  color: #f1f5f9;
+}
+
+select option:checked {
+  background-color: #dc2626;
+  color: #ffffff;
+}
+
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;

@@ -63,6 +63,16 @@ const createPlayer = async (req, res) => {
         .json({ message: "Please provide all required fields" });
     }
 
+    // Auto-calculate age from dateOfBirth if not provided
+    let calculatedAge = age;
+    if (!calculatedAge && dateOfBirth) {
+      const dob = new Date(dateOfBirth);
+      const today = new Date();
+      calculatedAge = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) calculatedAge--;
+    }
+
     // Check for duplicate playerId or email (only among non-deleted players)
     const existingPlayer = await Player.findOne({
       $or: [{ playerId }, { email }],
@@ -76,7 +86,7 @@ const createPlayer = async (req, res) => {
     // Build player data and auto-calculate Scout Report
     const playerData = {
       name,
-      age,
+      age: calculatedAge,
       age_group,
       playingPosition,
       alternativePosition,

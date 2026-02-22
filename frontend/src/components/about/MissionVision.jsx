@@ -1,6 +1,12 @@
 import { RocketLaunchIcon, EyeIcon } from "@heroicons/react/24/outline";
 
-const MissionVision = () => {
+const DEFAULT_MISSION = "Our mission is to create a transparent, accessible platform where professional football players can showcase their talents and connect with scouts, clubs, and opportunities worldwide. We believe every talented player deserves visibility and the chance to advance their career, regardless of their location or access to traditional networks.";
+
+const DEFAULT_VISION = "To become the world's leading platform for football player discovery, fostering connections between talented players, scouts, and clubs worldwide. We envision a future where talent is discovered solely based on merit and ability, with our platform serving as the bridge that makes this a reality for organizations globally.";
+
+const MissionVision = ({ mission }) => {
+  // Use API mission if available, otherwise fallback
+  const missionText = mission || DEFAULT_MISSION;
   return (
     <section className="relative py-16 md:py-24 lg:py-28 px-4">
       {/* Floating liquid particles in section background */}
@@ -34,17 +40,7 @@ const MissionVision = () => {
                 className="text-base leading-relaxed"
                 style={{ color: "#B3B3B3" }}
               >
-                Our mission is to create a transparent, accessible platform
-                where professional football players can showcase their talents
-                and connect with scouts, clubs, and opportunities worldwide.
-              </p>
-              <p
-                className="text-base leading-relaxed"
-                style={{ color: "#B3B3B3" }}
-              >
-                We believe every talented player deserves visibility and the
-                chance to advance their career, regardless of their location
-                or access to traditional networks.
+                {missionText}
               </p>
             </div>
           </div>

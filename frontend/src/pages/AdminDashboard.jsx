@@ -10,7 +10,6 @@ import {
   UserCircleIcon,
   TrophyIcon,
   ShieldCheckIcon,
-  ClipboardDocumentListIcon,
   InformationCircleIcon,
   LockClosedIcon,
   ArrowLeftIcon,
@@ -24,7 +23,6 @@ import PlayerManagement from "../components/admin/PlayerManagement";
 import ServiceManagement from "../components/admin/ServiceManagement";
 import AboutManagement from "../components/admin/AboutManagement";
 import AdminManagement from "../components/admin/AdminManagement";
-import AuditLogViewer from "../components/admin/AuditLogViewer";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -63,6 +61,27 @@ const AdminDashboard = () => {
     }
   }, [navigate]);
 
+  // Sync auth state across tabs
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "adminToken") {
+        if (!e.newValue) {
+          // Token removed in another tab → redirect to login
+          navigate("/login");
+        }
+      }
+      if (e.key === "adminData") {
+        if (e.newValue && e.newValue !== "undefined") {
+          try {
+            setAdminData(JSON.parse(e.newValue));
+          } catch { /* ignore parse errors */ }
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [navigate]);
+
   const fetchDashboardData = useCallback(async (signal) => {
     try {
       setLoading(true);
@@ -76,8 +95,10 @@ const AdminDashboard = () => {
 
       if (!signal.aborted) {
         setStats(statsRes.data || {});
-        setEnquiries(Array.isArray(enquiriesRes.data) ? enquiriesRes.data : []);
-        setProfileRequests(Array.isArray(profilesRes.data) ? profilesRes.data : []);
+        const enqData = enquiriesRes.data?.enquiries || enquiriesRes.data;
+        setEnquiries(Array.isArray(enqData) ? enqData : []);
+        const profData = profilesRes.data?.requests || profilesRes.data;
+        setProfileRequests(Array.isArray(profData) ? profData : []);
       }
     } catch (err) {
       if (!signal.aborted) {
@@ -117,7 +138,8 @@ const AdminDashboard = () => {
     try {
       await api.updateEnquiryStatus(id, status);
       const res = await api.getEnquiries();
-      setEnquiries(res.data);
+      const enqData = res.data?.enquiries || res.data;
+      setEnquiries(Array.isArray(enqData) ? enqData : []);
     } catch (err) {
       console.error("Error updating enquiry:", err);
     }
@@ -126,8 +148,10 @@ const AdminDashboard = () => {
   const updateProfileStatus = async (id, status) => {
     try {
       await api.updateProfileStatus(id, status);
+      // If approved, refetch will show updated status
       const res = await api.getProfileRequests();
-      setProfileRequests(res.data);
+      const profData = res.data?.requests || res.data;
+      setProfileRequests(Array.isArray(profData) ? profData : []);
     } catch (err) {
       console.error("Error updating profile request:", err);
     }
@@ -173,7 +197,6 @@ const AdminDashboard = () => {
     { id: "profiles", label: "Profile Requests", icon: UserCircleIcon },
     ...(isSuperAdmin ? [
       { id: "admins", label: "Admins", icon: ShieldCheckIcon },
-      { id: "audit", label: "Audit Logs", icon: ClipboardDocumentListIcon },
     ] : []),
     { id: "settings", label: "Settings", icon: LockClosedIcon },
   ];
@@ -338,8 +361,8 @@ const AdminDashboard = () => {
                     {profileRequests.slice(0, 3).map((p) => (
                       <div key={p._id} className="flex items-center justify-between bg-white/5 rounded-lg p-3">
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-sm truncate">{p.basicInfo?.fullName}</p>
-                          <p className="text-xs text-gray-500 truncate">{p.careerInfo?.playingPosition}</p>
+                          <p className="font-medium text-sm truncate">{p.fullName}</p>
+                          <p className="text-xs text-gray-500 truncate">{p.playingPosition}</p>
                         </div>
                         <span className={`shrink-0 ml-2 px-2 py-0.5 rounded text-xs font-medium ${
                           p.status === "pending" ? "bg-yellow-500/20 text-yellow-500" :
@@ -360,35 +383,35 @@ const AdminDashboard = () => {
 
           {/* ─── Players ─── */}
           {activeTab === "players" && (
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
               <PlayerManagement />
             </div>
           )}
 
           {/* ─── Blogs ─── */}
           {activeTab === "blogs" && (
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
               <BlogManagement />
             </div>
           )}
 
           {/* ─── Services & How It Works ─── */}
           {activeTab === "services" && (
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
               <ServiceManagement />
             </div>
           )}
 
           {/* ─── About Page ─── */}
           {activeTab === "about" && (
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
               <AboutManagement />
             </div>
           )}
 
           {/* ─── Enquiries ─── */}
           {activeTab === "enquiries" && (
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
               <h3 className="text-xl font-bold mb-6">Enquiries Management</h3>
               {enquiries.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">No enquiries found.</p>
@@ -441,7 +464,7 @@ const AdminDashboard = () => {
 
           {/* ─── Profile Requests ─── */}
           {activeTab === "profiles" && (
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
               <h3 className="text-xl font-bold mb-6">Profile Requests</h3>
               {profileRequests.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">No profile requests found.</p>
@@ -451,9 +474,9 @@ const AdminDashboard = () => {
                     <div key={profile._id} className="bg-white/5 rounded-lg p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-lg">{profile.basicInfo?.fullName}</h4>
-                          <p className="text-sm text-gray-400">{profile.basicInfo?.email} • {profile.basicInfo?.phone}</p>
-                          <p className="text-sm text-gray-400">{profile.basicInfo?.city}, {profile.basicInfo?.nationality}</p>
+                          <h4 className="font-semibold text-lg">{profile.fullName}</h4>
+                          <p className="text-sm text-gray-400">{profile.email} • {profile.phone}</p>
+                          <p className="text-sm text-gray-400">{profile.city}, {profile.nationality}</p>
                         </div>
                         <span className={`shrink-0 ml-2 px-3 py-1 rounded-full text-xs font-medium ${
                           profile.status === "pending" ? "bg-yellow-500/20 text-yellow-500" :
@@ -468,47 +491,61 @@ const AdminDashboard = () => {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                         <div className="bg-white/5 rounded p-2">
                           <p className="text-xs text-gray-400">Position</p>
-                          <p className="text-sm font-medium">{profile.careerInfo?.playingPosition}</p>
+                          <p className="text-sm font-medium">{profile.playingPosition}</p>
                         </div>
                         <div className="bg-white/5 rounded p-2">
                           <p className="text-xs text-gray-400">Foot</p>
-                          <p className="text-sm font-medium">{profile.careerInfo?.preferredFoot}</p>
+                          <p className="text-sm font-medium">{profile.preferredFoot}</p>
                         </div>
                         <div className="bg-white/5 rounded p-2">
                           <p className="text-xs text-gray-400">Height</p>
-                          <p className="text-sm font-medium">{profile.careerInfo?.height} cm</p>
+                          <p className="text-sm font-medium">{profile.height} cm</p>
                         </div>
                         <div className="bg-white/5 rounded p-2">
                           <p className="text-xs text-gray-400">Experience</p>
-                          <p className="text-sm font-medium">{profile.careerInfo?.yearsOfExperience} years</p>
+                          <p className="text-sm font-medium">{profile.yearsOfExperience} years</p>
                         </div>
                       </div>
 
-                      {profile.careerInfo?.currentClub && (
-                        <p className="text-sm text-gray-300 mb-2">Current Club: {profile.careerInfo.currentClub}</p>
+                      {profile.currentClub && (
+                        <p className="text-sm text-gray-300 mb-2">Current Club: {profile.currentClub}</p>
+                      )}
+
+                      {profile.achievements && (
+                        <p className="text-sm text-gray-300 mb-2">Achievements: {profile.achievements}</p>
+                      )}
+
+                      {profile.videoLink && (
+                        <p className="text-sm mb-2"><a href={profile.videoLink} target="_blank" rel="noopener noreferrer" className="text-red-400 hover:text-red-300 underline">View Video</a></p>
                       )}
 
                       <div className="flex gap-2 mt-3">
-                        <button
-                          onClick={() => updateProfileStatus(profile._id, "reviewing")}
-                          className="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 rounded text-sm transition-all"
-                        >
-                          Review
-                        </button>
-                        <button
-                          onClick={() => updateProfileStatus(profile._id, "approved")}
-                          className="px-3 py-1 bg-green-500/20 hover:bg-green-500/30 text-green-500 rounded text-sm transition-all flex items-center gap-1"
-                        >
-                          <CheckCircleIcon className="w-4 h-4" />
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => updateProfileStatus(profile._id, "rejected")}
-                          className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-500 rounded text-sm transition-all flex items-center gap-1"
-                        >
-                          <XCircleIcon className="w-4 h-4" />
-                          Reject
-                        </button>
+                        {profile.status !== "reviewing" && (
+                          <button
+                            onClick={() => updateProfileStatus(profile._id, "reviewing")}
+                            className="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 rounded text-sm transition-all"
+                          >
+                            Review
+                          </button>
+                        )}
+                        {profile.status !== "approved" && (
+                          <button
+                            onClick={() => updateProfileStatus(profile._id, "approved")}
+                            className="px-3 py-1 bg-green-500/20 hover:bg-green-500/30 text-green-500 rounded text-sm transition-all flex items-center gap-1"
+                          >
+                            <CheckCircleIcon className="w-4 h-4" />
+                            Approve
+                          </button>
+                        )}
+                        {profile.status !== "rejected" && (
+                          <button
+                            onClick={() => updateProfileStatus(profile._id, "rejected")}
+                            className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-500 rounded text-sm transition-all flex items-center gap-1"
+                          >
+                            <XCircleIcon className="w-4 h-4" />
+                            Reject
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -519,15 +556,8 @@ const AdminDashboard = () => {
 
           {/* ─── Admin Management (Super Admin Only) ─── */}
           {activeTab === "admins" && isSuperAdmin && (
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
               <AdminManagement />
-            </div>
-          )}
-
-          {/* ─── Audit Logs (Super Admin Only) ─── */}
-          {activeTab === "audit" && isSuperAdmin && (
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-              <AuditLogViewer />
             </div>
           )}
 
@@ -535,7 +565,7 @@ const AdminDashboard = () => {
           {activeTab === "settings" && (
             <div className="space-y-6">
               {/* Change Password */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                 <h3 className="text-xl font-bold mb-6">Change Password</h3>
 
                 {passwordError && (
@@ -592,7 +622,7 @@ const AdminDashboard = () => {
               </div>
 
               {/* Account Info */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                 <h3 className="text-xl font-bold mb-4">Account Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg">
                   <div>

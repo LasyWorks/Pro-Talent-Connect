@@ -5,7 +5,7 @@ import {
   TrophyIcon,
 } from "@heroicons/react/24/outline";
 
-const CoreValues = () => {
+const CoreValues = ({ credentials }) => {
   const coreValues = [
     {
       icon: SparklesIcon,
@@ -90,6 +90,19 @@ const CoreValues = () => {
             );
           })}
         </div>
+
+        {/* Dynamic Credentials from Admin */}
+        {credentials && (
+          <div className="mt-16 relative bg-white/5 backdrop-blur-xl border border-white/20 rounded-xl p-8 text-center hover:bg-white/8 transition-all duration-300 overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+            <h3 className="text-xl font-medium mb-4" style={{ fontSize: "22px" }}>
+              Our <span className="text-[#FF3B3B]">Credentials</span>
+            </h3>
+            <p className="leading-relaxed max-w-2xl mx-auto" style={{ fontSize: "14px", color: "#B3B3B3" }}>
+              {credentials}
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );

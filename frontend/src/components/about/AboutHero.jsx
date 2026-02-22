@@ -1,4 +1,4 @@
-const AboutHero = () => {
+const AboutHero = ({ orgName }) => {
   return (
     <section className="relative py-16 md:py-20 px-4 overflow-hidden">
       {/* Liquid glass overlay */}
@@ -35,8 +35,9 @@ const AboutHero = () => {
             lineHeight: "1.7",
           }}
         >
-          We are dedicated to connecting professional football players with
-          opportunities worldwide through our comprehensive database platform.
+          {orgName
+            ? `${orgName} is dedicated to connecting professional football players with opportunities worldwide through our comprehensive database platform.`
+            : "We are dedicated to connecting professional football players with opportunities worldwide through our comprehensive database platform."}
         </p>
       </div>
     </section>

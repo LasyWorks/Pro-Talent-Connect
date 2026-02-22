@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api } from "../services/api";
 import {
@@ -19,6 +19,24 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Sync login state across tabs: if another tab logs in, redirect to admin
+  useEffect(() => {
+    // Check if already logged in on mount
+    const token = localStorage.getItem("adminToken");
+    if (token) {
+      navigate("/admin");
+      return;
+    }
+
+    const handleStorageChange = (e) => {
+      if (e.key === "adminToken" && e.newValue) {
+        navigate("/admin");
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

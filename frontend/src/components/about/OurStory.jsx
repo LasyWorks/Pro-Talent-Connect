@@ -1,6 +1,19 @@
 import { HeartIcon } from "@heroicons/react/24/outline";
 
-const OurStory = () => {
+const DEFAULT_HISTORY = `Started in 2023, Pro Talent Connect was born from a simple observation: many talented players lacked the visibility and connections needed to advance their careers. Traditional scouting methods were limited by geographic and network constraints, leaving countless players undiscovered.
+
+We set out to revolutionize player discovery by creating a comprehensive, accessible database where players showcase their skills and connect with scouts, clubs, and opportunities. Today, we serve over 1,000 professional players across 50+ countries, connecting them to more than 200 partnering clubs.
+
+Our platform combines detailed player profiles, verified credentials, career statistics, and highlights to allow scouts and clubs to discover talent based on skill, statistics, and potential—rather than just connections or geography.
+
+Together, we're building the future of football talent discovery—one player at a time.`;
+
+const OurStory = ({ history, images }) => {
+  const storyText = history || DEFAULT_HISTORY;
+  const storyParagraphs = storyText.split("\n").filter(p => p.trim());
+  const heroImage = images?.length > 0
+    ? images[0]
+    : "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=800&auto=format&fit=crop";
   return (
     <section className="relative py-16 md:py-24 lg:py-28 px-4">
       {/* Background liquid effects */}
@@ -28,53 +41,15 @@ const OurStory = () => {
             </div>
 
             <div className="space-y-5" style={{ maxWidth: "720px" }}>
-              <p
-                className="text-base leading-relaxed"
-                style={{ color: "#B3B3B3" }}
-              >
-                <span className="text-[#FF3B3B] font-semibold">
-                  Started in 2023
-                </span>
-                , Pro Talent Connect was born from a simple observation: many
-                talented players lacked the visibility and connections needed
-                to advance their careers. Traditional scouting methods were
-                limited by geographic and network constraints, leaving
-                countless players undiscovered.
-              </p>
-
-              <p
-                className="text-base leading-relaxed"
-                style={{ color: "#B3B3B3" }}
-              >
-                We set out to{" "}
-                <span className="text-white font-semibold">
-                  revolutionize player discovery
-                </span>{" "}
-                by creating a comprehensive, accessible database where players
-                showcase their skills and connect with scouts, clubs, and
-                opportunities. Today, we serve over 1,000 professional players
-                across 50+ countries, connecting them to more than 200
-                partnering clubs.
-              </p>
-
-              <p
-                className="text-base leading-relaxed"
-                style={{ color: "#B3B3B3" }}
-              >
-                Our platform combines{" "}
-                <span className="text-white font-semibold">
-                  detailed player profiles
-                </span>
-                , verified credentials, career statistics, and highlights to
-                allow scouts and clubs to discover talent based on skill,
-                statistics, and potential—rather than just connections or
-                geography.
-              </p>
-
-              <p className="text-white font-semibold text-lg pt-2">
-                Together, we're building the future of football talent
-                discovery—one player at a time.
-              </p>
+              {storyParagraphs.map((paragraph, idx) => (
+                <p
+                  key={idx}
+                  className="text-base leading-relaxed"
+                  style={{ color: "#B3B3B3" }}
+                >
+                  {paragraph}
+                </p>
+              ))}
             </div>
           </div>
 
@@ -92,7 +67,7 @@ const OurStory = () => {
               {/* Image placeholder - using subtle football pattern */}
               <div className="relative z-10 aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-white/5 to-transparent flex items-center justify-center">
                 <img
-                  src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=800&auto=format&fit=crop"
+                  src={heroImage}
                   alt="Football action"
                   className="w-full h-full object-cover opacity-40 hover:opacity-60 transition-opacity duration-300"
                 />

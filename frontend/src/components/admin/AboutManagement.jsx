@@ -20,7 +20,7 @@ const AboutManagement = () => {
     try {
       setLoading(true);
       const res = await api.getAbout();
-      setData(res.data);
+      setData(res.data.about || res.data);
     } catch (err) {
       console.error("Error fetching about:", err);
       setError("Failed to load about data");

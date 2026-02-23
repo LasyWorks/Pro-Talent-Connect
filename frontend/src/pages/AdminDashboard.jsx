@@ -411,147 +411,12 @@ const AdminDashboard = () => {
 
           {/* ─── Enquiries ─── */}
           {activeTab === "enquiries" && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h3 className="text-xl font-bold mb-6">Enquiries Management</h3>
-              {enquiries.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No enquiries found.</p>
-              ) : (
-                <div className="space-y-4">
-                  {enquiries.map((enquiry) => (
-                    <div key={enquiry._id} className="bg-white/5 rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold">{enquiry.name}</h4>
-                          <p className="text-sm text-gray-400">{enquiry.email} • {enquiry.phone}</p>
-                          <p className="text-sm text-red-500 mt-1">{enquiry.subject}</p>
-                        </div>
-                        <span className={`shrink-0 ml-2 px-3 py-1 rounded-full text-xs font-medium ${
-                          enquiry.status === "pending" ? "bg-yellow-500/20 text-yellow-500" :
-                          enquiry.status === "in-progress" ? "bg-blue-500/20 text-blue-500" :
-                          enquiry.status === "resolved" ? "bg-green-500/20 text-green-500" :
-                          "bg-gray-500/20 text-gray-400"
-                        }`}>
-                          {enquiry.status}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-300 mb-3">{enquiry.message}</p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => updateEnquiryStatus(enquiry._id, "in-progress")}
-                          className="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 rounded text-sm transition-all"
-                        >
-                          In Progress
-                        </button>
-                        <button
-                          onClick={() => updateEnquiryStatus(enquiry._id, "resolved")}
-                          className="px-3 py-1 bg-green-500/20 hover:bg-green-500/30 text-green-500 rounded text-sm transition-all"
-                        >
-                          Resolve
-                        </button>
-                        <button
-                          onClick={() => updateEnquiryStatus(enquiry._id, "closed")}
-                          className="px-3 py-1 bg-gray-500/20 hover:bg-gray-500/30 text-gray-400 rounded text-sm transition-all"
-                        >
-                          Close
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <EnquiriesSection enquiries={enquiries} updateEnquiryStatus={updateEnquiryStatus} />
           )}
 
           {/* ─── Profile Requests ─── */}
           {activeTab === "profiles" && (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-              <h3 className="text-xl font-bold mb-6">Profile Requests</h3>
-              {profileRequests.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No profile requests found.</p>
-              ) : (
-                <div className="space-y-4">
-                  {profileRequests.map((profile) => (
-                    <div key={profile._id} className="bg-white/5 rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-lg">{profile.fullName}</h4>
-                          <p className="text-sm text-gray-400">{profile.email} • {profile.phone}</p>
-                          <p className="text-sm text-gray-400">{profile.city}, {profile.nationality}</p>
-                        </div>
-                        <span className={`shrink-0 ml-2 px-3 py-1 rounded-full text-xs font-medium ${
-                          profile.status === "pending" ? "bg-yellow-500/20 text-yellow-500" :
-                          profile.status === "reviewing" ? "bg-blue-500/20 text-blue-500" :
-                          profile.status === "approved" ? "bg-green-500/20 text-green-500" :
-                          "bg-red-500/20 text-red-500"
-                        }`}>
-                          {profile.status}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                        <div className="bg-white/5 rounded p-2">
-                          <p className="text-xs text-gray-400">Position</p>
-                          <p className="text-sm font-medium">{profile.playingPosition}</p>
-                        </div>
-                        <div className="bg-white/5 rounded p-2">
-                          <p className="text-xs text-gray-400">Foot</p>
-                          <p className="text-sm font-medium">{profile.preferredFoot}</p>
-                        </div>
-                        <div className="bg-white/5 rounded p-2">
-                          <p className="text-xs text-gray-400">Height</p>
-                          <p className="text-sm font-medium">{profile.height} cm</p>
-                        </div>
-                        <div className="bg-white/5 rounded p-2">
-                          <p className="text-xs text-gray-400">Experience</p>
-                          <p className="text-sm font-medium">{profile.yearsOfExperience} years</p>
-                        </div>
-                      </div>
-
-                      {profile.currentClub && (
-                        <p className="text-sm text-gray-300 mb-2">Current Club: {profile.currentClub}</p>
-                      )}
-
-                      {profile.achievements && (
-                        <p className="text-sm text-gray-300 mb-2">Achievements: {profile.achievements}</p>
-                      )}
-
-                      {profile.videoLink && (
-                        <p className="text-sm mb-2"><a href={profile.videoLink} target="_blank" rel="noopener noreferrer" className="text-red-400 hover:text-red-300 underline">View Video</a></p>
-                      )}
-
-                      <div className="flex gap-2 mt-3">
-                        {profile.status !== "reviewing" && (
-                          <button
-                            onClick={() => updateProfileStatus(profile._id, "reviewing")}
-                            className="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 rounded text-sm transition-all"
-                          >
-                            Review
-                          </button>
-                        )}
-                        {profile.status !== "approved" && (
-                          <button
-                            onClick={() => updateProfileStatus(profile._id, "approved")}
-                            className="px-3 py-1 bg-green-500/20 hover:bg-green-500/30 text-green-500 rounded text-sm transition-all flex items-center gap-1"
-                          >
-                            <CheckCircleIcon className="w-4 h-4" />
-                            Approve
-                          </button>
-                        )}
-                        {profile.status !== "rejected" && (
-                          <button
-                            onClick={() => updateProfileStatus(profile._id, "rejected")}
-                            className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-500 rounded text-sm transition-all flex items-center gap-1"
-                          >
-                            <XCircleIcon className="w-4 h-4" />
-                            Reject
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <ProfileRequestsSection profileRequests={profileRequests} updateProfileStatus={updateProfileStatus} />
           )}
 
           {/* ─── Admin Management (Super Admin Only) ─── */}
@@ -671,6 +536,220 @@ const StatCard = ({ icon: Icon, title, value, color }) => {
       </div>
       <p className="text-gray-400 text-sm mb-1">{title}</p>
       <p className="text-3xl font-bold">{value}</p>
+    </div>
+  );
+};
+
+// Enquiries Section with Sub-tabs
+const EnquiriesSection = ({ enquiries, updateEnquiryStatus }) => {
+  const [subTab, setSubTab] = useState("pending");
+
+  const subTabs = [
+    { id: "pending", label: "Pending", color: "yellow" },
+    { id: "in-progress", label: "In Progress", color: "blue" },
+    { id: "resolved", label: "Resolved", color: "green" },
+    { id: "closed", label: "Closed", color: "gray" },
+  ];
+
+  const filtered = enquiries.filter((e) => e.status === subTab);
+
+  const getStatusBadge = (status) => {
+    const colors = {
+      pending: "bg-yellow-500/20 text-yellow-500",
+      "in-progress": "bg-blue-500/20 text-blue-500",
+      resolved: "bg-green-500/20 text-green-500",
+      closed: "bg-gray-500/20 text-gray-400",
+    };
+    return colors[status] || "bg-gray-500/20 text-gray-400";
+  };
+
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+      <h3 className="text-xl font-bold mb-4">Enquiries Management</h3>
+
+      {/* Sub-tabs */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        {subTabs.map((tab) => {
+          const count = enquiries.filter((e) => e.status === tab.id).length;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setSubTab(tab.id)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                subTab === tab.id
+                  ? tab.color === "yellow" ? "bg-yellow-500/30 text-yellow-400 border border-yellow-500/40"
+                  : tab.color === "blue" ? "bg-blue-500/30 text-blue-400 border border-blue-500/40"
+                  : tab.color === "green" ? "bg-green-500/30 text-green-400 border border-green-500/40"
+                  : "bg-gray-500/30 text-gray-300 border border-gray-500/40"
+                  : "bg-white/5 text-gray-400 hover:bg-white/10 border border-transparent"
+              }`}
+            >
+              {tab.label} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      {filtered.length === 0 ? (
+        <p className="text-gray-500 text-center py-8">No {subTab} enquiries found.</p>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map((enquiry) => (
+            <div key={enquiry._id} className="bg-white/5 rounded-lg p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold">{enquiry.name}</h4>
+                  <p className="text-sm text-gray-400">{enquiry.email} • {enquiry.phone}</p>
+                  <p className="text-sm text-red-500 mt-1">{enquiry.subject}</p>
+                </div>
+                <span className={`shrink-0 ml-2 px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(enquiry.status)}`}>
+                  {enquiry.status}
+                </span>
+              </div>
+              <p className="text-sm text-gray-300 mb-3">{enquiry.message}</p>
+              <p className="text-xs text-gray-500 mb-3">Submitted: {new Date(enquiry.createdAt).toLocaleDateString()}</p>
+              {subTab === "pending" && (
+                <div className="flex gap-2">
+                  <button onClick={() => updateEnquiryStatus(enquiry._id, "in-progress")} className="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 rounded text-sm transition-all">In Progress</button>
+                  <button onClick={() => updateEnquiryStatus(enquiry._id, "resolved")} className="px-3 py-1 bg-green-500/20 hover:bg-green-500/30 text-green-500 rounded text-sm transition-all">Resolve</button>
+                  <button onClick={() => updateEnquiryStatus(enquiry._id, "closed")} className="px-3 py-1 bg-gray-500/20 hover:bg-gray-500/30 text-gray-400 rounded text-sm transition-all">Close</button>
+                </div>
+              )}
+              {subTab === "in-progress" && (
+                <div className="flex gap-2">
+                  <button onClick={() => updateEnquiryStatus(enquiry._id, "resolved")} className="px-3 py-1 bg-green-500/20 hover:bg-green-500/30 text-green-500 rounded text-sm transition-all">Resolve</button>
+                  <button onClick={() => updateEnquiryStatus(enquiry._id, "closed")} className="px-3 py-1 bg-gray-500/20 hover:bg-gray-500/30 text-gray-400 rounded text-sm transition-all">Close</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Profile Requests Section with Sub-tabs
+const ProfileRequestsSection = ({ profileRequests, updateProfileStatus }) => {
+  const [subTab, setSubTab] = useState("pending");
+
+  const subTabs = [
+    { id: "pending", label: "Pending", color: "yellow" },
+    { id: "reviewing", label: "Reviewing", color: "blue" },
+    { id: "approved", label: "Approved", color: "green" },
+    { id: "rejected", label: "Rejected", color: "red" },
+  ];
+
+  const filtered = profileRequests.filter((p) => p.status === subTab);
+
+  const getStatusBadge = (status) => {
+    const colors = {
+      pending: "bg-yellow-500/20 text-yellow-500",
+      reviewing: "bg-blue-500/20 text-blue-500",
+      approved: "bg-green-500/20 text-green-500",
+      rejected: "bg-red-500/20 text-red-500",
+    };
+    return colors[status] || "bg-gray-500/20 text-gray-400";
+  };
+
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+      <h3 className="text-xl font-bold mb-4">Profile Requests</h3>
+
+      {/* Sub-tabs */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        {subTabs.map((tab) => {
+          const count = profileRequests.filter((p) => p.status === tab.id).length;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setSubTab(tab.id)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                subTab === tab.id
+                  ? tab.color === "yellow" ? "bg-yellow-500/30 text-yellow-400 border border-yellow-500/40"
+                  : tab.color === "blue" ? "bg-blue-500/30 text-blue-400 border border-blue-500/40"
+                  : tab.color === "green" ? "bg-green-500/30 text-green-400 border border-green-500/40"
+                  : "bg-red-500/30 text-red-400 border border-red-500/40"
+                  : "bg-white/5 text-gray-400 hover:bg-white/10 border border-transparent"
+              }`}
+            >
+              {tab.label} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      {filtered.length === 0 ? (
+        <p className="text-gray-500 text-center py-8">No {subTab} profile requests found.</p>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map((profile) => (
+            <div key={profile._id} className="bg-white/5 rounded-lg p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-lg">{profile.fullName}</h4>
+                  <p className="text-sm text-gray-400">{profile.email} • {profile.phone}</p>
+                  <p className="text-sm text-gray-400">{profile.city}, {profile.nationality}</p>
+                </div>
+                <span className={`shrink-0 ml-2 px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(profile.status)}`}>
+                  {profile.status}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                <div className="bg-white/5 rounded p-2">
+                  <p className="text-xs text-gray-400">Position</p>
+                  <p className="text-sm font-medium">{profile.playingPosition}</p>
+                </div>
+                <div className="bg-white/5 rounded p-2">
+                  <p className="text-xs text-gray-400">Foot</p>
+                  <p className="text-sm font-medium">{profile.preferredFoot}</p>
+                </div>
+                <div className="bg-white/5 rounded p-2">
+                  <p className="text-xs text-gray-400">Height</p>
+                  <p className="text-sm font-medium">{profile.height} cm</p>
+                </div>
+                <div className="bg-white/5 rounded p-2">
+                  <p className="text-xs text-gray-400">Experience</p>
+                  <p className="text-sm font-medium">{profile.yearsOfExperience} years</p>
+                </div>
+              </div>
+
+              {profile.currentClub && (
+                <p className="text-sm text-gray-300 mb-2">Current Club: {profile.currentClub}</p>
+              )}
+
+              {profile.achievements && (
+                <p className="text-sm text-gray-300 mb-2">Achievements: {profile.achievements}</p>
+              )}
+
+              {profile.videoLink && (
+                <p className="text-sm mb-2"><a href={profile.videoLink} target="_blank" rel="noopener noreferrer" className="text-red-400 hover:text-red-300 underline">View Video</a></p>
+              )}
+
+              <p className="text-xs text-gray-500 mb-3">Submitted: {new Date(profile.createdAt).toLocaleDateString()}</p>
+
+              {(subTab === "pending" || subTab === "reviewing") && (
+                <div className="flex gap-2 mt-3">
+                  {profile.status !== "reviewing" && (
+                    <button onClick={() => updateProfileStatus(profile._id, "reviewing")} className="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 rounded text-sm transition-all">Review</button>
+                  )}
+                  {profile.status !== "approved" && (
+                    <button onClick={() => updateProfileStatus(profile._id, "approved")} className="px-3 py-1 bg-green-500/20 hover:bg-green-500/30 text-green-500 rounded text-sm transition-all flex items-center gap-1">
+                      <CheckCircleIcon className="w-4 h-4" /> Approve
+                    </button>
+                  )}
+                  {profile.status !== "rejected" && (
+                    <button onClick={() => updateProfileStatus(profile._id, "rejected")} className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-500 rounded text-sm transition-all flex items-center gap-1">
+                      <XCircleIcon className="w-4 h-4" /> Reject
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

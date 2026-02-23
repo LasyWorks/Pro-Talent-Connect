@@ -312,27 +312,62 @@ const BlogManagement = () => {
 
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Featured Image URL
+                  Featured Image
                 </label>
-                <input
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) =>
-                    setFormData({ ...formData, image: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
-                  placeholder="https://example.com/image.jpg"
-                />
-                {formData.image && (
-                  <img
-                    src={formData.image}
-                    alt="Preview"
-                    className="mt-3 w-full h-48 object-cover rounded-lg"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                    }}
-                  />
-                )}
+                <div className="space-y-3">
+                  {/* File Upload */}
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Upload Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setFormData({ ...formData, image: reader.result });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-red-500/20 file:text-red-400 hover:file:bg-red-500/30"
+                    />
+                  </div>
+                  {/* OR URL */}
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Or paste image URL</label>
+                    <input
+                      type="url"
+                      value={formData.image?.startsWith("data:") ? "" : formData.image}
+                      onChange={(e) =>
+                        setFormData({ ...formData, image: e.target.value })
+                      }
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
+                      placeholder="https://example.com/image.jpg"
+                    />
+                  </div>
+                  {/* Preview */}
+                  {formData.image && (
+                    <div className="relative">
+                      <img
+                        src={formData.image}
+                        alt="Preview"
+                        className="mt-1 w-full h-48 object-cover rounded-lg"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, image: "" })}
+                        className="absolute top-3 right-2 p-1 bg-black/70 rounded-full hover:bg-red-500/80 transition-all"
+                      >
+                        <XMarkIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>

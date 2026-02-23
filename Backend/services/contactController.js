@@ -114,7 +114,11 @@ const submitProfileRequest = async (req, res) => {
 // Get all enquiries (Admin only)
 const getAllEnquiries = async (req, res) => {
   try {
-    const enquiries = await Enquiry.find({ isDeleted: false }).sort({
+    const filter = { isDeleted: false };
+    if (req.query.status) {
+      filter.status = req.query.status;
+    }
+    const enquiries = await Enquiry.find(filter).sort({
       createdAt: -1,
     });
 
@@ -136,7 +140,11 @@ const getAllEnquiries = async (req, res) => {
 // Get all profile requests (Admin only)
 const getAllProfileRequests = async (req, res) => {
   try {
-    const requests = await ProfileRequest.find({ isDeleted: false }).sort({
+    const filter = { isDeleted: false };
+    if (req.query.status) {
+      filter.status = req.query.status;
+    }
+    const requests = await ProfileRequest.find(filter).sort({
       createdAt: -1,
     });
 

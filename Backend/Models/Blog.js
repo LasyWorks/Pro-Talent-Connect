@@ -73,7 +73,7 @@ const blogSchema = new mongoose.Schema(
 );
 
 // Auto-generate slug from title before saving
-blogSchema.pre("save", function (next) {
+blogSchema.pre("save", function () {
   if (this.isModified("title") && !this.slug) {
     this.slug = this.title
       .toLowerCase()
@@ -82,15 +82,13 @@ blogSchema.pre("save", function (next) {
       .replace(/[\s_-]+/g, "-")
       .replace(/^-+|-+$/g, "");
   }
-  next();
 });
 
 // Auto-set published_at when status changes to PUBLISHED
-blogSchema.pre("save", function (next) {
+blogSchema.pre("save", function () {
   if (this.isModified("status") && this.status === "PUBLISHED" && !this.published_at) {
     this.published_at = new Date();
   }
-  next();
 });
 
 module.exports = mongoose.model("Blog", blogSchema);

@@ -6,6 +6,7 @@ const NavBar = () => {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("adminToken"));
 
   // Handle scroll effect for enhanced glass morphism
   useEffect(() => {
@@ -16,6 +17,22 @@ const NavBar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Listen for auth state changes (cross-tab and same-tab)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "adminToken") {
+        setIsLoggedIn(!!e.newValue);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  // Re-check auth on every route change (same-tab login/logout)
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem("adminToken"));
+  }, [location]);
+
   const navLinks = [
     { name: "Home", path: "/", page: "home" },
     { name: "About", path: "/about", page: "about" },
@@ -23,7 +40,9 @@ const NavBar = () => {
     { name: "Blog", path: "/blog", page: "blog" },
     { name: "Services", path: "/services", page: "services" },
     { name: "Contact", path: "/contact", page: "contact" },
-    { name: "Login", path: "/login", page: "login" },
+    ...(isLoggedIn
+      ? [{ name: "Dashboard", path: "/admin", page: "admin" }]
+      : [{ name: "Login", path: "/login", page: "login" }]),
   ];
 
   const getIsActive = (path) => {
@@ -84,7 +103,7 @@ const NavBar = () => {
                             : "text-white hover:text-red-500"
                         }
                         ${
-                          link.name === "Login"
+                          link.name === "Login" || link.name === "Dashboard"
                             ? "ml-4 bg-red-500 hover:bg-red-600 text-white hover:text-white border-none"
                             : ""
                         }
@@ -172,7 +191,7 @@ const NavBar = () => {
                 hover:text-red-500 hover:bg-white/5 transition-all duration-300
                 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500
                 ${
-                  link.name === "Login"
+                  link.name === "Login" || link.name === "Dashboard"
                     ? "mt-2 bg-red-500/20 border border-red-500/30"
                     : ""
                 }

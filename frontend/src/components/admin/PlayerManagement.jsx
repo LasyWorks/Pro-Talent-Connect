@@ -366,8 +366,8 @@ const PlayerManagement = () => {
 
       {/* View Modal */}
       {showViewModal && viewPlayer && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowViewModal(false)}>
-          <div className="bg-gray-900 border border-white/10 rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-6" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) setShowViewModal(false); }}>
+          <div className="bg-gray-900 border border-white/10 rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold">{viewPlayer.name}</h3>
               <button onClick={() => setShowViewModal(false)}><XMarkIcon className="w-5 h-5 text-gray-400" /></button>
@@ -417,8 +417,8 @@ const PlayerManagement = () => {
 
       {/* Create/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-gray-900 border border-white/10 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}>
+          <div className="bg-gray-900 border border-white/10 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-gray-900 border-b border-white/10 p-4 flex items-center justify-between z-10">
               <h3 className="text-lg font-bold">{editingPlayer ? "Edit Player" : "Add New Player"}</h3>
               <button onClick={() => setShowModal(false)}><XMarkIcon className="w-5 h-5 text-gray-400" /></button>

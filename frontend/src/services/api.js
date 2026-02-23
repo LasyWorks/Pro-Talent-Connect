@@ -121,12 +121,12 @@ export const api = {
   submitEnquiry: (data) => apiClient.post('/contact/enquiry', data),
   submitProfileRequest: (data) => apiClient.post('/contact/profile-request', data),
   getEnquiries: (options = {}) => {
-    const { signal } = options;
-    return apiClient.get('/contact/enquiries', { signal });
+    const { signal, ...params } = options;
+    return apiClient.get('/contact/enquiries', { params, signal });
   },
   getProfileRequests: (options = {}) => {
-    const { signal } = options;
-    return apiClient.get('/contact/profile-requests', { signal });
+    const { signal, ...params } = options;
+    return apiClient.get('/contact/profile-requests', { params, signal });
   },
   updateEnquiryStatus: (id, status) => apiClient.put(`/contact/enquiries/${id}`, { status }),
   updateProfileStatus: (id, status, adminNotes) => apiClient.put(`/contact/profile-requests/${id}`, { status, adminNotes }),

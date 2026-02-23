@@ -156,8 +156,8 @@ const ServiceManagement = () => {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="bg-gray-900 border border-white/10 rounded-2xl max-w-md w-full max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}>
+          <div className="bg-gray-900 border border-white/10 rounded-2xl max-w-md w-full max-h-[85vh] overflow-y-auto">
             <div className="sticky top-0 bg-gray-900 border-b border-white/10 p-4 flex items-center justify-between">
               <h3 className="text-lg font-bold">{editing ? "Edit" : "Add"} {activeSection === "services" ? "Service" : "Step"}</h3>
               <button onClick={() => setShowModal(false)}><XMarkIcon className="w-5 h-5 text-gray-400" /></button>

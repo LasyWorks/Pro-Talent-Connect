@@ -80,7 +80,7 @@ const createBlog = async (req, res) => {
     });
   } catch (error) {
     console.error("Create blog error:", error.message);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -134,7 +134,7 @@ const getAllBlogs = async (req, res) => {
     });
   } catch (error) {
     console.error("Get blogs error:", error.message);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -171,7 +171,7 @@ const getBlogById = async (req, res) => {
     if (error.kind === "ObjectId") {
       return res.status(404).json({ message: "Blog not found" });
     }
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -253,7 +253,7 @@ const updateBlog = async (req, res) => {
     });
   } catch (error) {
     console.error("Update blog error:", error.message);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -293,7 +293,7 @@ const deleteBlog = async (req, res) => {
     });
   } catch (error) {
     console.error("Delete blog error:", error.message);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -335,7 +335,7 @@ const getPublishedBlogs = async (req, res) => {
     });
   } catch (error) {
     console.error("Get published blogs error:", error.message);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -377,7 +377,7 @@ const togglePublish = async (req, res) => {
     });
   } catch (error) {
     console.error("Toggle publish error:", error.message);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 

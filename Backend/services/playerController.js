@@ -1,4 +1,5 @@
 const Player = require("../Models/Players");
+const Otp = require("../Models/Otp");
 const { logAction } = require("../Middleware/auditLogger");
 const { calculateScoutReport } = require("./scoutReportCalculator");
 
@@ -62,6 +63,22 @@ const createPlayer = async (req, res) => {
         .status(400)
         .json({ message: "Please provide all required fields" });
     }
+
+    // Verify that OTP was confirmed for this player email
+    const verifiedOtp = await Otp.findOne({
+      email,
+      purpose: "player-creation",
+      verified: true,
+    });
+
+    if (!verifiedOtp || verifiedOtp.expiresAt < new Date()) {
+      return res.status(400).json({
+        message: "Email OTP verification is required before creating a player profile",
+      });
+    }
+
+    // Clean up the used OTP
+    await Otp.deleteMany({ email, purpose: "player-creation" });
 
     // Auto-calculate age from dateOfBirth if not provided
     let calculatedAge = age;

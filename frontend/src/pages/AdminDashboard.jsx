@@ -40,6 +40,14 @@ const AdminDashboard = () => {
   const [passwordSuccess, setPasswordSuccess] = useState(null);
   const [changingPassword, setChangingPassword] = useState(false);
 
+  // OTP state for change password
+  const [pwOtpSent, setPwOtpSent] = useState(false);
+  const [pwOtpVerified, setPwOtpVerified] = useState(false);
+  const [pwOtpValue, setPwOtpValue] = useState("");
+  const [pwOtpLoading, setPwOtpLoading] = useState(false);
+  const [pwOtpError, setPwOtpError] = useState("");
+  const [pwOtpSuccess, setPwOtpSuccess] = useState("");
+
   const isSuperAdmin = adminData?.role === "Super Admin";
 
   useEffect(() => {
@@ -157,10 +165,53 @@ const AdminDashboard = () => {
     }
   };
 
+  // Password OTP handlers
+  const handleSendPasswordOtp = async () => {
+    setPwOtpLoading(true);
+    setPwOtpError("");
+    setPwOtpSuccess("");
+    try {
+      await api.sendPasswordOtp();
+      setPwOtpSent(true);
+      setPwOtpSuccess("OTP sent to your email. Check your inbox.");
+    } catch (err) {
+      const errMsg = err.response?.data?.message || "Failed to send OTP. Check server email config.";
+      setPwOtpError(errMsg);
+      // Still show the OTP input so user can retry sending
+      setPwOtpSent(true);
+    } finally {
+      setPwOtpLoading(false);
+    }
+  };
+
+  const handleVerifyPasswordOtp = async () => {
+    if (!pwOtpValue || pwOtpValue.length !== 6) {
+      setPwOtpError("Please enter a valid 6-digit OTP");
+      return;
+    }
+    setPwOtpLoading(true);
+    setPwOtpError("");
+    try {
+      await api.verifyPasswordOtp(pwOtpValue);
+      setPwOtpVerified(true);
+      setPwOtpSuccess("OTP verified successfully!");
+      setPwOtpError("");
+    } catch (err) {
+      setPwOtpError(err.response?.data?.message || "Invalid or expired OTP");
+    } finally {
+      setPwOtpLoading(false);
+    }
+  };
+
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setPasswordError(null);
     setPasswordSuccess(null);
+
+    if (!pwOtpVerified) {
+      setPasswordError("Please verify OTP sent to your email first");
+      return;
+    }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setPasswordError("New passwords do not match");
@@ -179,6 +230,12 @@ const AdminDashboard = () => {
       });
       setPasswordSuccess("Password changed successfully!");
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      // Reset OTP state after successful password change
+      setPwOtpSent(false);
+      setPwOtpVerified(false);
+      setPwOtpValue("");
+      setPwOtpError("");
+      setPwOtpSuccess("");
     } catch (err) {
       setPasswordError(err.response?.data?.message || "Failed to change password");
     } finally {
@@ -476,10 +533,66 @@ const AdminDashboard = () => {
                       required
                     />
                   </div>
+
+                  {/* OTP Verification for Password Change */}
+                  <div className="p-3 rounded-lg border border-white/10 bg-white/5">
+                    <p className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wider">Email OTP Verification</p>
+                    {pwOtpError && <p className="text-xs text-red-400 mb-2">{pwOtpError}</p>}
+                    {pwOtpSuccess && <p className="text-xs text-green-400 mb-2">{pwOtpSuccess}</p>}
+
+                    {!pwOtpVerified ? (
+                      <div className="flex items-center gap-2">
+                        {!pwOtpSent ? (
+                          <button
+                            type="button"
+                            onClick={handleSendPasswordOtp}
+                            disabled={pwOtpLoading}
+                            className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-xs font-medium transition-all disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {pwOtpLoading ? "Sending..." : "Send OTP to Email"}
+                          </button>
+                        ) : (
+                          <>
+                            <input
+                              type="text"
+                              maxLength={6}
+                              placeholder="Enter 6-digit OTP"
+                              value={pwOtpValue}
+                              onChange={(e) => setPwOtpValue(e.target.value.replace(/\D/g, ""))}
+                              className="w-36 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 focus:border-blue-500 focus:outline-none text-sm text-white tracking-widest text-center"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleVerifyPasswordOtp}
+                              disabled={pwOtpLoading || pwOtpValue.length !== 6}
+                              className="px-4 py-1.5 bg-green-600 hover:bg-green-700 rounded-lg text-xs font-medium transition-all disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {pwOtpLoading ? "Verifying..." : "Verify OTP"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleSendPasswordOtp}
+                              disabled={pwOtpLoading}
+                              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs text-gray-400 transition-all disabled:opacity-50 whitespace-nowrap"
+                            >
+                              Resend
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-green-400">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        <span className="text-xs font-medium">OTP verified</span>
+                      </div>
+                    )}
+                  </div>
+
                   <button
                     type="submit"
-                    disabled={changingPassword}
+                    disabled={changingPassword || !pwOtpVerified}
                     className="px-6 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-medium transition-all text-sm disabled:opacity-50"
+                    title={!pwOtpVerified ? "Verify email OTP first" : ""}
                   >
                     {changingPassword ? "Changing..." : "Change Password"}
                   </button>

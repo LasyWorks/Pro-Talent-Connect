@@ -76,6 +76,12 @@ export const api = {
   refreshToken: () => apiClient.post('/auth/refresh'),
   registerAdmin: (data) => apiClient.post('/auth/register', data),
 
+  // ─── OTP ───
+  sendPlayerOtp: (email) => apiClient.post('/otp/send-player-otp', { email }),
+  verifyPlayerOtp: (email, otp) => apiClient.post('/otp/verify-player-otp', { email, otp }),
+  sendPasswordOtp: () => apiClient.post('/otp/send-password-otp'),
+  verifyPasswordOtp: (otp) => apiClient.post('/otp/verify-password-otp', { otp }),
+
   // ─── Players ───
   getPlayers: (options = {}) => {
     const { signal, ...params } = options;

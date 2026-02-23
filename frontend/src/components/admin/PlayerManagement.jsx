@@ -71,6 +71,14 @@ const PlayerManagement = () => {
   const [pagination, setPagination] = useState({});
   const [posFilter, setPosFilter] = useState("");
 
+  // OTP state for player creation
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpValue, setOtpValue] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState("");
+  const [otpSuccess, setOtpSuccess] = useState("");
+
   useEffect(() => { fetchPlayers(); }, [page, posFilter]);
 
   const fetchPlayers = async () => {
@@ -100,6 +108,11 @@ const PlayerManagement = () => {
     setEditingPlayer(null);
     setFormData({ ...emptyForm });
     setError("");
+    setOtpSent(false);
+    setOtpVerified(false);
+    setOtpValue("");
+    setOtpError("");
+    setOtpSuccess("");
     setShowModal(true);
   };
 
@@ -142,10 +155,60 @@ const PlayerManagement = () => {
     setShowModal(true);
   };
 
+  // OTP handlers for player creation
+  const handleSendPlayerOtp = async () => {
+    if (!formData.email) {
+      setOtpError("Please enter the player's email first");
+      return;
+    }
+    setOtpLoading(true);
+    setOtpError("");
+    setOtpSuccess("");
+    try {
+      await api.sendPlayerOtp(formData.email);
+      setOtpSent(true);
+      setOtpSuccess("OTP sent to " + formData.email + ". Check inbox.");
+    } catch (err) {
+      const errMsg = err.response?.data?.message || "Failed to send OTP. Check server email config.";
+      setOtpError(errMsg);
+      // Still show OTP input so user can retry
+      setOtpSent(true);
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyPlayerOtp = async () => {
+    if (!otpValue || otpValue.length !== 6) {
+      setOtpError("Please enter a valid 6-digit OTP");
+      return;
+    }
+    setOtpLoading(true);
+    setOtpError("");
+    try {
+      await api.verifyPlayerOtp(formData.email, otpValue);
+      setOtpVerified(true);
+      setOtpSuccess("Email verified successfully!");
+      setOtpError("");
+    } catch (err) {
+      setOtpError(err.response?.data?.message || "Invalid or expired OTP");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setError("");
+
+    // Require OTP verification for new player creation (not editing)
+    if (!editingPlayer && !otpVerified) {
+      setError("Please verify the player's email with OTP before creating the profile");
+      setSaving(false);
+      return;
+    }
+
     try {
       // Auto-calculate age from dateOfBirth
       let calculatedAge = formData.age ? Number(formData.age) : undefined;
@@ -503,11 +566,70 @@ const PlayerManagement = () => {
                 <h4 className="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wider">Contact</h4>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Email *">
-                    <input type="email" required value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} className={inputCls} />
+                    <input type="email" required value={formData.email} onChange={e => { setFormData(p => ({ ...p, email: e.target.value })); if (!editingPlayer) { setOtpSent(false); setOtpVerified(false); setOtpValue(""); setOtpError(""); setOtpSuccess(""); } }} className={inputCls} />
                   </Field>
                   <Field label="Mobile Number *">
                     <input required value={formData.mobileNumber} onChange={e => setFormData(p => ({ ...p, mobileNumber: e.target.value }))} className={inputCls} />
                   </Field>
+
+                  {/* OTP Verification Section - Only for new player creation */}
+                  {!editingPlayer && (
+                    <div className="col-span-2">
+                      <div className="p-3 rounded-lg border border-white/10 bg-white/5">
+                        <p className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wider">Email OTP Verification</p>
+                        {otpError && <p className="text-xs text-red-400 mb-2">{otpError}</p>}
+                        {otpSuccess && <p className="text-xs text-green-400 mb-2">{otpSuccess}</p>}
+
+                        {!otpVerified ? (
+                          <div className="flex items-center gap-2">
+                            {!otpSent ? (
+                              <button
+                                type="button"
+                                onClick={handleSendPlayerOtp}
+                                disabled={otpLoading || !formData.email}
+                                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-xs font-medium transition-all disabled:opacity-50 whitespace-nowrap"
+                              >
+                                {otpLoading ? "Sending..." : "Send OTP"}
+                              </button>
+                            ) : (
+                              <>
+                                <input
+                                  type="text"
+                                  maxLength={6}
+                                  placeholder="Enter 6-digit OTP"
+                                  value={otpValue}
+                                  onChange={e => setOtpValue(e.target.value.replace(/\D/g, ""))}
+                                  className="w-36 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 focus:border-blue-500 focus:outline-none text-sm text-white tracking-widest text-center"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={handleVerifyPlayerOtp}
+                                  disabled={otpLoading || otpValue.length !== 6}
+                                  className="px-4 py-1.5 bg-green-600 hover:bg-green-700 rounded-lg text-xs font-medium transition-all disabled:opacity-50 whitespace-nowrap"
+                                >
+                                  {otpLoading ? "Verifying..." : "Verify OTP"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={handleSendPlayerOtp}
+                                  disabled={otpLoading}
+                                  className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs text-gray-400 transition-all disabled:opacity-50 whitespace-nowrap"
+                                >
+                                  Resend
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-green-400">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                            <span className="text-xs font-medium">Email verified</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <Field label="Address" span={2}>
                     <input value={formData.address} onChange={e => setFormData(p => ({ ...p, address: e.target.value }))} className={inputCls} />
                   </Field>
@@ -640,7 +762,12 @@ const PlayerManagement = () => {
               {/* Submit */}
               <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm transition-all">Cancel</button>
-                <button type="submit" disabled={saving} className="px-6 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-sm font-medium transition-all disabled:opacity-50">
+                <button
+                  type="submit"
+                  disabled={saving || (!editingPlayer && !otpVerified)}
+                  className="px-6 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-sm font-medium transition-all disabled:opacity-50"
+                  title={!editingPlayer && !otpVerified ? "Verify player email OTP first" : ""}
+                >
                   {saving ? "Saving..." : editingPlayer ? "Update Player" : "Create Player"}
                 </button>
               </div>

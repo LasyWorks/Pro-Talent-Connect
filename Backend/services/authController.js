@@ -1,4 +1,5 @@
 const Admin = require("../Models/Admin");
+const Otp = require("../Models/Otp");
 const generateToken = require("../services/generateToken");
 const { logAction } = require("../Middleware/auditLogger");
 
@@ -203,6 +204,22 @@ const changePassword = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ message: "Current password is incorrect" });
     }
+
+    // Verify that OTP was confirmed for password change
+    const verifiedOtp = await Otp.findOne({
+      email: admin.email,
+      purpose: "change-password",
+      verified: true,
+    });
+
+    if (!verifiedOtp || verifiedOtp.expiresAt < new Date()) {
+      return res.status(400).json({
+        message: "Email OTP verification is required before changing password",
+      });
+    }
+
+    // Clean up the used OTP
+    await Otp.deleteMany({ email: admin.email, purpose: "change-password" });
 
     // Set new password (will be hashed by pre-save hook)
     admin.password = newPassword;

@@ -16,6 +16,8 @@ import {
   ArrowRightOnRectangleIcon,
   CheckCircleIcon,
   XCircleIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 import FloatingShapes from "../components/common/FloatingShapes";
 import BlogManagement from "../components/blogs/BlogManagement";
@@ -23,6 +25,7 @@ import PlayerManagement from "../components/admin/PlayerManagement";
 import ServiceManagement from "../components/admin/ServiceManagement";
 import AboutManagement from "../components/admin/AboutManagement";
 import AdminManagement from "../components/admin/AdminManagement";
+import PartnerManagement from "../components/admin/PartnerManagement";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -39,6 +42,16 @@ const AdminDashboard = () => {
   const [passwordError, setPasswordError] = useState(null);
   const [passwordSuccess, setPasswordSuccess] = useState(null);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [showPwFields, setShowPwFields] = useState({ current: false, new: false, confirm: false });
+
+  // Password criteria checks
+  const pwCriteria = {
+    length:    passwordData.newPassword.length >= 8,
+    uppercase: /[A-Z]/.test(passwordData.newPassword),
+    lowercase: /[a-z]/.test(passwordData.newPassword),
+    number:    /\d/.test(passwordData.newPassword),
+    special:   /[@$!%*?&]/.test(passwordData.newPassword),
+  };
 
   // OTP state for change password
   const [pwOtpSent, setPwOtpSent] = useState(false);
@@ -250,6 +263,7 @@ const AdminDashboard = () => {
     { id: "blogs", label: "Blogs", icon: DocumentTextIcon },
     { id: "services", label: "Services", icon: Cog6ToothIcon },
     { id: "about", label: "About", icon: InformationCircleIcon },
+    { id: "partners", label: "Partners", icon: UserGroupIcon },
     { id: "enquiries", label: "Enquiries", icon: EnvelopeIcon },
     { id: "profiles", label: "Profile Requests", icon: UserCircleIcon },
     ...(isSuperAdmin ? [
@@ -466,6 +480,13 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* ─── Partners Management ─── */}
+          {activeTab === "partners" && (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+              <PartnerManagement />
+            </div>
+          )}
+
           {/* ─── Enquiries ─── */}
           {activeTab === "enquiries" && (
             <EnquiriesSection enquiries={enquiries} updateEnquiryStatus={updateEnquiryStatus} />
@@ -504,34 +525,93 @@ const AdminDashboard = () => {
                 <form onSubmit={handleChangePassword} className="max-w-md space-y-4">
                   <div>
                     <label className="text-sm text-gray-400 mb-1 block">Current Password</label>
-                    <input
-                      type="password"
-                      value={passwordData.currentPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-red-500/50 text-sm"
-                      required
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPwFields.current ? "text" : "password"}
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                        className="w-full px-3 py-2 pr-10 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-red-500/50 text-sm"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPwFields((p) => ({ ...p, current: !p.current }))}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
+                      >
+                        {showPwFields.current ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className="text-sm text-gray-400 mb-1 block">New Password</label>
-                    <input
-                      type="password"
-                      value={passwordData.newPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-red-500/50 text-sm"
-                      placeholder="Min 6 characters"
-                      required
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPwFields.new ? "text" : "password"}
+                        value={passwordData.newPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                        className="w-full px-3 py-2 pr-10 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-red-500/50 text-sm"
+                        placeholder="Min 8 characters"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPwFields((p) => ({ ...p, new: !p.new }))}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
+                      >
+                        {showPwFields.new ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    {/* Password criteria */}
+                    {passwordData.newPassword.length > 0 && (
+                      <div className="mt-2 p-3 bg-white/5 border border-white/10 rounded-lg space-y-1">
+                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1.5">Password must contain</p>
+                        {[
+                          { key: "length",    label: "At least 8 characters" },
+                          { key: "uppercase", label: "At least one uppercase letter (A–Z)" },
+                          { key: "lowercase", label: "At least one lowercase letter (a–z)" },
+                          { key: "number",    label: "At least one number (0–9)" },
+                          { key: "special",   label: "At least one special character (@$!%*?&)" },
+                        ].map(({ key, label }) => (
+                          <div key={key} className="flex items-center gap-2">
+                            {pwCriteria[key] ? (
+                              <CheckCircleIcon className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                            ) : (
+                              <XCircleIcon className="w-3.5 h-3.5 text-red-400/70 shrink-0" />
+                            )}
+                            <span className={`text-xs ${pwCriteria[key] ? "text-green-400" : "text-gray-400"}`}>{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="text-sm text-gray-400 mb-1 block">Confirm New Password</label>
-                    <input
-                      type="password"
-                      value={passwordData.confirmPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-red-500/50 text-sm"
-                      required
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPwFields.confirm ? "text" : "password"}
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                        className="w-full px-3 py-2 pr-10 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-red-500/50 text-sm"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPwFields((p) => ({ ...p, confirm: !p.confirm }))}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
+                      >
+                        {showPwFields.confirm ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    {/* Confirm match indicator */}
+                    {passwordData.confirmPassword.length > 0 && (
+                      <p className={`text-xs mt-1 flex items-center gap-1 ${passwordData.newPassword === passwordData.confirmPassword ? "text-green-400" : "text-red-400"}`}>
+                        {passwordData.newPassword === passwordData.confirmPassword ? (
+                          <><CheckCircleIcon className="w-3.5 h-3.5" /> Passwords match</>
+                        ) : (
+                          <><XCircleIcon className="w-3.5 h-3.5" /> Passwords do not match</>
+                        )}
+                      </p>
+                    )}
                   </div>
 
                   {/* OTP Verification for Password Change */}

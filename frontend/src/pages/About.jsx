@@ -4,7 +4,7 @@ import AboutHero from "../components/about/AboutHero";
 import MissionVision from "../components/about/MissionVision";
 import ImpactStats from "../components/about/ImpactStats";
 import CoreValues from "../components/about/CoreValues";
-import OurStory from "../components/about/OurStory";
+import Partners from "../components/about/Partners";
 
 const Divider = () => (
   <div className="max-w-5xl mx-auto px-4">
@@ -48,7 +48,7 @@ const About = () => {
         <Divider />
         <CoreValues credentials={aboutData?.credentials} />
         <Divider />
-        <OurStory history={aboutData?.history} images={aboutData?.images} />
+        <Partners />
       </main>
     </div>
   );

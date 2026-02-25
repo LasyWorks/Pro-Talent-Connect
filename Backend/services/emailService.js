@@ -26,25 +26,45 @@ const hasRealCredentials = () => {
   );
 };
 
-/**
- * Create (or return cached) transporter
- */
+/** Wrap a promise with a timeout — rejects with a descriptive error if it hangs */
+const withTimeout = (promise, ms, label) =>
+  Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+    ),
+  ]);
+
 const getTransporter = async () => {
   // ── Real credentials configured ──
   if (hasRealCredentials()) {
-    return nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
       service: process.env.EMAIL_SERVICE || "gmail",
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
+      // Connection pool — reuse connections across OTP sends
+      pool: true,
+      maxConnections: 3,
+      // Socket-level timeouts so a stalled SMTP server can't block a request
+      connectionTimeout: 10000,
+      greetingTimeout: 8000,
+      socketTimeout: 10000,
     });
+    return transporter;
   }
 
   // ── No credentials → Ethereal (free test account, zero config) ──
   if (_etherealTransporter) return _etherealTransporter;
 
-  const testAccount = await nodemailer.createTestAccount();
+  // Guard: Ethereal account creation can hang for >30 s on slow networks
+  const testAccount = await withTimeout(
+    nodemailer.createTestAccount(),
+    15000,
+    "Ethereal test-account creation"
+  );
+
   _etherealTransporter = nodemailer.createTransport({
     host: "smtp.ethereal.email",
     port: 587,
@@ -53,6 +73,9 @@ const getTransporter = async () => {
       user: testAccount.user,
       pass: testAccount.pass,
     },
+    connectionTimeout: 10000,
+    greetingTimeout: 8000,
+    socketTimeout: 10000,
   });
 
   console.log("─────────────────────────────────────────────");

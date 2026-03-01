@@ -42,7 +42,15 @@ const YoutubeIcon = () => (
 );
 
 const GlobeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="w-4 h-4"
+  >
     <circle cx="12" cy="12" r="10" />
     <path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" />
   </svg>
@@ -61,10 +69,19 @@ export const DEFAULT_PARTNERS = [
     borderColor: "border-red-500/20",
     accentColor: "text-red-400",
     social: {
-      instagram: { handle: "@elitescoutnetwork", url: "https://instagram.com/elitescoutnetwork" },
-      twitter:   { handle: "@EliteScoutNet",     url: "https://x.com/EliteScoutNet" },
-      linkedin:  { handle: "Elite Scout Network", url: "https://linkedin.com/company/elite-scout-network" },
-      website:   { handle: "elitescoutnetwork.com", url: "https://elitescoutnetwork.com" },
+      instagram: {
+        handle: "@elitescoutnetwork",
+        url: "https://instagram.com/elitescoutnetwork",
+      },
+      twitter: { handle: "@EliteScoutNet", url: "https://x.com/EliteScoutNet" },
+      linkedin: {
+        handle: "Elite Scout Network",
+        url: "https://linkedin.com/company/elite-scout-network",
+      },
+      website: {
+        handle: "elitescoutnetwork.com",
+        url: "https://elitescoutnetwork.com",
+      },
     },
   },
   {
@@ -78,10 +95,19 @@ export const DEFAULT_PARTNERS = [
     borderColor: "border-blue-500/20",
     accentColor: "text-blue-400",
     social: {
-      instagram: { handle: "@globalfootballacademy", url: "https://instagram.com/globalfootballacademy" },
-      youtube:   { handle: "GFA Official",            url: "https://youtube.com/@globalfootballacademy" },
-      facebook:  { handle: "Global Football Academy", url: "https://facebook.com/globalfootballacademy" },
-      website:   { handle: "gfa-official.com",        url: "https://gfa-official.com" },
+      instagram: {
+        handle: "@globalfootballacademy",
+        url: "https://instagram.com/globalfootballacademy",
+      },
+      youtube: {
+        handle: "GFA Official",
+        url: "https://youtube.com/@globalfootballacademy",
+      },
+      facebook: {
+        handle: "Global Football Academy",
+        url: "https://facebook.com/globalfootballacademy",
+      },
+      website: { handle: "gfa-official.com", url: "https://gfa-official.com" },
     },
   },
   {
@@ -95,10 +121,19 @@ export const DEFAULT_PARTNERS = [
     borderColor: "border-purple-500/20",
     accentColor: "text-purple-400",
     social: {
-      instagram: { handle: "@prosportsmanagement", url: "https://instagram.com/prosportsmanagement" },
-      twitter:   { handle: "@ProSportsMgmt",      url: "https://x.com/ProSportsMgmt" },
-      linkedin:  { handle: "ProSports Management", url: "https://linkedin.com/company/prosports-management" },
-      website:   { handle: "prosportsmgmt.com",    url: "https://prosportsmgmt.com" },
+      instagram: {
+        handle: "@prosportsmanagement",
+        url: "https://instagram.com/prosportsmanagement",
+      },
+      twitter: { handle: "@ProSportsMgmt", url: "https://x.com/ProSportsMgmt" },
+      linkedin: {
+        handle: "ProSports Management",
+        url: "https://linkedin.com/company/prosports-management",
+      },
+      website: {
+        handle: "prosportsmgmt.com",
+        url: "https://prosportsmgmt.com",
+      },
     },
   },
   {
@@ -112,10 +147,22 @@ export const DEFAULT_PARTNERS = [
     borderColor: "border-green-500/20",
     accentColor: "text-green-400",
     social: {
-      instagram: { handle: "@afrifootballhub", url: "https://instagram.com/afrifootballhub" },
-      twitter:   { handle: "@AfriFootballHub", url: "https://x.com/AfriFootballHub" },
-      youtube:   { handle: "AfriFootball Hub", url: "https://youtube.com/@afrifootballhub" },
-      facebook:  { handle: "AfriFootball Hub", url: "https://facebook.com/afrifootballhub" },
+      instagram: {
+        handle: "@afrifootballhub",
+        url: "https://instagram.com/afrifootballhub",
+      },
+      twitter: {
+        handle: "@AfriFootballHub",
+        url: "https://x.com/AfriFootballHub",
+      },
+      youtube: {
+        handle: "AfriFootball Hub",
+        url: "https://youtube.com/@afrifootballhub",
+      },
+      facebook: {
+        handle: "AfriFootball Hub",
+        url: "https://facebook.com/afrifootballhub",
+      },
     },
   },
   {
@@ -129,10 +176,22 @@ export const DEFAULT_PARTNERS = [
     borderColor: "border-orange-500/20",
     accentColor: "text-orange-400",
     social: {
-      instagram: { handle: "@talentbridgesports", url: "https://instagram.com/talentbridgesports" },
-      linkedin:  { handle: "TalentBridge Sports", url: "https://linkedin.com/company/talentbridge-sports" },
-      twitter:   { handle: "@TalentBridgeSP",     url: "https://x.com/TalentBridgeSP" },
-      website:   { handle: "talentbridgesports.com", url: "https://talentbridgesports.com" },
+      instagram: {
+        handle: "@talentbridgesports",
+        url: "https://instagram.com/talentbridgesports",
+      },
+      linkedin: {
+        handle: "TalentBridge Sports",
+        url: "https://linkedin.com/company/talentbridge-sports",
+      },
+      twitter: {
+        handle: "@TalentBridgeSP",
+        url: "https://x.com/TalentBridgeSP",
+      },
+      website: {
+        handle: "talentbridgesports.com",
+        url: "https://talentbridgesports.com",
+      },
     },
   },
   {
@@ -146,50 +205,132 @@ export const DEFAULT_PARTNERS = [
     borderColor: "border-cyan-500/20",
     accentColor: "text-cyan-400",
     social: {
-      instagram: { handle: "@clubconnectintl",       url: "https://instagram.com/clubconnectintl" },
-      twitter:   { handle: "@ClubConnectInt",         url: "https://x.com/ClubConnectInt" },
-      linkedin:  { handle: "ClubConnect International", url: "https://linkedin.com/company/clubconnect-international" },
-      website:   { handle: "clubconnectintl.com",     url: "https://clubconnectintl.com" },
+      instagram: {
+        handle: "@clubconnectintl",
+        url: "https://instagram.com/clubconnectintl",
+      },
+      twitter: {
+        handle: "@ClubConnectInt",
+        url: "https://x.com/ClubConnectInt",
+      },
+      linkedin: {
+        handle: "ClubConnect International",
+        url: "https://linkedin.com/company/clubconnect-international",
+      },
+      website: {
+        handle: "clubconnectintl.com",
+        url: "https://clubconnectintl.com",
+      },
     },
   },
 ];
 
 /* ─── Social button config ─── */
 export const SOCIAL_CONFIG = {
-  instagram: { Icon: InstagramIcon, label: "Instagram", hoverClass: "hover:bg-pink-500/20 hover:border-pink-500/40 hover:text-pink-400" },
-  twitter:   { Icon: TwitterXIcon,  label: "X / Twitter", hoverClass: "hover:bg-white/15 hover:border-white/30 hover:text-white" },
-  linkedin:  { Icon: LinkedInIcon,  label: "LinkedIn", hoverClass: "hover:bg-blue-500/20 hover:border-blue-500/40 hover:text-blue-400" },
-  facebook:  { Icon: FacebookIcon,  label: "Facebook", hoverClass: "hover:bg-blue-600/20 hover:border-blue-600/40 hover:text-blue-300" },
-  youtube:   { Icon: YoutubeIcon,   label: "YouTube", hoverClass: "hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-400" },
-  website:   { Icon: GlobeIcon,     label: "Website", hoverClass: "hover:bg-white/10 hover:border-white/20 hover:text-white" },
+  instagram: {
+    Icon: InstagramIcon,
+    label: "Instagram",
+    hoverClass:
+      "hover:bg-pink-500/20 hover:border-pink-500/40 hover:text-pink-400",
+  },
+  twitter: {
+    Icon: TwitterXIcon,
+    label: "X / Twitter",
+    hoverClass: "hover:bg-white/15 hover:border-white/30 hover:text-white",
+  },
+  linkedin: {
+    Icon: LinkedInIcon,
+    label: "LinkedIn",
+    hoverClass:
+      "hover:bg-blue-500/20 hover:border-blue-500/40 hover:text-blue-400",
+  },
+  facebook: {
+    Icon: FacebookIcon,
+    label: "Facebook",
+    hoverClass:
+      "hover:bg-blue-600/20 hover:border-blue-600/40 hover:text-blue-300",
+  },
+  youtube: {
+    Icon: YoutubeIcon,
+    label: "YouTube",
+    hoverClass:
+      "hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-400",
+  },
+  website: {
+    Icon: GlobeIcon,
+    label: "Website",
+    hoverClass: "hover:bg-white/10 hover:border-white/20 hover:text-white",
+  },
 };
 
-/* ─── Single partner card ─── */
+/* ─── Single partner card — clean logo tile, description on hover ─── */
 const PartnerCard = ({ partner }) => (
-  <div className="group relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col gap-4 hover:bg-white/8 hover:border-white/20 hover:shadow-2xl hover:shadow-black/30 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-    {/* Liquid glass shine */}
-    <div className="absolute inset-0 bg-gradient-to-br from-white/8 via-transparent to-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+  <div
+    className="group relative rounded-2xl p-6 flex flex-col gap-3 transition-all duration-300 cursor-default overflow-hidden"
+    style={{
+      background: "rgba(255,255,255,0.06)",
+      backdropFilter: "blur(14px)",
+      WebkitBackdropFilter: "blur(14px)",
+      border: "1px solid rgba(255,255,255,0.12)",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+    }}
+  >
+    <div
+      className="absolute top-0 left-0 right-0 h-px rounded-t-2xl"
+      style={{
+        background:
+          "linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent)",
+      }}
+    />
 
-    {/* Header: avatar + name + type */}
-    <div className="flex items-center gap-4">
-      {/* Avatar */}
-      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${partner.avatarColor} border ${partner.borderColor} flex items-center justify-center shrink-0`}>
-        <span className={`text-sm font-bold tracking-wide ${partner.accentColor}`}>{partner.avatar}</span>
+    {/* Avatar + name row */}
+    <div className="flex items-center gap-3">
+      <div
+        className={`w-12 h-12 rounded-xl bg-linear-to-br ${partner.avatarColor} border ${partner.borderColor} flex items-center justify-center shrink-0`}
+      >
+        <span
+          className={`text-xs font-semibold tracking-wide ${partner.accentColor}`}
+        >
+          {partner.avatar}
+        </span>
       </div>
       <div className="min-w-0">
-        <h3 className="text-base font-semibold text-white leading-tight truncate">{partner.name}</h3>
-        <span className={`inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full bg-white/5 border border-white/10 ${partner.accentColor}`}>
+        {/* H3 — 16px / 600 for partner name (caption context) */}
+        <p
+          className="font-semibold text-white truncate"
+          style={{ fontSize: "16px" }}
+        >
+          {partner.name}
+        </p>
+        <span
+          className={`text-xs font-normal px-2 py-0.5 rounded-full ${partner.accentColor}`}
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
           {partner.type}
         </span>
       </div>
     </div>
 
-    {/* Description */}
-    <p className="text-sm leading-relaxed text-gray-400 grow">{partner.description}</p>
+    {/* Description — hidden by default, revealed on hover (Hick's Law: less noise) */}
+    <p
+      className="font-normal opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-h-0 group-hover:max-h-24 overflow-hidden"
+      style={{
+        fontSize: "14px",
+        lineHeight: "1.6",
+        color: "rgba(255,255,255,0.5)",
+      }}
+    >
+      {partner.description}
+    </p>
 
-    {/* Social media buttons */}
-    <div className="flex flex-wrap gap-2 pt-1 border-t border-white/8">
+    {/* Social links — icon-only, tight */}
+    <div
+      className="flex gap-2 flex-wrap pt-2 border-t"
+      style={{ borderColor: "rgba(255,255,255,0.08)" }}
+    >
       {Object.entries(partner.social).map(([platform, data]) => {
         const cfg = SOCIAL_CONFIG[platform];
         if (!cfg) return null;
@@ -202,10 +343,14 @@ const PartnerCard = ({ partner }) => (
             rel="noopener noreferrer"
             aria-label={`${partner.name} on ${label}`}
             title={data.handle}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 text-xs font-medium transition-all duration-200 ${hoverClass} group/btn`}
+            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${hoverClass}`}
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "rgba(255,255,255,0.45)",
+            }}
           >
             <Icon />
-            <span className="hidden sm:inline truncate max-w-[90px]">{data.handle}</span>
           </a>
         );
       })}
@@ -215,11 +360,16 @@ const PartnerCard = ({ partner }) => (
 
 /* ─── Section ─── */
 const Partners = () => {
-  const [partners, setPartners] = useState(() => loadPartners() ?? DEFAULT_PARTNERS);
+  const [partners, setPartners] = useState(
+    () => loadPartners() ?? DEFAULT_PARTNERS,
+  );
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const refresh = () => setPartners(loadPartners() ?? DEFAULT_PARTNERS);
-    window.addEventListener("storage", (e) => { if (e.key === STORAGE_KEY) refresh(); });
+    window.addEventListener("storage", (e) => {
+      if (e.key === STORAGE_KEY) refresh();
+    });
     window.addEventListener("ptc_partners_updated", refresh);
     return () => {
       window.removeEventListener("storage", refresh);
@@ -227,73 +377,105 @@ const Partners = () => {
     };
   }, []);
 
+  /* Hick's Law: show only 4 initially */
+  const visible = showAll ? partners : partners.slice(0, 4);
+  const hasMore = partners.length > 4;
+
   return (
-  <section className="relative py-16 md:py-24 lg:py-28 px-4">
-    {/* Background ambiance */}
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div
-        className="absolute top-0 right-1/4 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse"
-        style={{ animationDuration: "9s" }}
-      />
-      <div
-        className="absolute bottom-0 left-1/4 w-72 h-72 bg-black/15 rounded-full blur-3xl animate-pulse"
-        style={{ animationDuration: "7s", animationDelay: "3s" }}
-      />
-    </div>
+    <section className="relative py-24 px-4">
+      <div className="max-w-300 mx-auto">
+        {/* Section label */}
+        <p
+          className="text-center font-normal uppercase tracking-widest mb-4"
+          style={{
+            fontSize: "14px",
+            color: "rgba(255,255,255,0.4)",
+            letterSpacing: "0.16em",
+          }}
+        >
+          Ecosystem
+        </p>
 
-    <div className="max-w-6xl mx-auto">
-      {/* Section header */}
-      <div className="text-center mb-14">
-        <div className="inline-flex items-center justify-center w-14 h-14 bg-white/5 border border-white/20 rounded-xl mb-5">
-          {/* handshake icon via inline SVG so we don't depend on lucide being installed */}
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7 text-white/80">
-            <path d="M20.42 4.58a5.4 5.4 0 00-7.65 0l-.77.78-.77-.78a5.4 5.4 0 00-7.65 7.65l.77.78 7.65 7.65 7.65-7.65.78-.78a5.4 5.4 0 000-7.65z" />
-          </svg>
-        </div>
+        {/* H2 — 32–36px / 600 */}
         <h2
-          className="text-3xl md:text-4xl font-semibold mb-3"
-          style={{ fontSize: "clamp(28px, 4vw, 36px)" }}
+          className="text-center font-semibold text-white mb-4"
+          style={{
+            fontSize: "clamp(28px, 3.5vw, 36px)",
+            lineHeight: "1.25",
+            fontFamily: "'Playfair Display', serif",
+          }}
         >
-          Our <span className="text-[#FF3B3B]">Partners &amp; Collaborators</span>
+          Partners &amp;{" "}
+          <span className="relative inline-block">
+            Collaborators
+            <span
+              className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full"
+              style={{ background: "#C4161C", opacity: 0.8 }}
+            />
+          </span>
         </h2>
-        <p className="text-gray-400 text-base max-w-2xl mx-auto leading-relaxed">
-          We work alongside an exceptional network of scouting agencies, football academies,
-          sports management firms and club networks — all united by a shared mission to elevate football talent worldwide.
-        </p>
-      </div>
 
-      {/* Partner cards grid */}
-      {partners.length === 0 ? (
-        <p className="text-center text-gray-500 py-16">No partners listed yet.</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {partners.map((partner) => (
-            <PartnerCard key={partner.id} partner={partner} />
-          ))}
-        </div>
-      )}
-
-      {/* Collaboration CTA */}
-      <div className="mt-14 relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#FF3B3B]/5 via-transparent to-[#FF3B3B]/5 pointer-events-none" />
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#FF3B3B]/30 to-transparent" />
-        <h3 className="text-xl font-semibold text-white mb-2">Want to Collaborate?</h3>
-        <p className="text-gray-400 text-sm max-w-lg mx-auto mb-5">
-          We're always open to new partnerships with clubs, academies, agencies and organisations
-          that share our vision of talent-first football discovery.
-        </p>
-        <a
-          href="/contact"
-          className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#FF3B3B] hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-lg shadow-red-500/20 hover:shadow-red-500/40"
+        <p
+          className="text-center font-normal mx-auto mb-12"
+          style={{
+            fontSize: "16px",
+            lineHeight: "1.7",
+            color: "rgba(255,255,255,0.5)",
+            maxWidth: "500px",
+          }}
         >
-          Get in Touch
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </a>
+          A global network of scouts, academies and clubs — united by one
+          mission.
+        </p>
+
+        {/* Partner grid — 2 cols mobile, 4 cols desktop */}
+        {partners.length === 0 ? (
+          <p
+            className="text-center py-16"
+            style={{ color: "rgba(255,255,255,0.35)", fontSize: "14px" }}
+          >
+            No partners listed yet.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {visible.map((p) => (
+              <PartnerCard key={p.id} partner={p} />
+            ))}
+          </div>
+        )}
+
+        {/* View All / Show Less — Hick's Law */}
+        {hasMore && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => setShowAll((v) => !v)}
+              className="inline-flex items-center gap-2 font-semibold transition-all duration-200 hover:opacity-80"
+              style={{
+                fontSize: "14px",
+                color: "rgba(255,255,255,0.6)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: "12px",
+                padding: "10px 24px",
+                background: "rgba(255,255,255,0.04)",
+              }}
+            >
+              {showAll ? "Show Less" : `View All ${partners.length} Partners`}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`w-4 h-4 transition-transform duration-200 ${showAll ? "rotate-180" : ""}`}
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
-    </div>
-  </section>
+    </section>
   );
 };
 

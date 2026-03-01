@@ -5,107 +5,161 @@ import {
   TrophyIcon,
 } from "@heroicons/react/24/outline";
 
-const CoreValues = ({ credentials }) => {
-  const coreValues = [
-    {
-      icon: SparklesIcon,
-      title: "Excellence",
-      description:
-        "We strive for excellence in connecting talented players with top-tier opportunities.",
-    },
-    {
-      icon: ShieldCheckIcon,
-      title: "Transparency",
-      description:
-        "Clear, honest, and ethical operations in all of our dealings with players and clubs.",
-    },
-    {
-      icon: UserGroupIcon,
-      title: "Community",
-      description:
-        "Building a global community of football enthusiasts and professionals.",
-    },
-    {
-      icon: TrophyIcon,
-      title: "Quality",
-      description:
-        "Maintaining high standards and profiles that stand out in the market.",
-    },
-  ];
+const glass = {
+  background: "rgba(255,255,255,0.06)",
+  backdropFilter: "blur(14px)",
+  WebkitBackdropFilter: "blur(14px)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+};
 
-  return (
-    <section className="relative py-16 md:py-24 lg:py-28 px-4">
-      {/* Floating liquid orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-1/3 right-1/4 w-64 h-64 bg-white/8 rounded-full blur-3xl animate-pulse"
-          style={{ animationDuration: "8s" }}
-        ></div>
-        <div
-          className="absolute bottom-1/3 left-1/4 w-56 h-56 bg-black/10 rounded-full blur-3xl animate-pulse"
-          style={{ animationDuration: "6s", animationDelay: "3s" }}
-        ></div>
-      </div>
-      <div className="max-w-5xl mx-auto">
-        <h2
-          className="text-4xl font-semibold text-center mb-16"
-          style={{ fontSize: "clamp(28px, 4vw, 32px)" }}
-        >
-          Our Core <span className="text-[#FF3B3B]">Values</span>
-        </h2>
+const values = [
+  {
+    Icon: SparklesIcon,
+    title: "Excellence",
+    desc: "We deliver the highest standard of player representation and platform quality.",
+  },
+  {
+    Icon: ShieldCheckIcon,
+    title: "Transparency",
+    desc: "Honest, ethical operations — no hidden fees, no gatekeeping.",
+  },
+  {
+    Icon: UserGroupIcon,
+    title: "Community",
+    desc: "A global network of players, scouts, coaches and clubs — all in one place.",
+  },
+  {
+    Icon: TrophyIcon,
+    title: "Merit",
+    desc: "Talent wins. Every profile is judged on ability, not connections.",
+  },
+];
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {coreValues.map((value, index) => {
-            const Icon = value.icon;
-            return (
-              <div
-                key={index}
-                className="group relative bg-white/5 backdrop-blur-xl border border-white/20 rounded-xl p-6 text-center hover:bg-white/8 transition-all duration-300 hover:border-white/30 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-2 hover:scale-[1.03] focus-within:outline-2 focus-within:outline-white/40 overflow-hidden"
-              >
-                {/* Liquid glass shine */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+const CoreValues = ({ credentials }) => (
+  <section className="relative py-24 px-4">
+    <div className="max-w-300 mx-auto">
+      {/* Section label */}
+      <p
+        className="text-center font-normal uppercase tracking-widest mb-4"
+        style={{
+          fontSize: "14px",
+          color: "rgba(255,255,255,0.4)",
+          letterSpacing: "0.16em",
+        }}
+      >
+        What We Stand For
+      </p>
 
-                {/* Icon */}
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-black/20 border-2 border-white/20 rounded-xl mb-5 group-hover:bg-black/40 group-hover:scale-110 transition-all duration-300">
-                  <Icon className="w-8 h-8 text-white/80 group-hover:text-white transition-colors duration-300" />
-                </div>
+      {/* H2 — 32–36px / 600 */}
+      <h2
+        className="text-center font-semibold text-white mb-12"
+        style={{
+          fontSize: "clamp(28px, 3.5vw, 36px)",
+          lineHeight: "1.25",
+          fontFamily: "'Playfair Display', serif",
+        }}
+      >
+        Core{" "}
+        <span className="relative inline-block">
+          Values
+          <span
+            className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full"
+            style={{ background: "#C4161C", opacity: 0.8 }}
+          />
+        </span>
+      </h2>
 
-                {/* Title - H3: 22px */}
-                <h3
-                  className="text-xl font-medium mb-3 group-hover:text-white transition-colors duration-300"
-                  style={{ fontSize: "22px" }}
-                >
-                  {value.title}
-                </h3>
+      {/* 4 value cards — Miller's Law */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {values.map(({ Icon, title, desc }) => (
+          <div
+            key={title}
+            className="relative rounded-2xl p-8 flex flex-col gap-4 transition-all duration-300 hover:border-white/22 group"
+            style={glass}
+          >
+            <div
+              className="absolute top-0 left-0 right-0 h-px rounded-t-2xl"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent)",
+              }}
+            />
 
-                {/* Description - 14px muted */}
-                <p
-                  className="leading-relaxed"
-                  style={{ fontSize: "14px", color: "#B3B3B3" }}
-                >
-                  {value.description}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+            {/* Icon */}
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+              style={{
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.12)",
+              }}
+            >
+              <Icon className="w-5 h-5 text-white" />
+            </div>
 
-        {/* Dynamic Credentials from Admin */}
-        {credentials && (
-          <div className="mt-16 relative bg-white/5 backdrop-blur-xl border border-white/20 rounded-xl p-8 text-center hover:bg-white/8 transition-all duration-300 overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-            <h3 className="text-xl font-medium mb-4" style={{ fontSize: "22px" }}>
-              Our <span className="text-[#FF3B3B]">Credentials</span>
+            {/* H3 — 20–22px / 600 */}
+            <h3
+              className="font-semibold text-white"
+              style={{
+                fontSize: "20px",
+                fontFamily: "'Playfair Display', serif",
+              }}
+            >
+              {title}
             </h3>
-            <p className="leading-relaxed max-w-2xl mx-auto" style={{ fontSize: "14px", color: "#B3B3B3" }}>
-              {credentials}
+
+            {/* Caption — 14px / 400 */}
+            <p
+              className="font-normal"
+              style={{
+                fontSize: "14px",
+                lineHeight: "1.6",
+                color: "rgba(255,255,255,0.5)",
+              }}
+            >
+              {desc}
             </p>
           </div>
-        )}
+        ))}
       </div>
-    </section>
-  );
-};
+
+      {/* Credentials from Admin — merged into Values section (Miller's Law) */}
+      {credentials && (
+        <div
+          className="mt-6 relative rounded-2xl p-8 text-center transition-all duration-300 hover:border-white/20"
+          style={glass}
+        >
+          <div
+            className="absolute top-0 left-0 right-0 h-px rounded-t-2xl"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, rgba(196,22,28,0.4), transparent)",
+            }}
+          />
+          <h3
+            className="font-semibold text-white mb-3"
+            style={{
+              fontSize: "20px",
+              fontFamily: "'Playfair Display', serif",
+            }}
+          >
+            Our Credentials
+          </h3>
+          <p
+            className="font-normal mx-auto"
+            style={{
+              fontSize: "14px",
+              lineHeight: "1.7",
+              color: "rgba(255,255,255,0.5)",
+              maxWidth: "600px",
+            }}
+          >
+            {credentials}
+          </p>
+        </div>
+      )}
+    </div>
+  </section>
+);
 
 export default CoreValues;

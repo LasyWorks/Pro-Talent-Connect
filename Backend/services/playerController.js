@@ -73,7 +73,8 @@ const createPlayer = async (req, res) => {
 
     if (!verifiedOtp || verifiedOtp.expiresAt < new Date()) {
       return res.status(400).json({
-        message: "Email OTP verification is required before creating a player profile",
+        message:
+          "Email OTP verification is required before creating a player profile",
       });
     }
 
@@ -87,13 +88,14 @@ const createPlayer = async (req, res) => {
       const today = new Date();
       calculatedAge = today.getFullYear() - dob.getFullYear();
       const m = today.getMonth() - dob.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) calculatedAge--;
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate()))
+        calculatedAge--;
     }
 
     // Check for duplicate playerId or email (only among non-deleted players)
     const existingPlayer = await Player.findOne({
       $or: [{ playerId }, { email }],
-      isDeleted: false,
+      isDeleted: { $ne: true },
     });
 
     if (existingPlayer) {
@@ -173,8 +175,16 @@ const createPlayer = async (req, res) => {
     const player = await Player.create(playerData);
 
     // Populate admin details before returning
-    await player.populate({ path: "createdBy", select: "name email role", strictPopulate: false });
-    await player.populate({ path: "updatedBy", select: "name email role", strictPopulate: false });
+    await player.populate({
+      path: "createdBy",
+      select: "name email role",
+      strictPopulate: false,
+    });
+    await player.populate({
+      path: "updatedBy",
+      select: "name email role",
+      strictPopulate: false,
+    });
 
     // Log player creation
     await logAction({
@@ -208,7 +218,7 @@ const getAllPlayers = async (req, res) => {
     const skip = (page - 1) * limit;
 
     // Build filter from query params (exclude soft-deleted)
-    const filter = { isDeleted: false };
+    const filter = { isDeleted: { $ne: true } };
     if (req.query.name) {
       filter.name = { $regex: req.query.name, $options: "i" };
     }
@@ -231,8 +241,16 @@ const getAllPlayers = async (req, res) => {
     const totalResults = await Player.countDocuments(filter);
     const totalPages = Math.ceil(totalResults / limit);
     const players = await Player.find(filter)
-      .populate({ path: "createdBy", select: "name email role", strictPopulate: false })
-      .populate({ path: "updatedBy", select: "name email role", strictPopulate: false })
+      .populate({
+        path: "createdBy",
+        select: "name email role",
+        strictPopulate: false,
+      })
+      .populate({
+        path: "updatedBy",
+        select: "name email role",
+        strictPopulate: false,
+      })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -262,7 +280,7 @@ const searchPlayers = async (req, res) => {
     const skip = (page - 1) * limit;
 
     // Build dynamic search query
-    const filter = { isDeleted: false };
+    const filter = { isDeleted: { $ne: true } };
     const orConditions = [];
 
     if (name) {
@@ -302,8 +320,16 @@ const searchPlayers = async (req, res) => {
     const totalResults = await Player.countDocuments(filter);
     const totalPages = Math.ceil(totalResults / limit);
     const players = await Player.find(filter)
-      .populate({ path: "createdBy", select: "name email role", strictPopulate: false })
-      .populate({ path: "updatedBy", select: "name email role", strictPopulate: false })
+      .populate({
+        path: "createdBy",
+        select: "name email role",
+        strictPopulate: false,
+      })
+      .populate({
+        path: "updatedBy",
+        select: "name email role",
+        strictPopulate: false,
+      })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -329,10 +355,18 @@ const getPlayerById = async (req, res) => {
   try {
     const player = await Player.findOne({
       _id: req.params.id,
-      isDeleted: false,
+      isDeleted: { $ne: true },
     })
-      .populate({ path: "createdBy", select: "name email role", strictPopulate: false })
-      .populate({ path: "updatedBy", select: "name email role", strictPopulate: false });
+      .populate({
+        path: "createdBy",
+        select: "name email role",
+        strictPopulate: false,
+      })
+      .populate({
+        path: "updatedBy",
+        select: "name email role",
+        strictPopulate: false,
+      });
 
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
@@ -355,7 +389,7 @@ const updatePlayer = async (req, res) => {
   try {
     const player = await Player.findOne({
       _id: req.params.id,
-      isDeleted: false,
+      isDeleted: { $ne: true },
     });
 
     if (!player) {
@@ -427,8 +461,16 @@ const updatePlayer = async (req, res) => {
     }
 
     const updatedPlayer = await player.save();
-    await updatedPlayer.populate({ path: "createdBy", select: "name email role", strictPopulate: false });
-    await updatedPlayer.populate({ path: "updatedBy", select: "name email role", strictPopulate: false });
+    await updatedPlayer.populate({
+      path: "createdBy",
+      select: "name email role",
+      strictPopulate: false,
+    });
+    await updatedPlayer.populate({
+      path: "updatedBy",
+      select: "name email role",
+      strictPopulate: false,
+    });
 
     // Log player update
     await logAction({
@@ -459,7 +501,7 @@ const deletePlayer = async (req, res) => {
   try {
     const player = await Player.findOne({
       _id: req.params.id,
-      isDeleted: false,
+      isDeleted: { $ne: true },
     });
 
     if (!player) {

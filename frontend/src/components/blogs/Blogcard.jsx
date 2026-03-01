@@ -1,104 +1,176 @@
-import {
-  CalendarIcon,
-  UserIcon,
-  ClockIcon,
-  ArrowRightIcon,
-} from "@heroicons/react/24/outline";
+﻿import { useState } from "react";
 import { Link } from "react-router-dom";
 
-const BlogCard = ({ blog }) => {
-  const getCategoryColor = (category) => {
-    const colors = {
-      Transfers: "bg-blue-500/20 text-blue-400 border-blue-500/40",
-      Achievements: "bg-green-500/20 text-green-400 border-green-500/40",
-      Announcements: "bg-purple-500/20 text-purple-400 border-purple-500/40",
-    };
-    return (
-      colors[category] || "bg-gray-500/20 text-gray-400 border-gray-500/40"
-    );
-  };
+// Shared design tokens
+const GLASS = {
+  background: "rgba(255,255,255,0.05)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+};
+const GLASS_HOVER = {
+  background: "rgba(255,255,255,0.08)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255,255,255,0.14)",
+};
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+const catStyle = (category) => {
+  const map = {
+    Transfers: {
+      color: "rgba(96,165,250,0.9)",
+      bg: "rgba(59,130,246,0.12)",
+      border: "rgba(59,130,246,0.25)",
+    },
+    Achievements: {
+      color: "rgba(74,222,128,0.9)",
+      bg: "rgba(34,197,94,0.12)",
+      border: "rgba(34,197,94,0.25)",
+    },
+    Announcements: {
+      color: "rgba(196,167,255,0.9)",
+      bg: "rgba(139,92,246,0.12)",
+      border: "rgba(139,92,246,0.25)",
+    },
   };
+  return (
+    map[category] || {
+      color: "rgba(255,255,255,0.55)",
+      bg: "rgba(255,255,255,0.07)",
+      border: "rgba(255,255,255,0.12)",
+    }
+  );
+};
+
+const formatDate = (date) =>
+  new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+const getBlogImage = (blog) =>
+  blog.image ||
+  blog.cover_image ||
+  "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80";
+
+const getExcerpt = (blog) => blog.excerpt || blog.content || "";
+
+const getAuthor = (blog) => {
+  const a = blog.author || blog.author_id;
+  if (!a) return null;
+  return typeof a === "string" ? a : a?.name || "Admin";
+};
+
+const BlogCard = ({ blog }) => {
+  const cs = catStyle(blog.category);
+  const author = getAuthor(blog);
+  const [hovered, setHovered] = useState(false);
 
   return (
-    <article className="group bg-white/5 backdrop-blur-sm rounded-3xl overflow-hidden border border-white/10 hover:border-white/30 shadow-lg hover:shadow-2xl hover:shadow-black/20 transition-all duration-500 transform hover:-translate-y-2">
-      {/* Image with gradient overlay */}
-      <div className="relative aspect-[16/10] overflow-hidden">
-        <img
-          src={
-            blog.image ||
-            "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800"
-          }
-          alt={blog.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-
-        {/* Floating category badge */}
-        <div className="absolute top-4 left-4">
-          <span
-            className={`px-4 py-2 rounded-full text-xs font-semibold backdrop-blur-md border ${getCategoryColor(blog.category)}`}
-          >
-            {blog.category}
-          </span>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-6">
-        {/* Meta info */}
-        <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
-          <span className="flex items-center gap-1">
-            <CalendarIcon className="w-4 h-4" />
-            {formatDate(blog.createdAt)}
-          </span>
-          {blog.readTime && (
-            <span className="flex items-center gap-1">
-              <ClockIcon className="w-4 h-4" />
-              {blog.readTime} min
-            </span>
-          )}
-        </div>
-
-        {/* Title */}
-        <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 group-hover:text-red-500 transition-colors duration-300">
-          {blog.title}
-        </h3>
-
-        {/* Excerpt */}
-        <p className="text-gray-400 text-sm line-clamp-3 mb-4 leading-relaxed">
-          {blog.content || blog.excerpt}
-        </p>
-
-        {/* Author info */}
-        {blog.author && (
-          <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
-            <UserIcon className="w-4 h-4" />
-            <span>
-              {typeof blog.author === "string"
-                ? blog.author
-                : blog.author.name || "Admin"}
+    <Link
+      to={`/blog/${blog._id}`}
+      className="group block h-full"
+      style={{ textDecoration: "none" }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <article
+        className="h-full rounded-2xl overflow-hidden flex flex-col transition-all duration-300"
+        style={{
+          ...(hovered ? GLASS_HOVER : GLASS),
+          transform: hovered ? "translateY(-4px)" : "translateY(0)",
+          boxShadow: hovered
+            ? "0 16px 48px rgba(0,0,0,0.35)"
+            : "0 2px 16px rgba(0,0,0,0.18)",
+        }}
+      >
+        {/* 16:9 image */}
+        <div
+          className="relative w-full overflow-hidden"
+          style={{ paddingTop: "56.25%" }}
+        >
+          <img
+            src={getBlogImage(blog)}
+            alt={blog.title}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
+            style={{ transform: hovered ? "scale(1.06)" : "scale(1)" }}
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
+          {/* Category badge */}
+          <div className="absolute top-3 left-3">
+            <span
+              className="px-2.5 py-1 rounded-full font-medium"
+              style={{
+                fontSize: "11px",
+                letterSpacing: "0.03em",
+                color: cs.color,
+                background: cs.bg,
+                border: `1px solid ${cs.border}`,
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              {blog.category}
             </span>
           </div>
-        )}
+        </div>
 
-        {/* Read more link */}
-        <Link
-          to={`/blog/${blog._id}`}
-          className="inline-flex items-center gap-2 text-red-500 font-semibold group/link hover:text-red-400"
-        >
-          Read More
-          <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-        </Link>
-      </div>
-    </article>
+        {/* Body */}
+        <div className="flex-1 flex flex-col p-5 gap-2.5">
+          {/* Date + read time */}
+          <div
+            className="flex items-center gap-2"
+            style={{ fontSize: "13px", color: "rgba(255,255,255,0.3)" }}
+          >
+            <span>{formatDate(blog.createdAt || blog.published_at)}</span>
+            {blog.readTime && (
+              <>
+                <span>·</span>
+                <span>{blog.readTime} min read</span>
+              </>
+            )}
+          </div>
+
+          {/* Title */}
+          <h3
+            className="text-white font-semibold line-clamp-2"
+            style={{
+              fontSize: "18px",
+              lineHeight: "1.4",
+              fontFamily: "'Playfair Display', serif",
+            }}
+          >
+            {blog.title}
+          </h3>
+
+          {/* Excerpt — max 2 lines */}
+          <p
+            className="line-clamp-2 flex-1"
+            style={{
+              fontSize: "14px",
+              lineHeight: "1.65",
+              color: "rgba(255,255,255,0.42)",
+            }}
+          >
+            {getExcerpt(blog)}
+          </p>
+
+          {/* Author */}
+          {author && (
+            <p
+              style={{
+                fontSize: "13px",
+                color: "rgba(255,255,255,0.26)",
+                marginTop: "4px",
+              }}
+            >
+              By {author}
+            </p>
+          )}
+        </div>
+      </article>
+    </Link>
   );
 };
 

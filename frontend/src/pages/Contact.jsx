@@ -1,75 +1,96 @@
 import { useState } from "react";
 import { EnvelopeIcon, UserIcon } from "@heroicons/react/24/outline";
 import FloatingShapes from "../components/common/FloatingShapes";
-import PageHeader from "../components/common/PageHeader";
 import EnquiryForm from "../components/contact/EnquiryForm";
 import ProfileRequestForm from "../components/contact/ProfileRequestForm";
-import SuccessModal from "../components/contact/SuccessModal";
+
+const TABS = [
+  { id: "enquiry", label: "Send an Enquiry", Icon: EnvelopeIcon },
+  { id: "profile", label: "Request Profile Creation", Icon: UserIcon },
+];
 
 const Contact = () => {
-  const [activeTab, setActiveTab] = useState("enquiry"); // 'enquiry' or 'profile'
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-
-  const handleSuccess = (message) => {
-    setSuccessMessage(message);
-    setShowSuccess(true);
-  };
+  const [activeTab, setActiveTab] = useState("enquiry");
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-950 text-white">
+    <div className="min-h-screen bg-linear-to-b from-gray-900 via-black to-gray-950 text-white">
       <FloatingShapes />
 
       <main className="relative z-10">
-        <PageHeader
-          badge="Get In Touch"
-          title="Contact Us"
-          subtitle="Have questions? Want to join our network? We're here to help you connect and grow."
-        />
+        {/* ── Hero ────────────────────────────────── */}
+        <section className="pt-36 pb-24 px-4 text-center">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
+            Contact Us
+          </h1>
+          <p
+            className="text-lg md:text-xl text-gray-400 leading-relaxed mx-auto mb-10"
+            style={{ maxWidth: 600 }}
+          >
+            Have a question or want to join our network? Drop us a message —
+            we'll get back to you within one business day.
+          </p>
+          <a
+            href="#contact-form"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-full shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black"
+          >
+            <EnvelopeIcon className="w-5 h-5" />
+            Get in Touch
+          </a>
+        </section>
 
-        <section className="py-20 px-4">
+        {/* ── Tab + Form ──────────────────────────── */}
+        <section id="contact-form" className="pb-28 px-4">
           <div className="max-w-2xl mx-auto">
-            {/* Tab Navigation */}
-            <div className="flex gap-4 mb-8">
-              <button
-                onClick={() => setActiveTab("enquiry")}
-                className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all ${
-                  activeTab === "enquiry"
-                    ? "bg-red-500 text-white shadow-lg shadow-red-500/30"
-                    : "bg-white/5 backdrop-blur-sm text-gray-400 hover:bg-white/10"
-                }`}
-              >
-                <EnvelopeIcon className="w-5 h-5 inline-block mr-2" />
-                Enquiry Form
-              </button>
-              <button
-                onClick={() => setActiveTab("profile")}
-                className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all ${
-                  activeTab === "profile"
-                    ? "bg-red-500 text-white shadow-lg shadow-red-500/30"
-                    : "bg-white/5 backdrop-blur-sm text-gray-400 hover:bg-white/10"
-                }`}
-              >
-                <UserIcon className="w-5 h-5 inline-block mr-2" />
-                Profile Creation
-              </button>
+            {/* Tab Strip */}
+            <div
+              role="tablist"
+              aria-label="Contact options"
+              className="relative flex border-b border-white/10 mb-10"
+            >
+              {TABS.map(({ id, label, Icon }) => {
+                const active = activeTab === id;
+                return (
+                  <button
+                    key={id}
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setActiveTab(id)}
+                    className={`relative flex items-center gap-2 px-6 py-4 text-sm font-semibold transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+                      active
+                        ? "text-white"
+                        : "text-gray-400 hover:text-gray-200"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    {label}
+                    {/* Active underline */}
+                    <span
+                      className={`absolute bottom-0 left-0 w-full h-0.5 rounded-full bg-red-500 transition-all duration-300 ${
+                        active
+                          ? "opacity-100 scale-x-100"
+                          : "opacity-0 scale-x-0"
+                      }`}
+                    />
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Forms */}
-            {activeTab === "enquiry" ? (
-              <EnquiryForm onSuccess={handleSuccess} />
-            ) : (
-              <ProfileRequestForm onSuccess={handleSuccess} />
-            )}
+            {/* Forms — fade transition */}
+            <div className="relative">
+              {activeTab === "enquiry" ? (
+                <div key="enquiry" className="animate-fade-in">
+                  <EnquiryForm />
+                </div>
+              ) : (
+                <div key="profile" className="animate-fade-in">
+                  <ProfileRequestForm />
+                </div>
+              )}
+            </div>
           </div>
         </section>
       </main>
-
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={() => setShowSuccess(false)}
-      />
     </div>
   );
 };

@@ -4,26 +4,19 @@ import logo from "../assets/Logo@pro_talent_connect.png";
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
-  const footerLinks = {
-    company: [
-      { name: "About Us", to: "/about" },
-      { name: "Our Team", to: "/about" },
-      { name: "Careers", to: "/contact" },
-      { name: "Contact", to: "/contact" },
-    ],
-    resources: [
-      { name: "Blog", to: "/blog" },
-      { name: "Players", to: "/players" },
-      { name: "Services", to: "/services" },
-      { name: "Support", to: "/contact" },
-    ],
-    legal: [
-      { name: "Privacy Policy", to: "#" },
-      { name: "Terms of Service", to: "#" },
-      { name: "Cookie Policy", to: "#" },
-      { name: "Disclaimer", to: "#" },
-    ],
-  };
+  const navLinks = [
+    { name: "About Us", to: "/about" },
+    { name: "Services", to: "/services" },
+    { name: "Players", to: "/players" },
+    { name: "Blog", to: "/blog" },
+    { name: "Contact", to: "/contact" },
+  ];
+
+  const legalLinks = [
+    { name: "Privacy Policy", to: "#" },
+    { name: "Terms of Service", to: "#" },
+    { name: "Cookie Policy", to: "#" },
+  ];
 
   const socialLinks = [
     {
@@ -49,30 +42,37 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="relative bg-gradient-to-b from-gray-900 via-black to-gray-950 border-t border-white/10">
-      {/* Liquid Glass Effect Border */}
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/50 to-transparent"></div>
+    <footer className="relative bg-linear-to-b from-gray-900 via-black to-gray-950 border-t border-white/10">
+      {/* Top accent */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-red-500/50 to-transparent" />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Newsletter Section */}
-        <div className="mb-16 pb-16 border-b border-white/10">
-          <div className="max-w-xl mx-auto text-center">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        {/* ── Newsletter ─────────────────────────────── */}
+        <div className="py-16 border-b border-white/6">
+          <div className="max-w-lg mx-auto text-center">
             <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
               Stay in the Loop
             </h3>
-            <p className="text-gray-400 mb-8">
-              Subscribe to our newsletter for exclusive updates, player
-              spotlights, and industry insights
+            <p className="text-gray-400 mb-8 leading-relaxed">
+              Exclusive updates, player spotlights, and industry insights —
+              delivered to your inbox.
             </p>
-            <form className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
+            <form
+              className="flex flex-col sm:flex-row gap-3"
+              onSubmit={(e) => e.preventDefault()}
+            >
+              <label htmlFor="footer-email" className="sr-only">
+                Email address
+              </label>
               <input
+                id="footer-email"
                 type="email"
-                placeholder="Enter your email address"
-                className="flex-1 px-6 py-4 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300"
+                placeholder="your@email.com"
+                className="flex-1 px-5 py-3.5 rounded-full bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500/50 transition-all duration-200"
               />
               <button
                 type="submit"
-                className="px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 text-white font-semibold rounded-full hover:shadow-lg hover:shadow-red-500/30 transition-all duration-300 transform hover:scale-105"
+                className="px-7 py-3.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-full shadow-lg shadow-red-500/25 hover:shadow-red-500/40 hover:-translate-y-0.5 transition-all duration-200 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black"
               >
                 Subscribe
               </button>
@@ -80,64 +80,53 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
-          {/* Brand Section */}
-          <div className="lg:col-span-2">
+        {/* ── Main columns ───────────────────────────── */}
+        <div className="py-16 grid grid-cols-1 md:grid-cols-3 gap-12 border-b border-white/6">
+          {/* Brand */}
+          <div>
             <Link
               to="/"
-              className="inline-flex items-center mb-6 hover:opacity-80 transition-opacity duration-300"
+              className="inline-flex mb-6 hover:opacity-80 transition-opacity duration-200"
             >
-              <img
-                src={logo}
-                alt="Pro Talent Connect"
-                className="h-10 w-auto"
-              />
+              <img src={logo} alt="Pro Talent Connect" className="h-9 w-auto" />
             </Link>
-            <p className="text-gray-400 text-sm mb-6 max-w-sm leading-relaxed">
-              Connecting exceptional talent with outstanding opportunities. Your
-              premier platform for professional growth and success.
+            <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-xs">
+              Connecting exceptional talent with outstanding opportunities —
+              your premier platform for professional growth.
             </p>
-            {/* Social Links */}
-            <div className="flex space-x-4">
-              {socialLinks.map((social) => (
+            <div className="flex gap-3">
+              {socialLinks.map((s) => (
                 <a
-                  key={social.name}
-                  href={social.href}
-                  className="group relative w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 hover:bg-red-500 border border-white/10 hover:border-red-500 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1"
-                  aria-label={social.name}
+                  key={s.name}
+                  href={s.href}
+                  aria-label={s.name}
+                  className="group w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:bg-red-500 hover:border-red-500 transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 >
                   <svg
-                    className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors duration-300"
+                    className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors duration-200"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                     aria-hidden="true"
                   >
-                    <path d={social.icon} />
+                    <path d={s.icon} />
                   </svg>
-                  {/* Hover shadow effect */}
-                  <div className="absolute inset-0 bg-red-500/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Divider for mobile */}
-          <div className="lg:hidden col-span-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-
-          {/* Company Links */}
+          {/* Navigation */}
           <div>
-            <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-6">
-              Company
+            <h3 className="text-white font-semibold text-xs uppercase tracking-widest mb-6">
+              Navigation
             </h3>
-            <ul className="space-y-4">
-              {footerLinks.company.map((link) => (
+            <ul className="space-y-3.5">
+              {navLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.to}
-                    className="text-gray-400 hover:text-red-500 text-sm transition-all duration-300 inline-flex items-center group"
+                    className="text-gray-400 hover:text-white text-sm transition-colors duration-200"
                   >
-                    <span className="w-0 h-px bg-red-500 group-hover:w-4 mr-0 group-hover:mr-2 transition-all duration-300"></span>
                     {link.name}
                   </Link>
                 </li>
@@ -145,39 +134,18 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Resources Links */}
+          {/* Legal */}
           <div>
-            <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-6">
-              Resources
-            </h3>
-            <ul className="space-y-4">
-              {footerLinks.resources.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.to}
-                    className="text-gray-400 hover:text-red-500 text-sm transition-all duration-300 inline-flex items-center group"
-                  >
-                    <span className="w-0 h-px bg-red-500 group-hover:w-4 mr-0 group-hover:mr-2 transition-all duration-300"></span>
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal Links */}
-          <div>
-            <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-6">
+            <h3 className="text-white font-semibold text-xs uppercase tracking-widest mb-6">
               Legal
             </h3>
-            <ul className="space-y-4">
-              {footerLinks.legal.map((link) => (
+            <ul className="space-y-3.5">
+              {legalLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.to}
-                    className="text-gray-400 hover:text-red-500 text-sm transition-all duration-300 inline-flex items-center group"
+                    className="text-gray-400 hover:text-white text-sm transition-colors duration-200"
                   >
-                    <span className="w-0 h-px bg-red-500 group-hover:w-4 mr-0 group-hover:mr-2 transition-all duration-300"></span>
                     {link.name}
                   </Link>
                 </li>
@@ -186,41 +154,19 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8"></div>
-
-        {/* Bottom Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+        {/* ── Bottom bar ─────────────────────────────── */}
+        <div className="py-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-gray-500 text-sm">
             © {currentYear} Pro Talent Connect. All rights reserved.
           </p>
-          <div className="flex items-center space-x-6">
-            <a
-              href="#privacy"
-              className="text-gray-500 hover:text-red-500 text-sm transition-colors duration-300"
-            >
-              Privacy
-            </a>
-            <span className="text-gray-700">•</span>
-            <a
-              href="#terms"
-              className="text-gray-500 hover:text-red-500 text-sm transition-colors duration-300"
-            >
-              Terms
-            </a>
-            <span className="text-gray-700">•</span>
-            <a
-              href="#cookies"
-              className="text-gray-500 hover:text-red-500 text-sm transition-colors duration-300"
-            >
-              Cookies
-            </a>
-          </div>
+          <p className="text-gray-600 text-xs">
+            Built for athletes. Powered by passion.
+          </p>
         </div>
       </div>
 
-      {/* Decorative gradient at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-red-500/30 to-transparent"></div>
+      {/* Bottom accent */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-red-500/20 to-transparent" />
     </footer>
   );
 };

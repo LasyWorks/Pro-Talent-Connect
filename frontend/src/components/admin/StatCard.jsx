@@ -1,20 +1,28 @@
-const StatCard = ({ icon: Icon, title, value, color }) => {
+/**
+ * Compact KPI stat card — 8pt spacing, no blur, subtle border.
+ * Props: icon (component), title, value, color ("blue"|"green"|"purple"|"red"), trend (optional string e.g. "+2 today")
+ */
+const StatCard = ({ icon: Icon, title, value, color = "blue", trend }) => {
   const colorClasses = {
-    blue: "bg-blue-500/20 text-blue-500",
-    green: "bg-green-500/20 text-green-500",
-    purple: "bg-purple-500/20 text-purple-500",
-    red: "bg-red-500/20 text-red-500",
+    blue: { icon: "text-blue-400", bg: "bg-blue-500/10" },
+    green: { icon: "text-green-400", bg: "bg-green-500/10" },
+    purple: { icon: "text-purple-400", bg: "bg-purple-500/10" },
+    red: { icon: "text-red-400", bg: "bg-red-500/10" },
   };
+  const a = colorClasses[color] ?? colorClasses.blue;
 
   return (
-    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all">
-      <div
-        className={`inline-flex items-center justify-center w-12 h-12 ${colorClasses[color]} rounded-xl mb-3`}
-      >
-        <Icon className="w-6 h-6" />
+    <div className="bg-gray-900 border border-white/8 rounded-xl p-5 flex items-center gap-4">
+      <div className={`${a.bg} ${a.icon} rounded-lg p-2.5 shrink-0`}>
+        <Icon className="w-5 h-5" />
       </div>
-      <p className="text-gray-400 text-sm mb-1">{title}</p>
-      <p className="text-3xl font-bold">{value}</p>
+      <div className="min-w-0">
+        <p className="text-2xl font-bold text-white leading-none mb-0.5">
+          {value}
+        </p>
+        <p className="text-xs text-gray-500 truncate">{title}</p>
+        {trend && <p className="text-xs text-gray-600 mt-0.5">{trend}</p>}
+      </div>
     </div>
   );
 };

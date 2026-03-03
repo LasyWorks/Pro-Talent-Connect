@@ -223,7 +223,7 @@ const FeaturedPlayers = () => {
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {featured.map((player, idx) => {
+        {featured.map((player) => {
           const gradeData = getGrade(player.scoutReport?.grade);
           const lastClub = player.clubsPlayed?.[player.clubsPlayed.length - 1]?.clubName;
           const posData = POS_MAP[player.playingPosition] || { color: "rgba(107,114,128,0.85)", short: player.playingPosition };

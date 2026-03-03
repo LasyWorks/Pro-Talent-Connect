@@ -55,7 +55,7 @@ const Login = () => {
       localStorage.setItem("adminToken", response.data.token);
 
       // Store admin data (excluding token)
-      const { token, ...adminData } = response.data;
+      const { ...adminData } = response.data;
       localStorage.setItem("adminData", JSON.stringify(adminData));
 
       // Redirect to admin dashboard

@@ -90,6 +90,69 @@ const createPlayerSchema = Joi.object({
   featured: Joi.boolean(),
 });
 
+const updatePlayerSchema = Joi.object({
+  name: Joi.string().min(2).max(100).trim(),
+  age: Joi.number().integer().min(5).max(100).allow(null, ''),
+  age_group: Joi.string().valid('U13', 'U15', 'U17', 'U19', 'Senior').allow('', null),
+  playingPosition: Joi.string().trim(),
+  alternativePosition: Joi.string().allow('', null).trim(),
+  preferredFoot: Joi.string().valid('Left', 'Right', 'Both').allow('', null),
+  transferMarketLink: Joi.string().uri().allow('', null).trim(),
+  playerId: Joi.string().trim(),
+  dateOfBirth: Joi.date(),
+  nationality: Joi.string().allow('', null).trim(),
+  weight: Joi.number().min(30).max(150).allow(null, ''),
+  height: Joi.number().min(100).max(250).allow(null, ''),
+  gender: Joi.string().valid('Male', 'Female', 'Other').allow('', null),
+  jersey_no: Joi.number().integer().min(0).max(99).allow(null, ''),
+  size: Joi.string().valid('XS', 'S', 'M', 'L', 'XL', 'XXL').allow('', null),
+  city: Joi.string().allow('', null).trim(),
+  address: Joi.string().max(500).allow('', null).trim(),
+  mobileNumber: Joi.string().pattern(/^[0-9+\-\s()]+$/).allow('', null),
+  email: Joi.string().email().trim().lowercase(),
+  profileImage: Joi.string().allow('', null).trim(),
+  scouting_notes: Joi.string().max(2000).allow('', null).trim(),
+  career_history: Joi.string().max(2000).allow('', null).trim(),
+  media_links: Joi.array().items(Joi.string().uri()),
+  plId: Joi.string().allow('', null).trim(),
+  competitions: Joi.array().items(
+    Joi.object({
+      name: Joi.string().required().trim(),
+      type: Joi.string().valid(
+        'National Team',
+        'Santosh Trophy',
+        'I-League Senior',
+        'I-League 2',
+        'I-League 3',
+        'State Franchise League',
+        'Elite Youth I-League',
+        'National Youth Championships',
+        'Foreign Exposure',
+        'RFDL',
+        'State League',
+        'State Youth League',
+        'District League',
+        'Other'
+      ).required(),
+      year: Joi.number().integer().min(1900).max(2100),
+      result: Joi.string().valid('Champion', 'Runner-up', 'Third', 'Participant', '').allow(''),
+    })
+  ),
+  stateLeague: Joi.string().allow('', null).trim(),
+  clubTier: Joi.string().valid('', 'Tier 1', 'Tier 2', 'Tier 3').allow('', null),
+  sprint30m: Joi.number().min(0).max(10).allow(null, ''),
+  sprint50m: Joi.number().min(0).max(15).allow(null, ''),
+  mentalityScore: Joi.number().valid(0, 1, 2).allow(null),
+  clubsPlayed: Joi.array().items(
+    Joi.object({
+      clubName: Joi.string().required().trim(),
+      clubLogo: Joi.string().allow('').trim(),
+      duration: Joi.string().trim(),
+    })
+  ),
+  featured: Joi.boolean(),
+}).min(1);
+
 // Contact Schemas
 const enquirySchema = Joi.object({
   name: Joi.string().min(2).max(100).required().trim(),
@@ -161,6 +224,7 @@ module.exports = {
   loginSchema,
   registerAdminSchema,
   createPlayerSchema,
+  updatePlayerSchema,
   enquirySchema,
   profileRequestSchema,
   blogSchema,

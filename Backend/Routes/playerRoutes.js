@@ -10,7 +10,11 @@ const {
 } = require("../services/playerController");
 const { protect, authorize } = require("../Middleware/authMiddleware");
 const { createLimiter } = require("../Middleware/rateLimiter");
-const { validate, createPlayerSchema } = require("../Middleware/validator");
+const {
+  validate,
+  createPlayerSchema,
+  updatePlayerSchema,
+} = require("../Middleware/validator");
 
 // Public routes - no authentication required
 router.get("/", getAllPlayers);
@@ -33,7 +37,7 @@ router.post(
 router.put(
   "/:id",
   authorize("Admin", "Super Admin"),
-  validate(createPlayerSchema),
+  validate(updatePlayerSchema),
   updatePlayer
 );
 

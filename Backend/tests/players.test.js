@@ -2,55 +2,75 @@ const request = require("supertest");
 const app = require("../app");
 const Admin = require("../Models/Admin");
 const Player = require("../Models/Players");
+const Otp = require("../Models/Otp");
 
 describe("Players API", () => {
   let token;
   let superToken;
+
+  const createValidPlayerPayload = (overrides = {}) => ({
+    name: "John Doe",
+    playingPosition: "Forward",
+    playerId: "P001",
+    dateOfBirth: "2000-01-01",
+    gender: "Male",
+    mobileNumber: "1234567890",
+    email: "john@test.com",
+    age_group: "Senior",
+    preferredFoot: "Right",
+    nationality: "Indian",
+    profileImage: "https://example.com/image.jpg",
+    ...overrides,
+  });
+
+  const createVerifiedOtp = async (email) => {
+    await Otp.create({
+      email,
+      otp: "123456",
+      purpose: "player-creation",
+      verified: true,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    });
+  };
 
   beforeEach(async () => {
     // Setup Admin
     const admin = await Admin.create({
       name: "Admin",
       email: "admin@test.com",
-      password: "password123",
+      password: "Password@123",
       role: "Admin",
     });
 
     const superAdmin = await Admin.create({
       name: "Super Admin",
       email: "super@test.com",
-      password: "password123",
+      password: "Password@123",
       role: "Super Admin",
     });
 
     const loginRes = await request(app).post("/api/auth/login").send({
       email: "admin@test.com",
-      password: "password123",
+      password: "Password@123",
     });
     token = loginRes.body.token;
 
     const superLoginRes = await request(app).post("/api/auth/login").send({
       email: "super@test.com",
-      password: "password123",
+      password: "Password@123",
     });
     superToken = superLoginRes.body.token;
   });
 
   describe("POST /api/players", () => {
     it("should create a player by super admin", async () => {
+      const payload = createValidPlayerPayload();
+      await createVerifiedOtp(payload.email);
+
       const res = await request(app)
         .post("/api/players")
         .set("Authorization", `Bearer ${superToken}`)
-        .send({
-          name: "John Doe",
-          playingPosition: "Forward",
-          playerId: "P001",
-          dateOfBirth: "2000-01-01",
-          gender: "Male",
-          mobileNumber: "1234567890",
-          email: "john@test.com",
-          profileImage: "https://example.com/image.jpg",
-        });
+        .send(payload);
 
       expect(res.status).toBe(201);
       expect(res.body.name).toBe("John Doe");
@@ -58,18 +78,13 @@ describe("Players API", () => {
     });
 
     it("should fail to create player by regular admin", async () => {
+      const payload = createValidPlayerPayload();
+      await createVerifiedOtp(payload.email);
+
       const res = await request(app)
         .post("/api/players")
         .set("Authorization", `Bearer ${token}`)
-        .send({
-          name: "John Doe",
-          playingPosition: "Forward",
-          playerId: "P001",
-          dateOfBirth: "2000-01-01",
-          gender: "Male",
-          mobileNumber: "1234567890",
-          email: "john@test.com",
-        });
+        .send(payload);
 
       expect(res.status).toBe(403);
     });
@@ -83,7 +98,7 @@ describe("Players API", () => {
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.message).toBe("Please provide all required fields");
+      expect(res.body.message).toBe("Validation error");
     });
 
     it("should fail if playerId is duplicate", async () => {
@@ -97,18 +112,16 @@ describe("Players API", () => {
         email: "existing@test.com",
       });
 
+      const payload = createValidPlayerPayload({
+        playerId: "P001",
+        email: "new-email@test.com",
+      });
+      await createVerifiedOtp(payload.email);
+
       const res = await request(app)
         .post("/api/players")
         .set("Authorization", `Bearer ${superToken}`)
-        .send({
-          name: "John Doe",
-          playingPosition: "Forward",
-          playerId: "P001",
-          dateOfBirth: "2000-01-01",
-          gender: "Male",
-          mobileNumber: "1234567890",
-          email: "john@test.com",
-        });
+        .send(payload);
 
       expect(res.status).toBe(400);
       expect(res.body.message).toBe("Duplicate playerId or email");

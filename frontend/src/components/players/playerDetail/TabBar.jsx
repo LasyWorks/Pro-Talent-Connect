@@ -1,9 +1,9 @@
-export const TABS = [
-  { id: "overview", label: "Overview" },
-  { id: "scout", label: "Scout Report" },
-  { id: "career", label: "Career" },
-  { id: "competitions", label: "Competitions" },
-  { id: "analytics", label: "Analytics" },
+const TABS = [
+  { id: "overview",      label: "Overview",      short: "Overview"  },
+  { id: "scout",         label: "Scout Report",  short: "Scout"     },
+  { id: "career",        label: "Career",        short: "Career"    },
+  { id: "competitions",  label: "Competitions",  short: "Comps"     },
+  { id: "analytics",     label: "Analytics",     short: "Analytics" },
 ];
 
 const TabBar = ({ active, setActive }) => (
@@ -13,7 +13,7 @@ const TabBar = ({ active, setActive }) => (
         key={t.id}
         onClick={() => setActive(t.id)}
         className={`
-          px-5 py-3.5 text-[13px] font-medium whitespace-nowrap border-b-2 -mb-px
+          px-4 sm:px-5 py-3.5 text-[13px] font-medium whitespace-nowrap border-b-2 -mb-px
           transition-colors duration-150 focus:outline-none
           ${
             active === t.id
@@ -22,7 +22,8 @@ const TabBar = ({ active, setActive }) => (
           }
         `}
       >
-        {t.label}
+        <span className="sm:hidden">{t.short}</span>
+        <span className="hidden sm:inline">{t.label}</span>
       </button>
     ))}
   </nav>

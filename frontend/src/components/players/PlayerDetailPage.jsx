@@ -34,12 +34,6 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
   const [activeTab, setActiveTab]     = useState("overview");
   const [watchlisted, setWatchlisted] = useState(false);
 
-  // Reset tab when player changes
-  useEffect(() => {
-    setActiveTab("overview");
-    setWatchlisted(false);
-  }, [player?._id]);
-
   // Escape key to close
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
@@ -59,25 +53,25 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
   const handleDownloadReport = () => {
     if (!player) return;
     const txt = [
-      `PLAYER REPORT — Pro Talent Connect`,
+      `PLAYER REPORT ï¿½ Pro Talent Connect`,
       `Generated: ${new Date().toLocaleDateString()}`,
       `---`,
       `Name: ${player.name}`,
       `Position: ${player.playingPosition}`,
-      `Age: ${player.age || "—"}`,
-      `Nationality: ${player.nationality || "—"}`,
-      `City: ${player.city || "—"}`,
-      `Club: ${currentClub || "—"}`,
-      `Height: ${player.height ? player.height + " cm" : "—"}`,
-      `Weight: ${player.weight ? player.weight + " kg" : "—"}`,
-      `Preferred Foot: ${player.preferredFoot || "—"}`,
+      `Age: ${player.age || "ï¿½"}`,
+      `Nationality: ${player.nationality || "ï¿½"}`,
+      `City: ${player.city || "ï¿½"}`,
+      `Club: ${currentClub || "ï¿½"}`,
+      `Height: ${player.height ? player.height + " cm" : "ï¿½"}`,
+      `Weight: ${player.weight ? player.weight + " kg" : "ï¿½"}`,
+      `Preferred Foot: ${player.preferredFoot || "ï¿½"}`,
       ``,
-      `Scout Score: ${player.scoutReport?.totalScore ?? "—"}/100 (Grade ${player.scoutReport?.grade ?? "—"})`,
+      `Scout Score: ${player.scoutReport?.totalScore ?? "ï¿½"}/100 (Grade ${player.scoutReport?.grade ?? "ï¿½"})`,
       ``,
-      `Clubs: ${player.clubsPlayed?.map((c) => c.clubName).join(", ") || "—"}`,
-      `Competitions: ${player.competitions?.map((c) => `${c.name} (${c.result || "Participant"})`).join(", ") || "—"}`,
+      `Clubs: ${player.clubsPlayed?.map((c) => c.clubName).join(", ") || "ï¿½"}`,
+      `Competitions: ${player.competitions?.map((c) => `${c.name} (${c.result || "Participant"})`).join(", ") || "ï¿½"}`,
       ``,
-      `Notes: ${player.scouting_notes || "—"}`,
+      `Notes: ${player.scouting_notes || "ï¿½"}`,
     ].join("\n");
 
     const blob = new Blob([txt], { type: "text/plain" });
@@ -127,13 +121,13 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
 
             {/* Player identity */}
             <div className="bg-[#0E0E12] border-b border-white/[0.07]">
-              <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex items-start gap-5">
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-5 flex items-start gap-3 sm:gap-5">
                 {/* Avatar */}
                 <div className="relative shrink-0">
                   <img
                     src={player.profileImage || DEFAULT_IMAGE}
                     alt={player.name}
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-white/10"
+                    className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl object-cover border border-white/10"
                     onError={(e) => {
                       e.currentTarget.src = DEFAULT_IMAGE;
                     }}
@@ -147,7 +141,7 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
                   )}
                 </div>
 
-                {/* Score box — visible sm+ */}
+                {/* Score box ï¿½ visible sm+ */}
                 {player.scoutReport?.totalScore > 0 && gStyle && (
                   <div
                     className={`hidden sm:flex w-20 h-20 rounded-xl border flex-col items-center justify-center shrink-0 ${gStyle.bg} ${gStyle.border}`}
@@ -166,7 +160,7 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
                 {/* Name + meta */}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2.5 mb-2">
-                    <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight tracking-tight">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight tracking-tight">
                       {player.name}
                     </h1>
                     {player.playingPosition && (
@@ -178,7 +172,7 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
                     )}
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-gray-500 mb-3">
+                  <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-5 gap-y-1 text-sm text-gray-500 mb-3">
                     {currentClub && (
                       <span className="font-semibold text-gray-200">
                         {currentClub}
@@ -214,8 +208,8 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
                     </div>
                   )}
 
-                  {/* Primary action buttons */}
-                  <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-white/[0.05]">
+                  {/* Primary action buttons â€” desktop only; mobile uses sticky bottom bar */}
+                  <div className="hidden sm:flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-white/[0.05]">
                     <button
                       onClick={handleDownloadReport}
                       className="h-8 px-4 rounded-lg bg-[#C4161C] hover:bg-[#a81218] text-xs font-semibold text-white transition-colors flex items-center gap-1.5"
@@ -249,7 +243,7 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
             </div>
 
             {/* Tab bar */}
-            <div className="bg-[#0B0B0D] border-b border-white/[0.07]">
+            <div key={player?._id} className="bg-[#0B0B0D] border-b border-white/[0.07]">
               <div className="max-w-6xl mx-auto">
                 <TabBar active={activeTab} setActive={setActiveTab} />
               </div>
@@ -258,7 +252,7 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
 
           {/* -- Page Content -- */}
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-20">
-            {/* Overview is eagerly loaded — always the first visible tab */}
+            {/* Overview is eagerly loaded ï¿½ always the first visible tab */}
             {activeTab === "overview" && (
               <OverviewTab
                 player={player}
@@ -275,6 +269,37 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
               {activeTab === "competitions" && <CompetitionsTab player={player} />}
               {activeTab === "analytics"    && <AnalyticsTab    player={player} />}
             </Suspense>
+          </div>
+
+          {/* â”€â”€ Mobile sticky bottom action bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0B0B0D]/96 backdrop-blur-md border-t border-white/[0.09] px-4 py-3 flex gap-2">
+            <button
+              onClick={handleDownloadReport}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#C4161C] hover:bg-[#a81218] text-white text-xs font-bold transition-colors"
+            >
+              <ArrowDownTrayIcon className="w-4 h-4" />
+              Download
+            </button>
+            <button
+              onClick={() => setWatchlisted((v) => !v)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-bold transition-colors ${
+                watchlisted
+                  ? "bg-[#C4161C]/10 border-[#C4161C]/30 text-red-400"
+                  : "bg-white/[0.05] border-white/[0.1] text-gray-300"
+              }`}
+            >
+              <BookmarkIcon className="w-4 h-4" />
+              {watchlisted ? "Saved" : "Watchlist"}
+            </button>
+            {player.email && (
+              <a
+                href={`mailto:${player.email}`}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-gray-300 text-xs font-bold transition-colors hover:bg-white/[0.08]"
+              >
+                <EnvelopeIcon className="w-4 h-4" />
+                Contact
+              </a>
+            )}
           </div>
         </>
       )}

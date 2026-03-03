@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   CalendarIcon,
@@ -17,11 +17,7 @@ const BlogDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchBlog();
-  }, [id]);
-
-  const fetchBlog = async () => {
+  const fetchBlog = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.getBlog(id);
@@ -33,7 +29,11 @@ const BlogDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchBlog();
+  }, [fetchBlog]);
 
   const getCategoryColor = (category) => {
     const colors = {

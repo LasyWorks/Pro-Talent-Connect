@@ -3,7 +3,7 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
-import { card, gradeStyle } from "./tokens";
+import { card } from "./tokens";
 import { Badge, RadarChart } from "./primitives";
 
 const AnalyticsTab = ({ player }) => {
@@ -106,8 +106,6 @@ const AnalyticsTab = ({ player }) => {
       </div>
     );
   }
-
-  const gStyle = gradeStyle(report.grade);
 
   return (
     <div className="space-y-5">

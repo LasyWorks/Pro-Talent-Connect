@@ -1,9 +1,12 @@
 const { MongoMemoryServer } = require("mongodb-memory-server");
 const mongoose = require("mongoose");
 
+jest.setTimeout(180000);
+
 // Set env variables for testing
 process.env.JWT_SECRET = "testsecret";
 process.env.NODE_ENV = "test";
+process.env.MONGOMS_MD5_CHECK = "0";
 
 let mongoServer;
 
@@ -14,8 +17,13 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await mongoose.disconnect();
-  await mongoServer.stop();
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+  }
+
+  if (mongoServer) {
+    await mongoServer.stop();
+  }
 });
 
 beforeEach(async () => {

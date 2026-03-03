@@ -64,10 +64,7 @@ const StatCard = ({
           animation: "liquidGlow 3s ease-in-out infinite",
         }}
       >
-        <Icon
-          className="text-red-500 w-4.5 h-4.5"
-          style={{ strokeWidth: 1.6 }}
-        />
+        <Icon className="text-red-500 w-4.5 h-4.5" style={{ strokeWidth: 1.6 }} />
       </div>
 
       {/* Count */}

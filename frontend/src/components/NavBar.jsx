@@ -198,7 +198,7 @@ const IconDashboard = ({ active }) => (
   </svg>
 );
 
-const IconLogin = ({ active }) => (
+const IconLogin = () => (
   <svg
     width="22"
     height="22"
@@ -238,7 +238,7 @@ const IconMore = ({ active }) => (
 );
 
 /* Standard person / profile icon — replaces Login in mobile tab bar */
-const IconProfile = ({ active }) => (
+const IconProfile = () => (
   <svg
     width="22"
     height="22"
@@ -248,13 +248,7 @@ const IconProfile = ({ active }) => (
     strokeWidth="1.8"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <circle
-      cx="12"
-      cy="8"
-      r="4"
-      fill={active ? "currentColor" : "none"}
-      strokeWidth={active ? 0 : 1.8}
-    />
+    <circle cx="12" cy="8" r="4" fill="none" strokeWidth="1.8" />
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -266,9 +260,7 @@ const IconProfile = ({ active }) => (
 const NavBar = () => {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    !!localStorage.getItem("adminToken"),
-  );
+  const isLoggedIn = !!localStorage.getItem("adminToken");
   const [pressedTab, setPressedTab] = useState(null);
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -277,19 +269,6 @@ const NavBar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === "adminToken") setIsLoggedIn(!!e.newValue);
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
-
-  useEffect(() => {
-    setIsLoggedIn(!!localStorage.getItem("adminToken"));
-    setMoreOpen(false);
-  }, [location]);
 
   /* desktop links (includes About) */
   const desktopLinks = [

@@ -9,13 +9,13 @@ describe("Auth API", () => {
       const superAdmin = await Admin.create({
         name: "Super Admin",
         email: "super@test.com",
-        password: "password123",
+        password: "Password@123",
         role: "Super Admin",
       });
 
       const loginRes = await request(app).post("/api/auth/login").send({
         email: "super@test.com",
-        password: "password123",
+        password: "Password@123",
       });
 
       const token = loginRes.body.token;
@@ -26,7 +26,7 @@ describe("Auth API", () => {
         .send({
           name: "Regular Admin",
           email: "admin@test.com",
-          password: "password123",
+          password: "Password@123",
           role: "Admin",
         });
 
@@ -38,7 +38,7 @@ describe("Auth API", () => {
       const res = await request(app).post("/api/auth/register").send({
         name: "Admin",
         email: "admin@test.com",
-        password: "password123",
+        password: "Password@123",
       });
 
       expect(res.status).toBe(401);
@@ -49,13 +49,13 @@ describe("Auth API", () => {
       await Admin.create({
         name: "Regular Admin",
         email: "admin@test.com",
-        password: "password123",
+        password: "Password@123",
         role: "Admin",
       });
 
       const loginRes = await request(app).post("/api/auth/login").send({
         email: "admin@test.com",
-        password: "password123",
+        password: "Password@123",
       });
 
       const token = loginRes.body.token;
@@ -66,7 +66,7 @@ describe("Auth API", () => {
         .send({
           name: "Another Admin",
           email: "another@test.com",
-          password: "password123",
+          password: "Password@123",
         });
 
       expect(res.status).toBe(403);
@@ -78,12 +78,12 @@ describe("Auth API", () => {
       await Admin.create({
         name: "Admin",
         email: "admin@test.com",
-        password: "password123",
+        password: "Password@123",
       });
 
       const res = await request(app).post("/api/auth/login").send({
         email: "admin@test.com",
-        password: "password123",
+        password: "Password@123",
       });
 
       expect(res.status).toBe(200);
@@ -93,7 +93,7 @@ describe("Auth API", () => {
     it("should fail with invalid credentials", async () => {
       const res = await request(app).post("/api/auth/login").send({
         email: "nonexistent@test.com",
-        password: "password123",
+        password: "Password@123",
       });
 
       expect(res.status).toBe(401);

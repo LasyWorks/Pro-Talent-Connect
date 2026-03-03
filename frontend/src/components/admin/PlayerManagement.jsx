@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api } from "../../services/api";
 import {
   PlusIcon,
@@ -79,9 +79,7 @@ const PlayerManagement = () => {
   const [otpError, setOtpError] = useState("");
   const [otpSuccess, setOtpSuccess] = useState("");
 
-  useEffect(() => { fetchPlayers(); }, [page, posFilter]);
-
-  const fetchPlayers = async () => {
+  const fetchPlayers = useCallback(async () => {
     try {
       setLoading(true);
       const params = { page, limit: 10 };
@@ -96,7 +94,9 @@ const PlayerManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, posFilter, search]);
+
+  useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
 
   const handleSearch = (e) => {
     e.preventDefault();

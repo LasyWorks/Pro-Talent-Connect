@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect } from "react";
 
 export const STORAGE_KEY = "ptc_partners";
@@ -6,7 +7,9 @@ export const loadPartners = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
-  } catch (_) {}
+  } catch {
+    return null;
+  }
   return null; // signals to use DEFAULT_PARTNERS
 };
 

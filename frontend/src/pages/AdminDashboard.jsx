@@ -319,12 +319,12 @@ const MobileDrawer = ({
         aria-label="Dashboard navigation"
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-white/8">
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2 group">
             <div className="w-7 h-7 rounded-lg bg-red-500/90 flex items-center justify-center">
               <TrophyIcon className="w-4 h-4 text-white" />
             </div>
             <span className="text-sm font-semibold text-white">Pro Talent</span>
-          </div>
+          </Link>
           <button
             type="button"
             onClick={onClose}

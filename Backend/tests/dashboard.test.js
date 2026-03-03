@@ -10,13 +10,13 @@ describe("Dashboard API", () => {
     const admin = await Admin.create({
       name: "Admin",
       email: "admin@test.com",
-      password: "password123",
+      password: "Password@123",
       role: "Admin",
     });
 
     const loginRes = await request(app).post("/api/auth/login").send({
       email: "admin@test.com",
-      password: "password123",
+      password: "Password@123",
     });
     token = loginRes.body.token;
   });

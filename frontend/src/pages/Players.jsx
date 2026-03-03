@@ -73,11 +73,6 @@ const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400";
 
 // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const formatPlayerId = (id) => {
-  if (!id || id.toString().toUpperCase().startsWith("TEMP")) return null;
-  return id;
-};
-
 const getGradeStyle = (grade) => {
   const map = {
     A: { color: "#34D399", label: "Elite" },
@@ -492,18 +487,12 @@ const MobileFilterDrawer = ({
   onClose,
   filters,
   set,
-  clearFilters,
   activeCount,
 }) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const [posOpen, setPosOpen] = useState(true);
   const [ageOpen, setAgeOpen] = useState(false);
   const [locOpen, setLocOpen] = useState(false);
-
-  // Sync when drawer opens
-  useEffect(() => {
-    if (open) setLocalFilters(filters);
-  }, [open, filters]);
 
   const localSet = (key, val) =>
     setLocalFilters((prev) => ({ ...prev, [key]: val }));
@@ -1294,11 +1283,7 @@ const Players = () => {
     return () => ac.abort();
   }, [fetchPlayers]);
 
-  useEffect(() => {
-    applyFilters();
-  }, [filters, players, sortBy]);
-
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let result = [...players];
     const q = filters.searchQuery.toLowerCase();
     if (q) {
@@ -1340,7 +1325,11 @@ const Players = () => {
       return 0;
     });
     setFilteredPlayers(result);
-  };
+  }, [filters, players, sortBy]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const clearFilters = () =>
     setFilters({
@@ -1642,11 +1631,11 @@ const Players = () => {
 
         {/* Filter Drawer */}
         <MobileFilterDrawer
+          key={filterDrawerOpen ? "open" : "closed"}
           open={filterDrawerOpen}
           onClose={() => setFilterDrawerOpen(false)}
           filters={filters}
           set={set}
-          clearFilters={clearFilters}
           activeCount={activeChips.length}
         />
       </div>

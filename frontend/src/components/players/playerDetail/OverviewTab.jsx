@@ -98,7 +98,34 @@ const OverviewTab = ({ player, onDownload, onWatchlist, watchlisted }) => {
                 </p>
               </div>
             </div>
-            <div className="overflow-x-auto">
+            {/* Mobile: competition card list */}
+            <div className="sm:hidden divide-y divide-white/[0.04]">
+              {recentComps.map((c, i) => (
+                <div
+                  key={i}
+                  className="px-4 py-3 flex items-center justify-between gap-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-100 truncate">
+                      {c.name}
+                    </p>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      {[c.type, c.year].filter(Boolean).join(" · ") || "—"}
+                    </p>
+                  </div>
+                  {c.result === "Champion" ? (
+                    <Badge label="Champion" variant="gold" />
+                  ) : c.result === "Runner-up" ? (
+                    <Badge label="Runner-up" variant="yellow" />
+                  ) : (
+                    <Badge label={c.result || "Participant"} variant="gray" />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: competition table */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/[0.06]">
@@ -182,7 +209,85 @@ const OverviewTab = ({ player, onDownload, onWatchlist, watchlisted }) => {
                 Metric-level score breakdown
               </p>
             </div>
-            <div className="overflow-x-auto">
+            {/* Mobile: metric stat cards grid */}
+            <div className="sm:hidden p-4 grid grid-cols-2 gap-3">
+              {[
+                { label: "Age Prospect",  score: report.ageScore,            max: 5,    missing: !player.age },
+                { label: "Physical",      score: report.physicalScore,        max: 5,    missing: !player.height || !player.weight },
+                { label: "Transfer Mkt",  score: report.transferMarketScore,  max: 7.5,  missing: !player.transferMarketLink },
+                { label: "Competition",   score: report.competitionScore,     max: 50,   missing: !player.competitions?.length },
+                { label: "Championship",  score: report.championshipBonus,    max: "—",  missing: !player.competitions?.length },
+                { label: "State League",  score: report.stateLeagueBonus,     max: 2,    missing: !player.stateLeague },
+                { label: "Club Rep.",     score: report.clubReputationBonus,  max: 3,    missing: !player.clubsPlayed?.length },
+                { label: "Speed (30m)",   score: report.speedScore,           max: 2,    missing: !player.sprint30m },
+                { label: "Mentality",     score: report.mentalityAssessment,  max: 2,    missing: player.mentalityScore == null },
+              ].map((b, i) => {
+                const pct =
+                  b.max !== "—" && !b.missing
+                    ? Math.min(Math.round((b.score / b.max) * 100), 100)
+                    : null;
+                const barColor =
+                  pct == null
+                    ? "#374151"
+                    : pct >= 70
+                    ? "#34D399"
+                    : pct >= 40
+                    ? "#FBBF24"
+                    : "#F87171";
+                return (
+                  <div
+                    key={i}
+                    className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.06]"
+                  >
+                    <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wide leading-snug">
+                      {b.label}
+                    </p>
+                    {b.missing ? (
+                      <p className="text-xs text-gray-700 mt-2 italic">—</p>
+                    ) : (
+                      <>
+                        <div className="flex items-end justify-between mt-2 mb-1.5">
+                          <span className="text-lg font-black tabular-nums text-white leading-none">
+                            {b.score}
+                          </span>
+                          <span className="text-[10px] text-gray-600">
+                            /{b.max}
+                          </span>
+                        </div>
+                        <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{
+                              width: `${pct}%`,
+                              backgroundColor: barColor,
+                            }}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+              {/* Total score chip */}
+              <div
+                className={`col-span-2 rounded-xl p-3 border flex items-center justify-between ${gStyle.bg} ${gStyle.border}`}
+              >
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                  Total Score
+                </span>
+                <span
+                  className={`text-xl font-black tabular-nums ${gStyle.color}`}
+                >
+                  {report.totalScore}
+                  <span className="text-sm font-normal text-gray-600">
+                    /100
+                  </span>
+                </span>
+              </div>
+            </div>
+
+            {/* Desktop: metric table */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/[0.06]">
@@ -336,7 +441,7 @@ const OverviewTab = ({ player, onDownload, onWatchlist, watchlisted }) => {
           <div className="px-5 py-4 border-b border-white/[0.06]">
             <p className={T.sectionTitle}>Personal Details</p>
           </div>
-          <div className="p-5 grid grid-cols-1 gap-4">
+          <div className="p-5 grid grid-cols-2 sm:grid-cols-1 gap-4">
             <StatItem
               label="Age"
               value={player.age ? `${player.age} years` : null}
@@ -353,7 +458,7 @@ const OverviewTab = ({ player, onDownload, onWatchlist, watchlisted }) => {
           <div className="px-5 py-4 border-b border-white/[0.06]">
             <p className={T.sectionTitle}>Physical Attributes</p>
           </div>
-          <div className="p-5 grid grid-cols-1 gap-4">
+          <div className="p-5 grid grid-cols-2 sm:grid-cols-1 gap-4">
             <StatItem
               label="Height"
               value={player.height ? `${player.height} cm` : null}
@@ -420,8 +525,8 @@ const OverviewTab = ({ player, onDownload, onWatchlist, watchlisted }) => {
           </div>
         )}
 
-        {/* Quick Actions */}
-        <div className={card + " p-4 space-y-2"}>
+        {/* Quick Actions — desktop only; mobile uses sticky bottom bar */}
+        <div className={`${card} p-4 space-y-2 hidden sm:block`}>
           <p className={T.labelText + " mb-3"}>Quick Actions</p>
           <button className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-[#C4161C] hover:bg-[#A81319] text-white text-xs font-bold transition-colors">
             <ScaleIcon className="w-4 h-4" />

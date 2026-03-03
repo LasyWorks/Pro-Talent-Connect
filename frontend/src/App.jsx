@@ -30,30 +30,32 @@ function App() {
     <div className="min-h-screen">
       <ScrollToTop />
       {showLayout && <NavBar />}
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-950">
-              <main>
-                <HeroSection />
-                <FeaturedPlayers />
-                <StatsSection />
-              </main>
-            </div>
-          }
-        />
-        <Route path="/about" element={<About />} />
-        <Route path="/players" element={<Players />} />
-        <Route path="/blog" element={<BlogPage />} />
-        <Route path="/blog/:id" element={<BlogDetailPage />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="*" element={<Pagenotfound />} />
-      </Routes>
-      {showLayout && <Footer />}
+      <div className="md:pb-0 pb-16">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <div className="min-h-screen bg-linear-to-b from-gray-900 via-black to-gray-950">
+                <main>
+                  <HeroSection />
+                  <FeaturedPlayers />
+                  <StatsSection />
+                </main>
+              </div>
+            }
+          />
+          <Route path="/about" element={<About />} />
+          <Route path="/players" element={<Players />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:id" element={<BlogDetailPage />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="*" element={<Pagenotfound />} />
+        </Routes>
+        {showLayout && <Footer />}
+      </div>
     </div>
   );
 }

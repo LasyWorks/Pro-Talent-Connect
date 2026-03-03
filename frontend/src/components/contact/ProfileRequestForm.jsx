@@ -147,7 +147,7 @@ const ProfileRequestForm = () => {
   /* ── success ──────────────────────────────────────────────── */
   if (submitted) {
     return (
-      <div className="bg-white/4 border border-white/10 rounded-2xl p-10 text-center animate-fade-in shadow-xl shadow-black/30">
+      <div className="bg-white/4 border border-white/10 rounded-2xl p-5 sm:p-8 md:p-10 text-center animate-fade-in shadow-xl shadow-black/30">
         <div className="mx-auto mb-5 w-14 h-14 rounded-full bg-green-500/15 flex items-center justify-center">
           <CheckCircleIcon className="w-8 h-8 text-green-400" />
         </div>
@@ -183,7 +183,7 @@ const ProfileRequestForm = () => {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="bg-white/4 border border-white/10 rounded-2xl p-10 shadow-xl shadow-black/30 space-y-6"
+      className="bg-white/4 border border-white/10 rounded-2xl p-5 sm:p-8 md:p-10 shadow-xl shadow-black/30 space-y-6"
       aria-label="Profile creation request form"
     >
       <div>
@@ -433,7 +433,7 @@ const ProfileRequestForm = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-full shadow-lg shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black"
+          className="w-full sm:w-auto justify-center inline-flex items-center gap-2.5 px-8 py-4 sm:py-3.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-full shadow-lg shadow-red-500/30 hover:shadow-red-500/50 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black"
         >
           {isSubmitting ? (
             <>

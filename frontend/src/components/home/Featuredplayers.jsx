@@ -1,351 +1,333 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
-const getGradeStyle = (grade) => {
-  switch (grade) {
-    case "A":
-      return { bg: "#10b981", label: "Elite" };
-    case "B":
-      return { bg: "#3b82f6", label: "Professional" };
-    case "C":
-      return { bg: "#f59e0b", label: "Semi-Pro" };
-    case "D":
-      return { bg: "#f97316", label: "Amateur" };
-    case "E":
-      return { bg: "#ef4444", label: "Semi-Amateur" };
-    case "INCOMPLETE":
-      return { bg: "#ca8a04", label: "Incomplete Data" };
-    case "N/A":
-      return { bg: "#6b7280", label: "No Rating" };
-    default:
-      return null;
-  }
+/* â”€â”€â”€ Grade colour map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+const GRADE_MAP = {
+  A: { bg: "#10b981", glow: "rgba(16,185,129,0.35)", label: "Elite" },
+  B: { bg: "#3b82f6", glow: "rgba(59,130,246,0.35)", label: "Pro" },
+  C: { bg: "#f59e0b", glow: "rgba(245,158,11,0.35)", label: "Semi-Pro" },
+  D: { bg: "#f97316", glow: "rgba(249,115,22,0.35)", label: "Amateur" },
+  E: { bg: "#ef4444", glow: "rgba(239,68,68,0.35)", label: "Developing" },
+  INCOMPLETE: { bg: "#ca8a04", glow: "rgba(202,138,4,0.3)", label: "Unrated" },
+  "N/A": { bg: "#6b7280", glow: "rgba(107,114,128,0.3)", label: "No Rating" },
+};
+const getGrade = (g) => GRADE_MAP[g] || null;
+
+/* â”€â”€â”€ Position colour + short label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+const POS_MAP = {
+  FORWARD:    { color: "rgba(239,68,68,0.9)",    short: "FWD" },
+  WINGER:     { color: "rgba(249,115,22,0.9)",   short: "WNG" },
+  MIDFIELD:   { color: "rgba(59,130,246,0.9)",   short: "MID" },
+  DEFENDER:   { color: "rgba(16,185,129,0.9)",   short: "DEF" },
+  GOALKEEPER: { color: "rgba(168,85,247,0.9)",   short: "GK"  },
 };
 
-const ImageWithFallback = ({ src, alt, className, loading }) => {
-  const [imgSrc, setImgSrc] = useState(src);
+/* â”€â”€â”€ Lazy image with blur-up â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+const PlayerAvatar = ({ src, alt }) => {
+  const [loaded, setLoaded] = useState(false);
+  const fallback =
+    "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400&q=80";
 
   return (
-    <img
-      src={
-        imgSrc ||
-        "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400"
-      }
-      alt={alt}
-      className={className}
-      loading={loading}
-      onError={() =>
-        setImgSrc(
-          "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400",
-        )
-      }
-    />
+    <div className="relative w-full h-full overflow-hidden bg-white/5">
+      <img
+        src={src || fallback}
+        alt={alt}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        onError={(e) => { e.currentTarget.src = fallback; setLoaded(true); }}
+        className="w-full h-full object-cover object-top transition-opacity duration-400"
+        style={{ opacity: loaded ? 1 : 0 }}
+      />
+      {!loaded && (
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(90deg,rgba(255,255,255,0.04) 0%,rgba(255,255,255,0.1) 50%,rgba(255,255,255,0.04) 100%)",
+            backgroundSize: "200% 100%",
+            animation: "gradientShift 1.5s ease infinite",
+          }}
+        />
+      )}
+    </div>
   );
 };
 
-// ─── Random player generator ───
-const RANDOM_FIRST = ["Lucas", "Aryan", "Kai", "Omar", "Renzo", "Dante", "Yuki", "Mateo", "Soren", "Ellis", "Niko", "Zain", "Pavel", "Hugo", "Rafael", "Leo", "Marco", "Andre", "Jonas", "Felix"];
-const RANDOM_LAST = ["Silva", "Tanaka", "Eriksen", "Mbeki", "Rossi", "Fernandez", "Okonkwo", "Petrov", "Kim", "Alvarez", "Herrera", "Jansen", "Okoro", "Cruz", "Amir", "Diouf", "Novak", "Rodrigues", "Sato", "Werner"];
-const RANDOM_POSITIONS = ["FORWARD", "MIDFIELD", "DEFENDER", "GOALKEEPER", "WINGER"];
-const RANDOM_CLUBS = ["FC Barcelona Academy", "Ajax Youth", "Sporting CP B", "Borussia Dortmund II", "Santos FC Youth", "Flamengo Academy", "River Plate Youth", "PSV Academy", "Lyon Academy", "Benfica B"];
-const RANDOM_CITIES = ["São Paulo", "Lagos", "Amsterdam", "Mumbai", "Tokyo", "Buenos Aires", "Berlin", "Casablanca", "Seoul", "Lisbon"];
-const RANDOM_NATIONALITIES = ["Brazilian", "Nigerian", "Dutch", "Indian", "Japanese", "Argentine", "German", "Moroccan", "Korean", "Portuguese"];
-const RANDOM_GRADES = ["A", "B", "C"];
+/* â”€â”€â”€ Animated score bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+const ScoreBar = ({ score, grade }) => {
+  const barRef = useRef(null);
+  const [animated, setAnimated] = useState(false);
+  const gradeData = getGrade(grade);
 
-function generateRandomPlayers(count = 3) {
-  const players = [];
-  const usedNames = new Set();
-  for (let i = 0; i < count; i++) {
-    let first, last, fullName;
-    do {
-      first = RANDOM_FIRST[Math.floor(Math.random() * RANDOM_FIRST.length)];
-      last = RANDOM_LAST[Math.floor(Math.random() * RANDOM_LAST.length)];
-      fullName = `${first} ${last}`;
-    } while (usedNames.has(fullName));
-    usedNames.add(fullName);
+  useEffect(() => {
+    if (!barRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setAnimated(true); },
+      { threshold: 0.6 },
+    );
+    observer.observe(barRef.current);
+    return () => observer.disconnect();
+  }, []);
 
-    const grade = RANDOM_GRADES[Math.floor(Math.random() * RANDOM_GRADES.length)];
-    const score = grade === "A" ? 80 + Math.floor(Math.random() * 15)
-                : grade === "B" ? 70 + Math.floor(Math.random() * 10)
-                : 50 + Math.floor(Math.random() * 20);
-    const idx = Math.floor(Math.random() * RANDOM_CITIES.length);
+  return (
+    <div ref={barRef} className="mt-2.5">
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-white/40 text-[11px] font-medium">Scout Score</span>
+        <span className="text-white text-[11px] font-bold tabular-nums">{score}/100</span>
+      </div>
+      <div className="w-full rounded-full overflow-hidden bg-white/8" style={{ height: "5px" }}>
+        <div
+          style={{
+            height: "100%",
+            borderRadius: "9999px",
+            width: animated ? `${score}%` : "0%",
+            background: gradeData
+              ? `linear-gradient(90deg, ${gradeData.bg}, ${gradeData.bg}bb)`
+              : "#C4161C",
+            boxShadow: gradeData ? `0 0 6px ${gradeData.glow}` : "none",
+            transition: "width 1.1s cubic-bezier(0.4,0,0.2,1) 0.2s",
+          }}
+        />
+      </div>
+    </div>
+  );
+};
 
-    players.push({
-      _id: `random-${Date.now()}-${i}`,
-      _isRandom: true,
-      name: fullName,
-      playingPosition: RANDOM_POSITIONS[Math.floor(Math.random() * RANDOM_POSITIONS.length)],
-      profileImage: "",
-      city: RANDOM_CITIES[idx],
-      nationality: RANDOM_NATIONALITIES[idx],
-      clubsPlayed: [{ clubName: RANDOM_CLUBS[Math.floor(Math.random() * RANDOM_CLUBS.length)] }],
-      scoutReport: { totalScore: score, grade },
-    });
-  }
-  return players;
-}
-
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/*                    FEATURED PLAYERS                         */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const FeaturedPlayers = () => {
   const scrollRef = useRef(null);
   const [players, setPlayers] = useState([]);
-  const [randomPlayers, setRandomPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeIdx, setActiveIdx] = useState(0);
 
   useEffect(() => {
-    fetchPlayers();
+    (async () => {
+      try {
+        setLoading(true);
+        const base = import.meta.env.VITE_API_URL || "http://localhost:5001";
+        const res = await axios.get(`${base}/api/players?limit=100`);
+        const all = res.data.players || res.data || [];
+        const unique = Array.from(new Map(all.map((p) => [p._id, p])).values());
+        const sorted = unique
+          .filter((p) => p.scoutReport?.totalScore > 0)
+          .sort((a, b) => (b.scoutReport?.totalScore || 0) - (a.scoutReport?.totalScore || 0))
+          .slice(0, 6);
+        setPlayers(sorted);
+      } catch {
+        setPlayers([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  // Rotate random players every 30 seconds
+  const featured = players;
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const cardW = el.firstChild?.offsetWidth || 1;
+    setActiveIdx(Math.round(el.scrollLeft / (cardW + 12)));
+  }, []);
+
   useEffect(() => {
-    setRandomPlayers(generateRandomPlayers(3));
-    const interval = setInterval(() => {
-      setRandomPlayers(generateRandomPlayers(3));
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
 
-  const fetchPlayers = async () => {
-    try {
-      setLoading(true);
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
-      const response = await axios.get(`${apiUrl}/api/players?limit=100`);
-      const playersList = response.data.players || response.data || [];
-      setPlayers(playersList);
-    } catch (err) {
-      console.error("Error fetching players:", err);
-      setPlayers([]);
-    } finally {
-      setLoading(false);
-    }
+  const scrollTo = (idx) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const cardW = el.firstChild?.offsetWidth || 260;
+    el.scrollTo({ left: idx * (cardW + 12), behavior: "smooth" });
   };
 
-  // Top 3 real players by scout report score
-  const topReal = [...players]
-    .filter((p) => p.scoutReport?.totalScore > 0)
-    .sort((a, b) => (b.scoutReport?.totalScore || 0) - (a.scoutReport?.totalScore || 0))
-    .slice(0, 3);
-
-  const featured = [...topReal, ...randomPlayers];
-
+  /* â”€â”€ LOADING â”€â”€ */
   if (loading) {
     return (
-      <section
-        className="w-full"
-        style={{ backgroundColor: "#0B0B0B" }}
-        aria-label="Featured players loading"
-      >
-        <div className="mx-auto max-w-[1440px] px-4 py-16 md:px-8 lg:py-20">
-          <div className="mb-8">
-            <div className="h-8 w-48 bg-white/10 rounded animate-pulse mb-2"></div>
-            <div className="h-4 w-64 bg-white/10 rounded animate-pulse"></div>
-          </div>
-          <div className="flex gap-4 overflow-hidden">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="w-[280px] md:w-[300px] flex-shrink-0 bg-white/5 rounded h-96 animate-pulse"
-              ></div>
-            ))}
-          </div>
+      <section className="bg-[#0B0B0B] py-6" aria-label="Featured players loading">
+        <div className="px-5 mb-5">
+          <div className="h-6 w-40 rounded-lg mb-1.5" style={{ background: "rgba(255,255,255,0.08)", animation: "gradientShift 1.5s ease infinite" }} />
+          <div className="h-3 w-52 rounded-md" style={{ background: "rgba(255,255,255,0.05)", animation: "gradientShift 1.5s ease infinite" }} />
+        </div>
+        <div className="flex gap-3 overflow-hidden px-5">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="shrink-0 rounded-2xl" style={{ width: "72vw", maxWidth: 260, height: 340, background: "rgba(255,255,255,0.04)", animation: "gradientShift 1.5s ease infinite" }} />
+          ))}
         </div>
       </section>
     );
   }
 
-  if (topReal.length === 0 && randomPlayers.length === 0) {
-    return null;
+  /* â”€â”€ EMPTY â”€â”€ */
+  if (!featured.length) {
+    return (
+      <section className="bg-[#0B0B0B] py-10 px-5" aria-label="Featured players">
+        <div className="text-center">
+          <h2 className="text-white font-bold text-2xl m-0 mb-2">Featured Players</h2>
+          <p className="text-white/40 text-sm mb-5">No players available yet.</p>
+          <Link to="/players" className="inline-flex items-center px-6 py-3 rounded-xl text-white text-sm font-bold no-underline" style={{ background: "#C4161C" }}>
+            Browse All Players
+          </Link>
+        </div>
+      </section>
+    );
   }
 
+  /* â”€â”€ RENDER â”€â”€ */
   return (
-    <section
-      className="w-full"
-      style={{ backgroundColor: "#0B0B0B" }}
-      aria-label="Featured players"
-    >
-      <div className="mx-auto max-w-[1440px] px-4 py-16 md:px-8 lg:py-20">
-        <div className="mb-8 flex items-end justify-between">
-          <div>
-            <h2
-              className="m-0 text-white"
-              style={{
-                fontSize: "clamp(22px, 3vw, 32px)",
-                fontWeight: 700,
-                letterSpacing: "-0.01em",
-              }}
-            >
-              Featured Players
-            </h2>
-            <p className="m-0 mt-2 text-white/50" style={{ fontSize: "15px" }}>
-              Top rated talent & sample profiles
-            </p>
-          </div>
-          <div className="hidden items-center gap-2 md:flex">
-            <Link
-              to="/players"
-              className="px-6 py-2 rounded-lg text-white font-semibold transition-all hover:opacity-90 hover:shadow-lg hover:shadow-red-500/50"
-              style={{
-                backgroundColor: "#C4161C",
-                fontSize: "14px",
-              }}
-            >
-              View All
-            </Link>
-          </div>
-        </div>
+    <section className="bg-[#0B0B0B] pt-7 pb-5" aria-label="Featured players">
 
-        <div
-          ref={scrollRef}
-          className="flex gap-4 overflow-x-auto pb-4 md:gap-6"
-          style={{ scrollbarWidth: "none" }}
-          role="list"
-          aria-label="Featured players list"
+      {/* â”€â”€ Header â”€â”€ */}
+      <div className="flex items-center justify-between px-5 mb-4">
+        <div>
+          <h2 className="text-white font-bold m-0 leading-tight" style={{ fontSize: "clamp(20px,5vw,26px)" }}>
+            Featured Players
+          </h2>
+          <p className="text-white/35 text-[12px] mt-0.5 mb-0">
+            Top rated talent &amp; curated profiles
+          </p>
+        </div>
+        {/* Fitts's Law â€” big enough tap target */}
+        <Link
+          to="/players"
+          className="shrink-0 flex items-center justify-center font-semibold text-white text-[13px] px-4 rounded-lg no-underline"
+          style={{
+            height: "36px",
+            background: "#C4161C",
+            boxShadow: "0 2px 12px rgba(196,22,28,0.4)",
+          }}
         >
-          {featured.map((player) => (
-            <div
+          View All
+        </Link>
+      </div>
+
+      {/* â”€â”€ Carousel â€” peek pattern shows ~15% of next card (Zeigarnik affordance) â”€â”€ */}
+      <div
+        ref={scrollRef}
+        className="no-scrollbar flex overflow-x-auto overflow-y-visible"
+        role="list"
+        aria-label="Featured players list"
+        style={{
+          gap: "12px",
+          paddingLeft: "20px",
+          paddingRight: "20px",
+          paddingBottom: "4px",
+          scrollSnapType: "x mandatory",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
+        {featured.map((player, idx) => {
+          const gradeData = getGrade(player.scoutReport?.grade);
+          const lastClub = player.clubsPlayed?.[player.clubsPlayed.length - 1]?.clubName;
+          const posData = POS_MAP[player.playingPosition] || { color: "rgba(107,114,128,0.85)", short: player.playingPosition };
+
+          return (
+            <article
               key={player._id}
-              className="group flex w-[280px] flex-shrink-0 flex-col overflow-hidden rounded border border-white/10 no-underline transition-all duration-200 hover:border-white/20 md:w-[300px] cursor-pointer"
-              style={{ backgroundColor: "#111111" }}
               role="listitem"
-              aria-label={`${player.name}, ${player.playingPosition} at ${player.clubsPlayed?.[player.clubsPlayed.length - 1]?.clubName || "N/A"}`}
+              aria-label={`${player.name}, ${player.playingPosition}`}
+              className="shrink-0 rounded-2xl overflow-hidden cursor-pointer"
+              style={{
+                /* 72vw card + 8% right peek = natural affordance to swipe */
+                width: "min(72vw, 260px)",
+                scrollSnapAlign: "start",
+                background: "linear-gradient(160deg,rgba(255,255,255,0.08) 0%,rgba(255,255,255,0.03) 100%)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                boxShadow: "0 6px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07)",
+              }}
             >
-              <div className="relative aspect-[4/3] overflow-hidden">
-                <ImageWithFallback
-                  src={player.profileImage}
-                  alt={`Photo of ${player.name}`}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                  loading="lazy"
+              {/* â”€â”€ Avatar zone â€” shorter on mobile for card economy â”€â”€ */}
+              <div className="relative" style={{ height: "160px" }}>
+                <PlayerAvatar src={player.profileImage} alt={`Photo of ${player.name}`} />
+
+                {/* Bottom fade into card body */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 pointer-events-none"
+                  style={{ height: "64px", background: "linear-gradient(to bottom,transparent,rgba(11,11,11,0.92))" }}
                 />
+
+                {/* Position chip â€” top-left */}
                 <span
-                  className="absolute left-3 top-3 rounded px-2.5 py-1 text-white"
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    backgroundColor: "rgba(0,0,0,0.7)",
-                  }}
+                  className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md text-white text-[10px] font-bold uppercase tracking-wider"
+                  style={{ background: posData.color, backdropFilter: "blur(4px)" }}
                 >
-                  {player.playingPosition}
+                  {posData.short}
                 </span>
-                {player._isRandom && (
+
+                {/* Grade + score chip â€” top-right */}
+                {gradeData && (
                   <span
-                    className="absolute left-3 bottom-3 rounded px-2 py-1 text-white"
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 600,
-                      backgroundColor: "rgba(99,102,241,0.85)",
-                    }}
+                    className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md text-white text-[10px] font-bold"
+                    style={{ background: gradeData.bg, boxShadow: `0 0 8px ${gradeData.glow}` }}
                   >
-                    Sample Profile
-                  </span>
-                )}
-                {player.scoutReport?.grade && (
-                  <span
-                    className="absolute right-3 top-3 rounded px-2 py-1 text-white flex items-center gap-1"
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      backgroundColor: getGradeStyle(player.scoutReport.grade)
-                        ?.bg,
-                    }}
-                  >
-                    {player.scoutReport.grade}
-                    <span
-                      style={{
-                        fontSize: "10px",
-                        fontWeight: 600,
-                        opacity: 0.85,
-                      }}
-                    >
-                      {player.scoutReport.totalScore}
-                    </span>
+                    <span>{player.scoutReport.grade}</span>
+                    <span className="opacity-75">{player.scoutReport.totalScore}</span>
                   </span>
                 )}
               </div>
-              <div className="flex flex-1 flex-col p-4">
-                <h3
-                  className="m-0 text-white"
-                  style={{ fontSize: "16px", fontWeight: 600 }}
-                >
+
+              {/* â”€â”€ Card body â”€â”€ */}
+              <div className="px-3.5 pt-3 pb-4">
+                {/* Name â€” visual anchor (Serial Position: primacy) */}
+                <h3 className="text-white font-bold text-[16px] m-0 leading-snug truncate">
                   {player.name}
                 </h3>
-                <p
-                  className="m-0 mt-1 text-white/60"
-                  style={{ fontSize: "13px" }}
-                >
-                  {player.clubsPlayed?.[player.clubsPlayed.length - 1]?.clubName || "No club"}
+
+                {/* Club + location â€” secondary info */}
+                <p className="text-white/50 text-[12px] m-0 mt-0.5 truncate">
+                  {lastClub || "Free Agent"}
                 </p>
-                <p
-                  className="m-0 mt-0.5 text-white/40"
-                  style={{ fontSize: "13px" }}
-                >
-                  {player.city || "N/A"}, {player.nationality || "N/A"}
+                <p className="text-white/30 text-[11px] m-0 truncate">
+                  {[player.city, player.nationality].filter(Boolean).join(", ") || "â€”"}
                 </p>
+
+                {/* Score bar */}
                 {player.scoutReport?.totalScore > 0 && (
-                  <div className="mt-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <span
-                        className="text-white/40"
-                        style={{ fontSize: "11px" }}
-                      >
-                        Scout Score
-                      </span>
-                      <span
-                        className="text-white font-semibold"
-                        style={{ fontSize: "11px" }}
-                      >
-                        {player.scoutReport.totalScore}/100
-                      </span>
-                    </div>
-                    <div
-                      className="w-full rounded-full overflow-hidden"
-                      style={{
-                        height: "4px",
-                        backgroundColor: "rgba(255,255,255,0.1)",
-                      }}
-                    >
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${player.scoutReport.totalScore}%`,
-                          backgroundColor: getGradeStyle(
-                            player.scoutReport.grade,
-                          )?.bg,
-                          transition: "width 0.5s ease",
-                        }}
-                      />
-                    </div>
-                  </div>
+                  <ScoreBar score={player.scoutReport.totalScore} grade={player.scoutReport.grade} />
                 )}
-                <div className="mt-4 flex items-center justify-end border-t border-white/5 pt-3">
-                  {player._isRandom ? (
-                    <span
-                      className="rounded px-3 py-1.5 text-white/50"
-                      style={{
-                        backgroundColor: "rgba(255,255,255,0.05)",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                      }}
-                    >
-                      Sample
-                    </span>
-                  ) : (
-                    <Link
-                      to="/players"
-                      className="rounded px-3 py-1.5 text-white no-underline"
-                      style={{
-                        backgroundColor: "#C4161C",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                      }}
-                    >
-                      View Profile
-                    </Link>
-                  )}
-                </div>
+
+                {/* CTA â€” Fitts's Law: full-width, 48px tall = easy thumb tap */}
+                <Link
+                  to="/players"
+                  className="mt-3.5 flex items-center justify-center text-white text-[14px] font-bold no-underline rounded-xl transition-opacity duration-200 active:opacity-80"
+                  style={{
+                    height: "48px",
+                    background: "linear-gradient(135deg,#C4161C 0%,#E8242B 100%)",
+                    boxShadow: "0 3px 14px rgba(196,22,28,0.4)",
+                    letterSpacing: "0.01em",
+                  }}
+                >
+                  View Profile
+                </Link>
               </div>
-            </div>
-          ))}
-        </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {/* â”€â”€ Scroll dots â”€â”€ */}
+      <div className="flex items-center justify-center mt-4" style={{ gap: "7px" }} aria-hidden="true">
+        {featured.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => scrollTo(i)}
+            aria-label={`Go to player ${i + 1}`}
+            className="border-none p-0 cursor-pointer rounded-full transition-all duration-300"
+            style={{
+              width: i === activeIdx ? "20px" : "6px",
+              height: "6px",
+              background: i === activeIdx ? "#C4161C" : "rgba(255,255,255,0.2)",
+              boxShadow: i === activeIdx ? "0 0 6px rgba(196,22,28,0.5)" : "none",
+            }}
+          />
+        ))}
       </div>
     </section>
   );

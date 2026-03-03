@@ -20,6 +20,8 @@ import {
   ChevronDownIcon,
   UsersIcon,
   ClockIcon,
+  Bars3Icon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import BlogManagement from "../components/blogs/BlogManagement";
 import PlayerManagement from "../components/admin/PlayerManagement";
@@ -104,7 +106,7 @@ const SYSTEM_ITEMS = [
 
 /* â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const Sidebar = ({ activeTab, setActiveTab, isSuperAdmin, onLogout }) => (
-  <aside className="w-56 shrink-0 flex flex-col bg-gray-900 border-r border-white/8 min-h-screen">
+  <aside className="hidden md:flex w-56 shrink-0 flex-col bg-gray-900 border-r border-white/8 min-h-screen">
     {/* Logo */}
     <div className="px-4 py-5 border-b border-white/8">
       <Link to="/" className="flex items-center gap-2 group" tabIndex={-1}>
@@ -209,7 +211,7 @@ const BREADCRUMB_LABELS = {
 const TopHeader = ({ activeTab, adminData, isSuperAdmin }) => {
   const [open, setOpen] = useState(false);
   return (
-    <header className="h-14 shrink-0 flex items-center justify-between px-6 border-b border-white/8 bg-gray-950">
+    <header className="hidden md:flex h-14 shrink-0 items-center justify-between px-6 border-b border-white/8 bg-gray-950">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm">
         <span className="text-gray-500">Dashboard</span>
@@ -263,6 +265,195 @@ const TopHeader = ({ activeTab, adminData, isSuperAdmin }) => {
 };
 
 /* â”€â”€ Enquiries Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Mobile header (mobile only) ───────────────────────────── */
+const MobileHeader = ({ activeTab, onOpenDrawer }) => (
+  <header className="md:hidden sticky top-0 z-30 flex h-14 items-center justify-between px-4 bg-gray-950 border-b border-white/8 shrink-0">
+    <button
+      type="button"
+      onClick={onOpenDrawer}
+      className="flex items-center justify-center w-9 h-9 rounded-lg text-gray-400 hover:bg-white/6 transition-colors focus:outline-none"
+      aria-label="Open navigation"
+    >
+      <Bars3Icon className="w-5 h-5" />
+    </button>
+    <div className="flex items-center gap-1.5">
+      <div className="w-5 h-5 rounded-md bg-red-500/90 flex items-center justify-center">
+        <TrophyIcon className="w-3 h-3 text-white" />
+      </div>
+      <span className="text-sm font-semibold text-white">
+        {BREADCRUMB_LABELS[activeTab] ?? "Dashboard"}
+      </span>
+    </div>
+    <div className="w-8 h-8 rounded-full bg-red-500/20 border border-red-500/30 flex items-center justify-center">
+      <UserCircleIcon className="w-5 h-5 text-red-400" />
+    </div>
+  </header>
+);
+
+/* ── Mobile slide-in nav drawer ────────────────────────────── */
+const MobileDrawer = ({
+  open,
+  onClose,
+  activeTab,
+  setActiveTab,
+  isSuperAdmin,
+  adminData,
+  onLogout,
+}) => {
+  if (!open) return null;
+  const select = (id) => {
+    setActiveTab(id);
+    onClose();
+  };
+  return (
+    <>
+      <div
+        className="md:hidden fixed inset-0 z-40 bg-black/60"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        className="md:hidden fixed top-0 left-0 bottom-0 z-50 w-72 flex flex-col bg-[#111116] shadow-2xl"
+        style={{ animation: "slideInLeft 220ms ease-out both" }}
+        role="dialog"
+        aria-label="Dashboard navigation"
+      >
+        <div className="flex items-center justify-between px-4 py-4 border-b border-white/8">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-red-500/90 flex items-center justify-center">
+              <TrophyIcon className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-sm font-semibold text-white">Pro Talent</span>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:bg-white/6 transition-colors"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="px-3 py-3 border-b border-white/8">
+          <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-white/4 border border-white/8">
+            <div className="w-10 h-10 rounded-full bg-red-500/20 border border-red-500/30 flex items-center justify-center shrink-0">
+              <UserCircleIcon className="w-6 h-6 text-red-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-white truncate">
+                {adminData?.name}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {adminData?.email}
+              </p>
+            </div>
+            {isSuperAdmin && (
+              <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-semibold text-purple-400 bg-purple-500/10 border border-purple-500/20 rounded">
+                Super
+              </span>
+            )}
+          </div>
+        </div>
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-4">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label}>
+              <p className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-600">
+                {group.label}
+              </p>
+              <ul className="space-y-0.5">
+                {group.items.map(({ id, label, icon: Icon }) => {
+                  const active = activeTab === id;
+                  return (
+                    <li key={id}>
+                      <button
+                        onClick={() => select(id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${active ? "bg-red-500/12 text-red-400" : "text-gray-400 hover:bg-white/5 hover:text-gray-200"}`}
+                      >
+                        <Icon
+                          className={`w-4 h-4 shrink-0 ${active ? "text-red-400" : ""}`}
+                        />
+                        {label}
+                        {active && (
+                          <span className="ml-auto w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+          <div>
+            <p className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-600">
+              System
+            </p>
+            <ul className="space-y-0.5">
+              {SYSTEM_ITEMS.filter((i) => !i.superOnly || isSuperAdmin).map(
+                ({ id, label, icon: Icon }) => {
+                  const active = activeTab === id;
+                  return (
+                    <li key={id}>
+                      <button
+                        onClick={() => select(id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${active ? "bg-red-500/12 text-red-400" : "text-gray-400 hover:bg-white/5 hover:text-gray-200"}`}
+                      >
+                        <Icon
+                          className={`w-4 h-4 shrink-0 ${active ? "text-red-400" : ""}`}
+                        />
+                        {label}
+                      </button>
+                    </li>
+                  );
+                },
+              )}
+            </ul>
+          </div>
+        </nav>
+        <div className="px-3 py-4 border-t border-white/8">
+          <button
+            onClick={() => {
+              onClose();
+              onLogout();
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:bg-white/5 hover:text-red-400 transition-colors"
+          >
+            <ArrowRightOnRectangleIcon className="w-4 h-4 shrink-0" />
+            Logout
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
+
+/* ── Mobile horizontal section tab rail ────────────────────── */
+const ALL_TABS_FLAT = [...NAV_GROUPS.flatMap((g) => g.items), ...SYSTEM_ITEMS];
+
+const MobileTabRail = ({ activeTab, setActiveTab, isSuperAdmin }) => (
+  <div className="md:hidden shrink-0 border-b border-white/8 bg-gray-950">
+    <div className="flex overflow-x-auto no-scrollbar px-3 py-2 gap-1.5">
+      {ALL_TABS_FLAT.filter((t) => !t.superOnly || isSuperAdmin).map(
+        ({ id, label, icon: Icon }) => {
+          const active = activeTab === id;
+          return (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-colors shrink-0 border ${
+                active
+                  ? "bg-red-500/12 text-red-400 border-red-500/25"
+                  : "text-gray-500 border-transparent hover:text-gray-300"
+              }`}
+            >
+              <Icon className="w-3 h-3 shrink-0" />
+              {label}
+            </button>
+          );
+        },
+      )}
+    </div>
+  </div>
+);
+
 const EnquiriesSection = ({ enquiries, updateEnquiryStatus }) => {
   const [filter, setFilter] = useState("all");
 
@@ -1118,6 +1309,7 @@ const AdminDashboard = () => {
   const [profileRequests, setProfileRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const isSuperAdmin = adminData?.role === "Super Admin";
 
@@ -1242,6 +1434,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex h-screen bg-gray-950 text-white overflow-hidden">
+      {/* Desktop sidebar */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -1249,14 +1442,40 @@ const AdminDashboard = () => {
         onLogout={handleLogout}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Mobile drawer */}
+      <MobileDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isSuperAdmin={isSuperAdmin}
+        adminData={adminData}
+        onLogout={handleLogout}
+      />
+
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        {/* Mobile top header */}
+        <MobileHeader
+          activeTab={activeTab}
+          adminData={adminData}
+          onOpenDrawer={() => setDrawerOpen(true)}
+        />
+
+        {/* Desktop top header */}
         <TopHeader
           activeTab={activeTab}
           adminData={adminData}
           isSuperAdmin={isSuperAdmin}
         />
 
-        <main className="flex-1 overflow-y-auto p-6">
+        {/* Mobile horizontal tab rail */}
+        <MobileTabRail
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isSuperAdmin={isSuperAdmin}
+        />
+
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {error && (
             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
               {error}

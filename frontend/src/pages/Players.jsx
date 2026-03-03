@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback, useRef } from "react";
 import {
   MagnifyingGlassIcon,
   PhoneIcon,
@@ -9,6 +9,8 @@ import {
   ChevronDownIcon,
   XMarkIcon,
   BookmarkIcon,
+  AdjustmentsHorizontalIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { api } from "../services/api";
 import PlayerDetailPage from "../components/players/PlayerDetailPage";
@@ -228,6 +230,543 @@ const SkeletonCard = () => (
     </div>
   </div>
 );
+
+/* ── Mobile skeleton row ─────────────────────────────────────── */
+const MobileSkeletonCard = () => (
+  <div
+    className="flex items-center gap-3 px-4 py-3 rounded-2xl animate-pulse"
+    style={{
+      background: "rgba(255,255,255,0.05)",
+      border: "1px solid rgba(255,255,255,0.06)",
+    }}
+  >
+    {/* Avatar placeholder */}
+    <div
+      className="shrink-0 rounded-xl"
+      style={{
+        width: "68px",
+        height: "68px",
+        background: "rgba(255,255,255,0.08)",
+      }}
+    />
+    {/* Content placeholder */}
+    <div className="flex-1 min-w-0 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <div
+          className="h-4 rounded-md w-32"
+          style={{ background: "rgba(255,255,255,0.09)" }}
+        />
+        <div
+          className="h-4 w-8 rounded-md"
+          style={{ background: "rgba(255,255,255,0.06)" }}
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <div
+          className="h-3.5 w-10 rounded"
+          style={{ background: "rgba(255,255,255,0.07)" }}
+        />
+        <div
+          className="h-3.5 w-24 rounded"
+          style={{ background: "rgba(255,255,255,0.05)" }}
+        />
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <div
+          className="h-3 w-20 rounded"
+          style={{ background: "rgba(255,255,255,0.04)" }}
+        />
+        <div
+          className="h-2 w-16 rounded-full"
+          style={{ background: "rgba(255,255,255,0.06)" }}
+        />
+      </div>
+    </div>
+    {/* Chevron placeholder */}
+    <div
+      className="w-4 h-4 rounded shrink-0"
+      style={{ background: "rgba(255,255,255,0.05)" }}
+    />
+  </div>
+);
+
+/* ── Mobile Player Card ──────────────────────────────────────── */
+/*
+  UX Laws applied:
+  • Fitts's Law       — entire row tappable, min ~88px touch height
+  • Miller's Law      — 3 lines of info max, short position codes
+  • Serial Position   — name (most important) in top-left anchor
+  • Von Restorff      — grade badge stands out with brand color
+  • Gestalt Proximity — related info grouped tightly in 3 rows
+  • Zeigarnik Effect  — score bar implies incompleteness → drives tap
+  • Aesthetic-Usability— consistent spacing, clear type hierarchy
+*/
+const POS_CODES = {
+  goalkeeper: "GK",
+  defender: "DEF",
+  midfielder: "MID",
+  forward: "FWD",
+  winger: "WNG",
+  striker: "ST",
+};
+
+const MobilePlayerCard = ({ player, onViewProfile }) => {
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [pressed, setPressed] = useState(false);
+  const currentClub =
+    player.clubsPlayed?.[player.clubsPlayed.length - 1]?.clubName;
+  const posStyle = getPositionStyle(player.playingPosition);
+  const gradeStyle = player.scoutReport?.grade
+    ? getGradeStyle(player.scoutReport.grade)
+    : null;
+  const score = player.scoutReport?.totalScore;
+  const posCode =
+    POS_CODES[player.playingPosition?.toLowerCase()] ||
+    player.playingPosition?.slice(0, 3).toUpperCase() ||
+    "—";
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`View profile of ${player.name}`}
+      onClick={() => onViewProfile(player)}
+      onKeyDown={(e) => e.key === "Enter" && onViewProfile(player)}
+      onPointerDown={() => setPressed(true)}
+      onPointerUp={() => setPressed(false)}
+      onPointerLeave={() => setPressed(false)}
+      className="flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer select-none"
+      style={{
+        background: pressed
+          ? "rgba(255,255,255,0.08)"
+          : "rgba(255,255,255,0.05)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        transform: pressed ? "scale(0.985)" : "scale(1)",
+        transition: "transform 0.1s ease, background 0.1s ease",
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
+      {/* ── Avatar (68×68, rounded-xl) ── */}
+      <div
+        className="relative shrink-0 rounded-xl overflow-hidden"
+        style={{
+          width: "68px",
+          height: "68px",
+          background: "rgba(255,255,255,0.08)",
+        }}
+      >
+        {!imgLoaded && (
+          <div
+            className="absolute inset-0 animate-pulse"
+            style={{ background: "rgba(255,255,255,0.09)" }}
+          />
+        )}
+        <img
+          src={player.profileImage || DEFAULT_IMAGE}
+          alt={player.name}
+          loading="lazy"
+          onLoad={() => setImgLoaded(true)}
+          className="w-full h-full object-cover object-top"
+          style={{ opacity: imgLoaded ? 1 : 0, transition: "opacity 0.25s" }}
+        />
+        {/* Bottom scrim */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 55%)",
+          }}
+        />
+        {/* Age pill — bottom center */}
+        {player.age && (
+          <span
+            className="absolute bottom-1 left-0 right-0 text-center font-bold text-white"
+            style={{ fontSize: "9px", letterSpacing: "0.02em" }}
+          >
+            {player.age}y
+          </span>
+        )}
+      </div>
+
+      {/* ── Content — 3 tight rows ── */}
+      <div className="flex-1 min-w-0">
+        {/* Row 1 : Name  +  Grade badge (Von Restorff) */}
+        <div className="flex items-center justify-between gap-2">
+          <h3
+            className="text-white font-semibold truncate"
+            style={{ fontSize: "15px", lineHeight: 1.3 }}
+          >
+            {player.name}
+          </h3>
+          {gradeStyle && (
+            <span
+              className="shrink-0 font-bold rounded-md px-1.5 py-0.5"
+              style={{
+                fontSize: "10px",
+                color: gradeStyle.color,
+                background: `${gradeStyle.color}22`,
+                border: `1px solid ${gradeStyle.color}44`,
+                lineHeight: 1.4,
+              }}
+            >
+              {player.scoutReport.grade}
+            </span>
+          )}
+        </div>
+
+        {/* Row 2 : Position code  +  Club */}
+        <div className="flex items-center gap-2 mt-1">
+          <span
+            className="shrink-0 font-bold rounded px-1.5 py-0.5"
+            style={{
+              fontSize: "10px",
+              color: posStyle.color,
+              background: posStyle.bg,
+              letterSpacing: "0.05em",
+              lineHeight: 1.4,
+            }}
+          >
+            {posCode}
+          </span>
+          <span
+            className="text-[12px] truncate"
+            style={{ color: "rgba(255,255,255,0.45)" }}
+          >
+            {currentClub || "Free Agent"}
+          </span>
+        </div>
+
+        {/* Row 3 : City  +  Score bar + number (Zeigarnik) */}
+        <div className="flex items-center justify-between gap-2 mt-1.5">
+          <span
+            className="text-[11px] truncate"
+            style={{ color: "rgba(255,255,255,0.28)" }}
+          >
+            {[player.city, player.nationality].filter(Boolean).join(", ") || ""}
+          </span>
+          {score > 0 && (
+            <div className="flex items-center gap-1.5 shrink-0">
+              <div
+                className="rounded-full overflow-hidden"
+                style={{
+                  width: "48px",
+                  height: "3px",
+                  background: "rgba(255,255,255,0.08)",
+                }}
+              >
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${score}%`,
+                    background: gradeStyle?.color || "#C4161C",
+                  }}
+                />
+              </div>
+              <span
+                className="font-bold"
+                style={{
+                  fontSize: "11px",
+                  color: gradeStyle?.color || "rgba(255,255,255,0.5)",
+                }}
+              >
+                {score}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Chevron affordance ── */}
+      <ChevronRightIcon
+        className="w-4 h-4 shrink-0"
+        style={{ color: "rgba(255,255,255,0.2)" }}
+      />
+    </div>
+  );
+};
+
+/* ── Mobile Filter Drawer (bottom sheet) ────────────────────── */
+/* Hick's Law: filters grouped, progressive disclosure           */
+const MobileFilterDrawer = ({
+  open,
+  onClose,
+  filters,
+  set,
+  clearFilters,
+  activeCount,
+}) => {
+  const [localFilters, setLocalFilters] = useState(filters);
+  const [posOpen, setPosOpen] = useState(true);
+  const [ageOpen, setAgeOpen] = useState(false);
+  const [locOpen, setLocOpen] = useState(false);
+
+  // Sync when drawer opens
+  useEffect(() => {
+    if (open) setLocalFilters(filters);
+  }, [open, filters]);
+
+  const localSet = (key, val) =>
+    setLocalFilters((prev) => ({ ...prev, [key]: val }));
+
+  const handleApply = () => {
+    Object.entries(localFilters).forEach(([k, v]) => set(k, v));
+    onClose();
+  };
+
+  const handleClear = () => {
+    const empty = {
+      position: "",
+      ageMin: "",
+      ageMax: "",
+      heightMin: "",
+      heightMax: "",
+      city: "",
+      searchQuery: filters.searchQuery,
+    };
+    setLocalFilters(empty);
+  };
+
+  if (!open) return null;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-40"
+        style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)" }}
+        onClick={onClose}
+      />
+      {/* Sheet */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-hidden"
+        style={{
+          background: "#161616",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "none",
+          paddingBottom: "env(safe-area-inset-bottom)",
+          maxHeight: "82vh",
+          display: "flex",
+          flexDirection: "column",
+          animation: "slideUpSheet 0.28s cubic-bezier(0.32,0.72,0,1)",
+        }}
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div
+            className="w-10 h-1 rounded-full"
+            style={{ background: "rgba(255,255,255,0.2)" }}
+          />
+        </div>
+
+        {/* Sheet header */}
+        <div
+          className="flex items-center justify-between px-5 py-3 shrink-0"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <span className="text-white font-semibold text-base">Filters</span>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleClear}
+              style={{
+                fontSize: "13px",
+                color: "rgba(255,255,255,0.4)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              Clear All
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "rgba(255,255,255,0.4)",
+              }}
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable filter sections */}
+        <div className="flex-1 overflow-y-auto px-5 py-2">
+          {/* Position */}
+          <div style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+            <button
+              className="w-full flex items-center justify-between py-4"
+              style={{ background: "none", border: "none", cursor: "pointer" }}
+              onClick={() => setPosOpen((o) => !o)}
+            >
+              <span
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "rgba(255,255,255,0.75)",
+                }}
+              >
+                Position
+              </span>
+              <ChevronDownIcon
+                className={`w-4 h-4 transition-transform duration-200 ${posOpen ? "rotate-180" : ""}`}
+                style={{ color: "rgba(255,255,255,0.3)" }}
+              />
+            </button>
+            {posOpen && (
+              <div className="pb-4 flex flex-wrap gap-2">
+                {["", ...POSITIONS].map((p) => (
+                  <button
+                    key={p || "all"}
+                    onClick={() => localSet("position", p)}
+                    className="px-4 py-2 rounded-xl text-[13px] font-medium transition-all duration-150"
+                    style={{
+                      background:
+                        localFilters.position === p
+                          ? "#C4161C"
+                          : "rgba(255,255,255,0.06)",
+                      color:
+                        localFilters.position === p
+                          ? "#fff"
+                          : "rgba(255,255,255,0.55)",
+                      border:
+                        localFilters.position === p
+                          ? "none"
+                          : "1px solid rgba(255,255,255,0.08)",
+                      cursor: "pointer",
+                      minHeight: "44px",
+                    }}
+                  >
+                    {p || "All"}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Age range */}
+          <div style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+            <button
+              className="w-full flex items-center justify-between py-4"
+              style={{ background: "none", border: "none", cursor: "pointer" }}
+              onClick={() => setAgeOpen((o) => !o)}
+            >
+              <span
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "rgba(255,255,255,0.75)",
+                }}
+              >
+                Age Range
+              </span>
+              <ChevronDownIcon
+                className={`w-4 h-4 transition-transform duration-200 ${ageOpen ? "rotate-180" : ""}`}
+                style={{ color: "rgba(255,255,255,0.3)" }}
+              />
+            </button>
+            {ageOpen && (
+              <div className="pb-4 flex gap-3">
+                {[
+                  ["Min age", "ageMin"],
+                  ["Max age", "ageMax"],
+                ].map(([ph, key]) => (
+                  <input
+                    key={key}
+                    type="number"
+                    placeholder={ph}
+                    value={localFilters[key]}
+                    onChange={(e) => localSet(key, e.target.value)}
+                    style={{
+                      flex: 1,
+                      height: "48px",
+                      padding: "0 14px",
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      borderRadius: "12px",
+                      fontSize: "14px",
+                      color: "#fff",
+                      outline: "none",
+                    }}
+                    className="placeholder:text-white/25"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Location */}
+          <div>
+            <button
+              className="w-full flex items-center justify-between py-4"
+              style={{ background: "none", border: "none", cursor: "pointer" }}
+              onClick={() => setLocOpen((o) => !o)}
+            >
+              <span
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "rgba(255,255,255,0.75)",
+                }}
+              >
+                Location
+              </span>
+              <ChevronDownIcon
+                className={`w-4 h-4 transition-transform duration-200 ${locOpen ? "rotate-180" : ""}`}
+                style={{ color: "rgba(255,255,255,0.3)" }}
+              />
+            </button>
+            {locOpen && (
+              <div className="pb-4">
+                <input
+                  type="text"
+                  placeholder="City or country…"
+                  value={localFilters.city}
+                  onChange={(e) => localSet("city", e.target.value)}
+                  style={{
+                    width: "100%",
+                    height: "48px",
+                    padding: "0 14px",
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    color: "#fff",
+                    outline: "none",
+                  }}
+                  className="placeholder:text-white/25"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Apply CTA — Fitts's Law: full-width, 56px */}
+        <div
+          className="px-5 pt-3 pb-4 shrink-0"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <button
+            onClick={handleApply}
+            className="w-full flex items-center justify-center text-white font-bold rounded-2xl transition-opacity duration-150 active:opacity-80"
+            style={{
+              height: "56px",
+              fontSize: "16px",
+              background: "#C4161C",
+              border: "none",
+              cursor: "pointer",
+              boxShadow: "0 4px 20px rgba(196,22,28,0.4)",
+              letterSpacing: "0.01em",
+            }}
+          >
+            Apply Filters{activeCount > 0 ? ` (${activeCount})` : ""}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
 
 const NoResults = ({ onReset }) => (
   <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -714,6 +1253,8 @@ const Players = () => {
   const [sortBy, setSortBy] = useState("name");
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showPlayerModal, setShowPlayerModal] = useState(false);
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const mobileSearchRef = useRef(null);
 
   const [filters, setFilters] = useState({
     position: "",
@@ -890,170 +1431,91 @@ const Players = () => {
       </div>
 
       {/* â”€â”€ Header â”€â”€ */}
-      <div className="relative pt-32 pb-8 px-4 sm:px-6">
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <div className="flex flex-col lg:flex-row lg:items-end gap-6">
-            <div className="flex-1">
-              <p
-                className="uppercase tracking-widest mb-2"
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  color: "rgba(255,255,255,0.28)",
-                  letterSpacing: "0.16em",
-                }}
-              >
-                Pro Talent Connect
-              </p>
+      {/* ═══════════════ MOBILE LAYOUT (< md) ═══════════════ */}
+      <div className="md:hidden flex flex-col" style={{ minHeight: "100dvh" }}>
+        {/* Sticky mobile top bar */}
+        <div
+          className="sticky z-30 shrink-0"
+          style={{
+            top: 0,
+            background: "rgba(10,10,15,0.92)",
+            backdropFilter: "blur(16px)",
+            borderBottom: "1px solid rgba(255,255,255,0.07)",
+            paddingTop: "calc(64px + env(safe-area-inset-top))",
+          }}
+        >
+          {/* Title + controls row */}
+          <div className="flex items-center justify-between px-4 pt-3 pb-2">
+            <div>
               <h1
-                className="text-white"
-                style={{
-                  fontSize: "clamp(36px, 5vw, 48px)",
-                  fontWeight: 600,
-                  lineHeight: 1.1,
-                  fontFamily: "'Playfair Display', serif",
-                }}
+                className="text-white font-bold leading-tight"
+                style={{ fontSize: "22px" }}
               >
                 Player <span style={{ color: "#C4161C" }}>Database</span>
               </h1>
               <p
                 style={{
-                  fontSize: "15px",
+                  fontSize: "12px",
                   color: "rgba(255,255,255,0.32)",
-                  marginTop: "8px",
-                  lineHeight: 1.5,
+                  marginTop: "2px",
                 }}
               >
                 {loading
-                  ? "Loading playersâ€¦"
+                  ? "Loading\u2026"
                   : `${filteredPlayers.length} verified player${filteredPlayers.length !== 1 ? "s" : ""}`}
               </p>
             </div>
-
-            {/* Controls */}
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Search â€” Fitts's Law: 48px height */}
-              <div
-                className="relative"
-                style={{ minWidth: "260px", flex: "1 1 260px" }}
-              >
-                <MagnifyingGlassIcon
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
-                  style={{ color: "rgba(255,255,255,0.28)" }}
-                />
-                <input
-                  type="text"
-                  placeholder="Search by name, position, city..."
-                  value={filters.searchQuery}
-                  onChange={(e) => set("searchQuery", e.target.value)}
-                  style={{
-                    width: "100%",
-                    height: "48px",
-                    paddingLeft: "48px",
-                    paddingRight: "16px",
-                    ...GLASS,
-                    borderRadius: "14px",
-                    fontSize: "14px",
-                    color: "#fff",
-                    outline: "none",
-                  }}
-                  className="placeholder:text-white/25 focus:border-white/20 transition-all"
-                />
-              </div>
-
-              {/* Sort */}
+            <div className="flex items-center gap-2">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 style={{
-                  height: "48px",
-                  padding: "0 16px",
-                  ...GLASS,
-                  borderRadius: "14px",
-                  fontSize: "14px",
-                  color: "rgba(255,255,255,0.65)",
+                  height: "38px",
+                  padding: "0 10px",
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: "10px",
+                  fontSize: "12px",
+                  color: "rgba(255,255,255,0.6)",
                   outline: "none",
                   cursor: "pointer",
-                  minWidth: "140px",
                 }}
               >
                 <option value="name" className="bg-gray-900">
-                  Sort: Name
+                  Name
                 </option>
                 <option value="score" className="bg-gray-900">
-                  Sort: Score
+                  Score
                 </option>
                 <option value="position" className="bg-gray-900">
-                  Sort: Position
+                  Position
                 </option>
                 <option value="age" className="bg-gray-900">
-                  Sort: Age
+                  Age
                 </option>
               </select>
-
-              {/* View Toggle */}
-              <div
-                className="flex items-center p-1 gap-1 rounded-xl"
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                }}
-              >
-                {[
-                  { mode: "grid", Icon: Squares2X2Icon },
-                  { mode: "list", Icon: ListBulletIcon },
-                ].map(({ mode, Icon }) => (
-                  <button
-                    key={mode}
-                    onClick={() => setViewMode(mode)}
-                    className="flex items-center justify-center rounded-lg transition-all duration-200"
-                    style={{
-                      width: "36px",
-                      height: "36px",
-                      background:
-                        viewMode === mode
-                          ? "rgba(255,255,255,0.1)"
-                          : "transparent",
-                      border:
-                        viewMode === mode
-                          ? "1px solid rgba(255,255,255,0.12)"
-                          : "1px solid transparent",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <Icon
-                      className="w-4 h-4"
-                      style={{
-                        color:
-                          viewMode === mode ? "#fff" : "rgba(255,255,255,0.3)",
-                      }}
-                    />
-                  </button>
-                ))}
-              </div>
-
-              {/* Mobile filter toggle */}
               <button
-                onClick={() => setShowFilters((v) => !v)}
-                className="lg:hidden flex items-center gap-2 rounded-xl px-4 transition-all duration-200"
+                onClick={() => setFilterDrawerOpen(true)}
+                className="relative flex items-center justify-center rounded-xl transition-all duration-200 active:scale-95"
                 style={{
-                  height: "48px",
-                  ...GLASS,
-                  fontSize: "14px",
-                  color: "rgba(255,255,255,0.55)",
+                  width: "42px",
+                  height: "38px",
+                  background:
+                    activeChips.length > 0
+                      ? "rgba(196,22,28,0.2)"
+                      : "rgba(255,255,255,0.06)",
+                  border:
+                    activeChips.length > 0
+                      ? "1px solid rgba(196,22,28,0.4)"
+                      : "1px solid rgba(255,255,255,0.08)",
                   cursor: "pointer",
                 }}
               >
-                Filters
+                <AdjustmentsHorizontalIcon className="w-5 h-5 text-white" />
                 {activeChips.length > 0 && (
                   <span
-                    className="flex items-center justify-center w-5 h-5 rounded-full"
-                    style={{
-                      background: "#C4161C",
-                      color: "#fff",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                    }}
+                    className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 rounded-full text-white font-bold"
+                    style={{ fontSize: "9px", background: "#C4161C" }}
                   >
                     {activeChips.length}
                   </span>
@@ -1062,294 +1524,605 @@ const Players = () => {
             </div>
           </div>
 
-          {/* Active filter chips */}
-          {activeChips.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 mt-5">
-              <span
+          {/* Sticky search bar */}
+          <div className="px-4 pb-3">
+            <div className="relative">
+              <MagnifyingGlassIcon
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
+                style={{ color: "rgba(255,255,255,0.3)" }}
+              />
+              <input
+                ref={mobileSearchRef}
+                type="text"
+                placeholder="Search name, position, city\u2026"
+                value={filters.searchQuery}
+                onChange={(e) => set("searchQuery", e.target.value)}
                 style={{
-                  fontSize: "12px",
-                  color: "rgba(255,255,255,0.28)",
-                  fontWeight: 500,
+                  width: "100%",
+                  height: "48px",
+                  paddingLeft: "40px",
+                  paddingRight: filters.searchQuery ? "42px" : "14px",
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.09)",
+                  borderRadius: "14px",
+                  fontSize: "14px",
+                  color: "#fff",
+                  outline: "none",
                 }}
-              >
-                Active:
-              </span>
-              {activeChips.map((chip) => (
-                <FilterChip
-                  key={chip.key}
-                  label={chip.label}
-                  onRemove={() => removeChip(chip.key)}
-                />
-              ))}
-              <button
-                onClick={clearFilters}
-                style={{
-                  fontSize: "12px",
-                  color: "rgba(255,255,255,0.28)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                }}
-              >
-                Reset all
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Divider */}
-      <div
-        style={{ maxWidth: "1200px", margin: "0 auto 32px", padding: "0 24px" }}
-      >
-        <div style={{ height: "1px", background: "rgba(255,255,255,0.05)" }} />
-      </div>
-
-      {/* â”€â”€ Main Content â”€â”€ */}
-      <div className="relative px-4 sm:px-6 pb-24">
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <div className="flex gap-8">
-            {/* â”€â”€ Filter Sidebar â”€â”€ */}
-            <aside
-              className={`${showFilters ? "block" : "hidden"} lg:block shrink-0`}
-              style={{ width: "232px" }}
-            >
-              <div
-                className="lg:sticky"
-                style={{
-                  top: "96px",
-                  ...GLASS,
-                  borderRadius: "20px",
-                  padding: "0 20px",
-                  maxHeight: "calc(100vh - 120px)",
-                  overflowY: "auto",
-                }}
-              >
-                <div className="flex items-center justify-between py-5">
-                  <span
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      color: "rgba(255,255,255,0.8)",
-                    }}
-                  >
-                    Filters
-                  </span>
-                  {activeChips.length > 0 && (
-                    <button
-                      onClick={clearFilters}
-                      style={{
-                        fontSize: "12px",
-                        color: "rgba(255,255,255,0.3)",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Reset all
-                    </button>
-                  )}
-                </div>
-
-                <div
-                  style={{
-                    height: "1px",
-                    background: "rgba(255,255,255,0.05)",
-                  }}
-                />
-
-                <FilterSection title="Position">
-                  <select
-                    value={filters.position}
-                    onChange={(e) => set("position", e.target.value)}
-                    style={{
-                      ...inputStyle,
-                      color: filters.position
-                        ? "#fff"
-                        : "rgba(255,255,255,0.3)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <option value="" className="bg-gray-900">
-                      All Positions
-                    </option>
-                    {POSITIONS.map((p) => (
-                      <option key={p} value={p} className="bg-gray-900">
-                        {p}
-                      </option>
-                    ))}
-                  </select>
-                </FilterSection>
-
-                <FilterSection title="Age Range">
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.ageMin}
-                      onChange={(e) => set("ageMin", e.target.value)}
-                      style={{ ...inputStyle, width: "50%" }}
-                      className="placeholder:text-white/20"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.ageMax}
-                      onChange={(e) => set("ageMax", e.target.value)}
-                      style={{ ...inputStyle, width: "50%" }}
-                      className="placeholder:text-white/20"
-                    />
-                  </div>
-                </FilterSection>
-
-                <FilterSection title="Location">
-                  <input
-                    type="text"
-                    placeholder="e.g. London"
-                    value={filters.city}
-                    onChange={(e) => set("city", e.target.value)}
-                    style={inputStyle}
-                    className="placeholder:text-white/20"
-                  />
-                </FilterSection>
-
-                {/* Advanced */}
+                className="placeholder:text-white/25 transition-all"
+              />
+              {filters.searchQuery && (
                 <button
-                  onClick={() => setShowAdvanced((v) => !v)}
-                  className="w-full flex items-center justify-between py-4"
+                  onClick={() => set("searchQuery", "")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full active:bg-white/10 transition-colors"
                   style={{
                     background: "none",
                     border: "none",
                     cursor: "pointer",
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      fontWeight: 500,
-                      color: "rgba(255,255,255,0.3)",
-                      letterSpacing: "0.1em",
-                    }}
-                  >
-                    ADVANCED
-                  </span>
-                  <ChevronDownIcon
-                    className={`w-3.5 h-3.5 text-white/25 transition-transform duration-200 ${showAdvanced ? "rotate-180" : ""}`}
+                  <XMarkIcon
+                    className="w-4 h-4"
+                    style={{ color: "rgba(255,255,255,0.4)" }}
                   />
                 </button>
+              )}
+            </div>
+            {activeChips.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {activeChips.map((chip) => (
+                  <FilterChip
+                    key={chip.key}
+                    label={chip.label}
+                    onRemove={() => removeChip(chip.key)}
+                  />
+                ))}
+                <button
+                  onClick={clearFilters}
+                  style={{
+                    fontSize: "12px",
+                    color: "rgba(255,255,255,0.3)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                >
+                  Clear
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
-                {showAdvanced && (
-                  <div className="pb-5">
-                    <p
+        {/* Mobile player list */}
+        <div
+          className="flex-1 px-4 pt-3 pb-24 space-y-3"
+          style={{ overscrollBehavior: "contain" }}
+        >
+          {loading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <MobileSkeletonCard key={i} />
+            ))
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.35)" }}>
+                {error}
+              </p>
+              <button
+                onClick={() => {
+                  const ac = new AbortController();
+                  fetchPlayers(ac.signal);
+                }}
+                className="mt-4"
+                style={{
+                  fontSize: "14px",
+                  color: "#FCA5A5",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+              >
+                Try again
+              </button>
+            </div>
+          ) : filteredPlayers.length === 0 ? (
+            <NoResults onReset={clearFilters} />
+          ) : (
+            filteredPlayers.map((player) => (
+              <MobilePlayerCard
+                key={player._id}
+                player={player}
+                onViewProfile={handleViewProfile}
+              />
+            ))
+          )}
+        </div>
+
+        {/* Filter Drawer */}
+        <MobileFilterDrawer
+          open={filterDrawerOpen}
+          onClose={() => setFilterDrawerOpen(false)}
+          filters={filters}
+          set={set}
+          clearFilters={clearFilters}
+          activeCount={activeChips.length}
+        />
+      </div>
+
+      {/* ═══════════════ DESKTOP LAYOUT (≥ md) ═══════════════ */}
+      <div className="hidden md:block">
+        <div className="relative pt-32 pb-8 px-4 sm:px-6">
+          <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+            <div className="flex flex-col lg:flex-row lg:items-end gap-6">
+              <div className="flex-1">
+                <p
+                  className="uppercase tracking-widest mb-2"
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    color: "rgba(255,255,255,0.28)",
+                    letterSpacing: "0.16em",
+                  }}
+                >
+                  Pro Talent Connect
+                </p>
+                <h1
+                  className="text-white"
+                  style={{
+                    fontSize: "clamp(36px, 5vw, 48px)",
+                    fontWeight: 600,
+                    lineHeight: 1.1,
+                    fontFamily: "'Playfair Display', serif",
+                  }}
+                >
+                  Player <span style={{ color: "#C4161C" }}>Database</span>
+                </h1>
+                <p
+                  style={{
+                    fontSize: "15px",
+                    color: "rgba(255,255,255,0.32)",
+                    marginTop: "8px",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {loading
+                    ? "Loading playersâ€¦"
+                    : `${filteredPlayers.length} verified player${filteredPlayers.length !== 1 ? "s" : ""}`}
+                </p>
+              </div>
+
+              {/* Controls */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Search â€” Fitts's Law: 48px height */}
+                <div
+                  className="relative"
+                  style={{ minWidth: "260px", flex: "1 1 260px" }}
+                >
+                  <MagnifyingGlassIcon
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
+                    style={{ color: "rgba(255,255,255,0.28)" }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search by name, position, city..."
+                    value={filters.searchQuery}
+                    onChange={(e) => set("searchQuery", e.target.value)}
+                    style={{
+                      width: "100%",
+                      height: "48px",
+                      paddingLeft: "48px",
+                      paddingRight: "16px",
+                      ...GLASS,
+                      borderRadius: "14px",
+                      fontSize: "14px",
+                      color: "#fff",
+                      outline: "none",
+                    }}
+                    className="placeholder:text-white/25 focus:border-white/20 transition-all"
+                  />
+                </div>
+
+                {/* Sort */}
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  style={{
+                    height: "48px",
+                    padding: "0 16px",
+                    ...GLASS,
+                    borderRadius: "14px",
+                    fontSize: "14px",
+                    color: "rgba(255,255,255,0.65)",
+                    outline: "none",
+                    cursor: "pointer",
+                    minWidth: "140px",
+                  }}
+                >
+                  <option value="name" className="bg-gray-900">
+                    Sort: Name
+                  </option>
+                  <option value="score" className="bg-gray-900">
+                    Sort: Score
+                  </option>
+                  <option value="position" className="bg-gray-900">
+                    Sort: Position
+                  </option>
+                  <option value="age" className="bg-gray-900">
+                    Sort: Age
+                  </option>
+                </select>
+
+                {/* View Toggle */}
+                <div
+                  className="flex items-center p-1 gap-1 rounded-xl"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.07)",
+                  }}
+                >
+                  {[
+                    { mode: "grid", Icon: Squares2X2Icon },
+                    { mode: "list", Icon: ListBulletIcon },
+                  ].map(({ mode, Icon }) => (
+                    <button
+                      key={mode}
+                      onClick={() => setViewMode(mode)}
+                      className="flex items-center justify-center rounded-lg transition-all duration-200"
                       style={{
-                        fontSize: "12px",
-                        color: "rgba(255,255,255,0.25)",
-                        marginBottom: "10px",
+                        width: "36px",
+                        height: "36px",
+                        background:
+                          viewMode === mode
+                            ? "rgba(255,255,255,0.1)"
+                            : "transparent",
+                        border:
+                          viewMode === mode
+                            ? "1px solid rgba(255,255,255,0.12)"
+                            : "1px solid transparent",
+                        cursor: "pointer",
                       }}
                     >
-                      Height (cm)
-                    </p>
+                      <Icon
+                        className="w-4 h-4"
+                        style={{
+                          color:
+                            viewMode === mode
+                              ? "#fff"
+                              : "rgba(255,255,255,0.3)",
+                        }}
+                      />
+                    </button>
+                  ))}
+                </div>
+
+                {/* Mobile filter toggle */}
+                <button
+                  onClick={() => setShowFilters((v) => !v)}
+                  className="lg:hidden flex items-center gap-2 rounded-xl px-4 transition-all duration-200"
+                  style={{
+                    height: "48px",
+                    ...GLASS,
+                    fontSize: "14px",
+                    color: "rgba(255,255,255,0.55)",
+                    cursor: "pointer",
+                  }}
+                >
+                  Filters
+                  {activeChips.length > 0 && (
+                    <span
+                      className="flex items-center justify-center w-5 h-5 rounded-full"
+                      style={{
+                        background: "#C4161C",
+                        color: "#fff",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {activeChips.length}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Active filter chips */}
+            {activeChips.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 mt-5">
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "rgba(255,255,255,0.28)",
+                    fontWeight: 500,
+                  }}
+                >
+                  Active:
+                </span>
+                {activeChips.map((chip) => (
+                  <FilterChip
+                    key={chip.key}
+                    label={chip.label}
+                    onRemove={() => removeChip(chip.key)}
+                  />
+                ))}
+                <button
+                  onClick={clearFilters}
+                  style={{
+                    fontSize: "12px",
+                    color: "rgba(255,255,255,0.28)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                >
+                  Reset all
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "0 auto 32px",
+            padding: "0 24px",
+          }}
+        >
+          <div
+            style={{ height: "1px", background: "rgba(255,255,255,0.05)" }}
+          />
+        </div>
+
+        {/* â”€â”€ Main Content â”€â”€ */}
+        <div className="relative px-4 sm:px-6 pb-24">
+          <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+            <div className="flex gap-8">
+              {/* â”€â”€ Filter Sidebar â”€â”€ */}
+              <aside
+                className={`${showFilters ? "block" : "hidden"} lg:block shrink-0`}
+                style={{ width: "232px" }}
+              >
+                <div
+                  className="lg:sticky"
+                  style={{
+                    top: "96px",
+                    ...GLASS,
+                    borderRadius: "20px",
+                    padding: "0 20px",
+                    maxHeight: "calc(100vh - 120px)",
+                    overflowY: "auto",
+                  }}
+                >
+                  <div className="flex items-center justify-between py-5">
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: 600,
+                        color: "rgba(255,255,255,0.8)",
+                      }}
+                    >
+                      Filters
+                    </span>
+                    {activeChips.length > 0 && (
+                      <button
+                        onClick={clearFilters}
+                        style={{
+                          fontSize: "12px",
+                          color: "rgba(255,255,255,0.3)",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Reset all
+                      </button>
+                    )}
+                  </div>
+
+                  <div
+                    style={{
+                      height: "1px",
+                      background: "rgba(255,255,255,0.05)",
+                    }}
+                  />
+
+                  <FilterSection title="Position">
+                    <select
+                      value={filters.position}
+                      onChange={(e) => set("position", e.target.value)}
+                      style={{
+                        ...inputStyle,
+                        color: filters.position
+                          ? "#fff"
+                          : "rgba(255,255,255,0.3)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <option value="" className="bg-gray-900">
+                        All Positions
+                      </option>
+                      {POSITIONS.map((p) => (
+                        <option key={p} value={p} className="bg-gray-900">
+                          {p}
+                        </option>
+                      ))}
+                    </select>
+                  </FilterSection>
+
+                  <FilterSection title="Age Range">
                     <div className="flex gap-2">
                       <input
                         type="number"
                         placeholder="Min"
-                        value={filters.heightMin}
-                        onChange={(e) => set("heightMin", e.target.value)}
+                        value={filters.ageMin}
+                        onChange={(e) => set("ageMin", e.target.value)}
                         style={{ ...inputStyle, width: "50%" }}
                         className="placeholder:text-white/20"
                       />
                       <input
                         type="number"
                         placeholder="Max"
-                        value={filters.heightMax}
-                        onChange={(e) => set("heightMax", e.target.value)}
+                        value={filters.ageMax}
+                        onChange={(e) => set("ageMax", e.target.value)}
                         style={{ ...inputStyle, width: "50%" }}
                         className="placeholder:text-white/20"
                       />
                     </div>
-                  </div>
-                )}
-              </div>
-            </aside>
+                  </FilterSection>
 
-            {/* â”€â”€ Player Grid / List â”€â”€ */}
-            <main className="flex-1 min-w-0">
-              {loading ? (
-                <div
-                  className={
-                    viewMode === "grid"
-                      ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-                      : "space-y-3"
-                  }
-                >
-                  {Array.from({ length: 6 }).map((_, i) =>
-                    viewMode === "grid" ? (
-                      <SkeletonCard key={i} />
-                    ) : (
-                      <div
-                        key={i}
-                        className="rounded-2xl animate-pulse"
-                        style={{ height: "72px", ...GLASS }}
-                      />
-                    ),
-                  )}
-                </div>
-              ) : error ? (
-                <div className="flex flex-col items-center justify-center py-24 text-center">
-                  <p
-                    style={{
-                      fontSize: "15px",
-                      color: "rgba(255,255,255,0.35)",
-                    }}
-                  >
-                    {error}
-                  </p>
+                  <FilterSection title="Location">
+                    <input
+                      type="text"
+                      placeholder="e.g. London"
+                      value={filters.city}
+                      onChange={(e) => set("city", e.target.value)}
+                      style={inputStyle}
+                      className="placeholder:text-white/20"
+                    />
+                  </FilterSection>
+
+                  {/* Advanced */}
                   <button
-                    onClick={() => {
-                      const ac = new AbortController();
-                      fetchPlayers(ac.signal);
-                    }}
-                    className="mt-4"
+                    onClick={() => setShowAdvanced((v) => !v)}
+                    className="w-full flex items-center justify-between py-4"
                     style={{
-                      fontSize: "14px",
-                      color: "#FCA5A5",
                       background: "none",
                       border: "none",
                       cursor: "pointer",
-                      textDecoration: "underline",
                     }}
                   >
-                    Try again
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        fontWeight: 500,
+                        color: "rgba(255,255,255,0.3)",
+                        letterSpacing: "0.1em",
+                      }}
+                    >
+                      ADVANCED
+                    </span>
+                    <ChevronDownIcon
+                      className={`w-3.5 h-3.5 text-white/25 transition-transform duration-200 ${showAdvanced ? "rotate-180" : ""}`}
+                    />
                   </button>
+
+                  {showAdvanced && (
+                    <div className="pb-5">
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          color: "rgba(255,255,255,0.25)",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        Height (cm)
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          placeholder="Min"
+                          value={filters.heightMin}
+                          onChange={(e) => set("heightMin", e.target.value)}
+                          style={{ ...inputStyle, width: "50%" }}
+                          className="placeholder:text-white/20"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Max"
+                          value={filters.heightMax}
+                          onChange={(e) => set("heightMax", e.target.value)}
+                          style={{ ...inputStyle, width: "50%" }}
+                          className="placeholder:text-white/20"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ) : filteredPlayers.length === 0 ? (
-                <NoResults onReset={clearFilters} />
-              ) : viewMode === "grid" ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {filteredPlayers.map((player) => (
-                    <PlayerCardGrid
-                      key={player._id}
-                      player={player}
-                      onViewProfile={handleViewProfile}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredPlayers.map((player) => (
-                    <PlayerCardList
-                      key={player._id}
-                      player={player}
-                      onViewProfile={handleViewProfile}
-                    />
-                  ))}
-                </div>
-              )}
-            </main>
+              </aside>
+
+              {/* â”€â”€ Player Grid / List â”€â”€ */}
+              <main className="flex-1 min-w-0">
+                {loading ? (
+                  <div
+                    className={
+                      viewMode === "grid"
+                        ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+                        : "space-y-3"
+                    }
+                  >
+                    {Array.from({ length: 6 }).map((_, i) =>
+                      viewMode === "grid" ? (
+                        <SkeletonCard key={i} />
+                      ) : (
+                        <div
+                          key={i}
+                          className="rounded-2xl animate-pulse"
+                          style={{ height: "72px", ...GLASS }}
+                        />
+                      ),
+                    )}
+                  </div>
+                ) : error ? (
+                  <div className="flex flex-col items-center justify-center py-24 text-center">
+                    <p
+                      style={{
+                        fontSize: "15px",
+                        color: "rgba(255,255,255,0.35)",
+                      }}
+                    >
+                      {error}
+                    </p>
+                    <button
+                      onClick={() => {
+                        const ac = new AbortController();
+                        fetchPlayers(ac.signal);
+                      }}
+                      className="mt-4"
+                      style={{
+                        fontSize: "14px",
+                        color: "#FCA5A5",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                      }}
+                    >
+                      Try again
+                    </button>
+                  </div>
+                ) : filteredPlayers.length === 0 ? (
+                  <NoResults onReset={clearFilters} />
+                ) : viewMode === "grid" ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {filteredPlayers.map((player) => (
+                      <PlayerCardGrid
+                        key={player._id}
+                        player={player}
+                        onViewProfile={handleViewProfile}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredPlayers.map((player) => (
+                      <PlayerCardList
+                        key={player._id}
+                        player={player}
+                        onViewProfile={handleViewProfile}
+                      />
+                    ))}
+                  </div>
+                )}
+              </main>
+            </div>
           </div>
         </div>
       </div>
+      {/* end desktop hidden md:block */}
     </div>
   );
 };

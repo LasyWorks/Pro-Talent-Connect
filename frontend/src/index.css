@@ -1,17 +1,32 @@
 @import "tailwindcss";
 
+/* ============================================================
+   GLOBAL RESET & 8PT SPACING SYSTEM
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
 /*
- * Dropdown styling for dark theme
- * WCAG AA: contrast ratio ≥ 4.5:1
- * #e2e8f0 on #111827 = ~13.5:1 (AAA compliant)
- * Hover: #f1f5f9 on #1f2937 = ~11.8:1 (AAA compliant)
+ * DROPDOWN – WCAG AA ≥ 4.5:1
+ * #e2e8f0 on #111827 ≈ 13.5:1 (AAA)
  */
 select {
   background-color: rgba(255, 255, 255, 0.05);
   color: #e2e8f0;
   cursor: pointer;
 }
-
 select option {
   background-color: #111827;
   color: #e2e8f0;
@@ -19,143 +34,195 @@ select option {
   font-size: 14px;
   line-height: 1.5;
 }
-
 select option:hover,
-select option:focus {
-  background-color: #1f2937;
-  color: #f1f5f9;
-}
+select option:focus  { background-color: #1f2937; color: #f1f5f9; }
+select option:checked { background-color: #dc2626; color: #ffffff; }
 
-select option:checked {
-  background-color: #dc2626;
-  color: #ffffff;
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Custom scrollbar to match the liquid glass theme */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #000000;
-}
-
-::-webkit-scrollbar-thumb {
+/* ============================================================
+   CUSTOM SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar        { width: 6px; }
+::-webkit-scrollbar-track  { background: #000; }
+::-webkit-scrollbar-thumb  {
   background: linear-gradient(180deg, #ef4444, #991b1b);
   border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #dc2626, #7f1d1d);
 }
 
-/* Enhance backdrop blur support */
-@supports (backdrop-filter: blur(10px)) {
-  .backdrop-blur-custom {
-    backdrop-filter: blur(10px);
-  }
+/* ============================================================
+   LIQUID ANIMATION SYSTEM
+   ============================================================ */
+
+/* 1. Liquid ripple on button click */
+@keyframes liquidRipple {
+  0%   { transform: scale(0); opacity: 0.7; }
+  80%  { transform: scale(1); opacity: 0.15; }
+  100% { transform: scale(1.05); opacity: 0; }
 }
 
-/* Fade-in animation for images */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* 2. Floating blob (background accent) */
+@keyframes floatBlob {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  33%       { transform: translateY(-18px) scale(1.04); }
+  66%       { transform: translateY(10px) scale(0.97); }
 }
 
-img {
-  animation: fadeIn 0.6s ease-out;
+/* 3. Hero scroll-hint pulse */
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.2; transform: scaleY(1); }
+  50%       { opacity: 0.6; transform: scaleY(1.3); }
 }
 
-/* Ripple effect for buttons */
-@keyframes ripple {
-  0% {
-    transform: scale(0);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(4);
-    opacity: 0;
-  }
+/* 4. Liquid glow pulse (stats icons) */
+@keyframes liquidGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196,22,28,0); }
+  50%       { box-shadow: 0 0 24px 6px rgba(196,22,28,0.35); }
 }
 
-.btn-ripple {
-  position: relative;
-  overflow: hidden;
+/* 5. Subtle card float */
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-4px); }
 }
 
-.btn-ripple::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+/* 6. Scroll-triggered slide-up entrance */
+@keyframes slideUpEntrance {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.btn-ripple:active::after {
-  width: 300px;
-  height: 300px;
-  animation: ripple 0.6s ease-out;
-}
-
-/* Scroll reveal animation */
-@keyframes scrollReveal {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.scroll-reveal {
-  animation: scrollReveal 0.8s ease-out;
-}
-
-/* Floating animation for background shapes */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-/* Gradient text animation */
+/* 7. Gradient mesh shift */
 @keyframes gradientShift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+/* 8. Progress bar fill */
+@keyframes barFill {
+  from { width: 0%; }
+  to   { width: var(--bar-width, 70%); }
+}
+
+/* 9. Count-up (visual support) */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 10. Social icon float on hover */
+@keyframes socialFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-3px); }
+}
+
+/* 11. Accordion chevron */
+@keyframes chevronOpen  { from { transform: rotate(0deg); }   to { transform: rotate(180deg); } }
+@keyframes chevronClose { from { transform: rotate(180deg); } to { transform: rotate(0deg); } }
+
+/* 12. Stat number count-up shimmer */
+@keyframes numberShimmer {
+  0%   { opacity: 0; transform: translateY(12px); }
+  60%  { opacity: 1; transform: translateY(-2px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+img { animation: fadeIn 0.6s ease-out; }
+
+/* Backdrop blur support */
+@supports (backdrop-filter: blur(10px)) {
+  .glass {
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
   }
 }
 
+/* Scroll-reveal utility – applied via JS IntersectionObserver */
+.scroll-reveal-hidden {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.scroll-reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hero primary button – elastic press */
+.hero-btn-primary:hover  { transform: scale(1.03); }
+.hero-btn-primary:active { transform: scale(0.98); }
+
+/* Hero secondary button – elastic press */
+.hero-btn-secondary:hover  { transform: scale(1.02); background: rgba(255,255,255,0.1) !important; }
+.hero-btn-secondary:active { transform: scale(0.97); }
+
+/* Player card hover lift (desktop) */
+@media (hover: hover) {
+  .player-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+  }
+}
+
+/* Stat card float */
+.stat-card {
+  animation: cardFloat 5s ease-in-out infinite;
+}
+.stat-card:nth-child(2) { animation-delay: 1.6s; }
+.stat-card:nth-child(3) { animation-delay: 3.2s; }
+
+/* Animate-gradient utility */
 .animate-gradient {
   background-size: 200% auto;
   animation: gradientShift 3s ease infinite;
 }
 
+/* Hide scrollbar but keep scrollable */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Liquid border on newsletter input */
+@keyframes liquidBorder {
+  0%, 100% { border-color: rgba(196,22,28,0.6); box-shadow: 0 0 0 0 rgba(196,22,28,0); }
+  50%       { border-color: rgba(255,70,85,0.9); box-shadow: 0 0 14px 3px rgba(196,22,28,0.3); }
+}
+.newsletter-input:focus {
+  animation: liquidBorder 1.8s ease-in-out infinite;
+  outline: none;
+}
+
+/* Accordion expand */
+.accordion-body {
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.25s ease;
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-20px); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+/* Mobile filter drawer slide-up sheet */
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.animate-slide-up-sheet { animation: slideUpSheet 0.32s cubic-bezier(0.32, 0.72, 0, 1) both; }
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+/* Hide scrollbar while keeping scroll behaviour (horizontal chip rows etc.) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

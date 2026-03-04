@@ -1,11 +1,11 @@
 const Blog = require("../Models/Blog");
 const { logAction } = require("../Middleware/auditLogger");
+const { AppError, catchAsync } = require("../Middleware/errorHandler");
 
 // @desc    Create a new blog/article
 // @route   POST /api/blogs
 // @access  Private / Admin & Super Admin
-const createBlog = async (req, res) => {
-  try {
+const createBlog = catchAsync(async (req, res) => {
     const {
       title,
       slug,
@@ -21,9 +21,7 @@ const createBlog = async (req, res) => {
 
     // Check required fields
     if (!title || !content) {
-      return res
-        .status(400)
-        .json({ message: "Please provide title and content" });
+      throw new AppError("Please provide title and content", 400);
     }
 
     // Generate slug if not provided
@@ -78,17 +76,12 @@ const createBlog = async (req, res) => {
       message: "Blog created successfully",
       blog,
     });
-  } catch (error) {
-    console.error("Create blog error:", error.message);
-    res.status(500).json({ message: error.message || "Server error" });
-  }
-};
+});
 
 // @desc    Get all blogs including drafts (with filters & pagination)
 // @route   GET /api/blogs/all
 // @access  Private / Admin & Super Admin
-const getAllBlogs = async (req, res) => {
-  try {
+const getAllBlogs = catchAsync(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -132,17 +125,12 @@ const getAllBlogs = async (req, res) => {
       currentPage: page,
       blogs,
     });
-  } catch (error) {
-    console.error("Get blogs error:", error.message);
-    res.status(500).json({ message: error.message || "Server error" });
-  }
-};
+});
 
 // @desc    Get single blog by ID or slug
 // @route   GET /api/blogs/:identifier
 // @access  Public
-const getBlogById = async (req, res) => {
-  try {
+const getBlogById = catchAsync(async (req, res) => {
     const { identifier } = req.params;
     
     // Try to find by ID first, then by slug
@@ -159,34 +147,26 @@ const getBlogById = async (req, res) => {
     }
 
     if (!blog) {
-      return res.status(404).json({ message: "Blog not found" });
+      throw new AppError("Blog not found", 404);
     }
 
     res.status(200).json({
       success: true,
       blog,
     });
-  } catch (error) {
-    console.error("Get blog error:", error.message);
-    if (error.kind === "ObjectId") {
-      return res.status(404).json({ message: "Blog not found" });
-    }
-    res.status(500).json({ message: error.message || "Server error" });
-  }
-};
+});
 
 // @desc    Update a blog/article
 // @route   PUT /api/blogs/:id
 // @access  Private / Admin & Super Admin
-const updateBlog = async (req, res) => {
-  try {
+const updateBlog = catchAsync(async (req, res) => {
     const blog = await Blog.findOne({
       _id: req.params.id,
       isDeleted: false,
     });
 
     if (!blog) {
-      return res.status(404).json({ message: "Blog not found" });
+      throw new AppError("Blog not found", 404);
     }
 
     // Update only provided fields
@@ -251,24 +231,19 @@ const updateBlog = async (req, res) => {
       message: "Blog updated successfully",
       blog: updatedBlog,
     });
-  } catch (error) {
-    console.error("Update blog error:", error.message);
-    res.status(500).json({ message: error.message || "Server error" });
-  }
-};
+});
 
 // @desc    Delete a blog/article
 // @route   DELETE /api/blogs/:id
 // @access  Private / Super Admin only
-const deleteBlog = async (req, res) => {
-  try {
+const deleteBlog = catchAsync(async (req, res) => {
     const blog = await Blog.findOne({
       _id: req.params.id,
       isDeleted: false,
     });
 
     if (!blog) {
-      return res.status(404).json({ message: "Blog not found" });
+      throw new AppError("Blog not found", 404);
     }
 
     // Soft delete
@@ -291,17 +266,12 @@ const deleteBlog = async (req, res) => {
       success: true,
       message: "Blog deleted successfully",
     });
-  } catch (error) {
-    console.error("Delete blog error:", error.message);
-    res.status(500).json({ message: error.message || "Server error" });
-  }
-};
+});
 
 // @desc    Get published blogs only
 // @route   GET /api/blogs
 // @access  Public
-const getPublishedBlogs = async (req, res) => {
-  try {
+const getPublishedBlogs = catchAsync(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -333,24 +303,19 @@ const getPublishedBlogs = async (req, res) => {
       currentPage: page,
       blogs,
     });
-  } catch (error) {
-    console.error("Get published blogs error:", error.message);
-    res.status(500).json({ message: error.message || "Server error" });
-  }
-};
+});
 
 // @desc    Toggle blog status to PUBLISHED
 // @route   PATCH /api/blogs/:id/publish
 // @access  Private / Admin & Super Admin
-const togglePublish = async (req, res) => {
-  try {
+const togglePublish = catchAsync(async (req, res) => {
     const blog = await Blog.findOne({
       _id: req.params.id,
       isDeleted: false,
     });
 
     if (!blog) {
-      return res.status(404).json({ message: "Blog not found" });
+      throw new AppError("Blog not found", 404);
     }
 
     // Toggle to PUBLISHED status
@@ -375,11 +340,7 @@ const togglePublish = async (req, res) => {
       message: "Blog published successfully",
       blog: updatedBlog,
     });
-  } catch (error) {
-    console.error("Toggle publish error:", error.message);
-    res.status(500).json({ message: error.message || "Server error" });
-  }
-};
+});
 
 module.exports = {
   createBlog,

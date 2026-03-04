@@ -84,7 +84,7 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0B0D] text-white">
+    <div className="fixed inset-0 z-[60] overflow-y-auto bg-[#0B0B0D] text-white">
       {isLoading ? (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6">
           <DetailSkeleton />

@@ -289,13 +289,17 @@ const PartnerCard = ({ partner }) => (
     {/* Avatar + name row */}
     <div className="flex items-center gap-3">
       <div
-        className={`w-12 h-12 rounded-xl bg-linear-to-br ${partner.avatarColor} border ${partner.borderColor} flex items-center justify-center shrink-0`}
+        className={`w-12 h-12 rounded-xl bg-linear-to-br ${partner.avatarColor} border ${partner.borderColor} flex items-center justify-center shrink-0 overflow-hidden`}
       >
-        <span
-          className={`text-xs font-semibold tracking-wide ${partner.accentColor}`}
-        >
-          {partner.avatar}
-        </span>
+        {partner.logoUrl ? (
+          <img src={partner.logoUrl} alt={partner.name} className="w-full h-full object-contain rounded-xl" />
+        ) : (
+          <span
+            className={`text-xs font-semibold tracking-wide ${partner.accentColor}`}
+          >
+            {partner.avatar}
+          </span>
+        )}
       </div>
       <div className="min-w-0">
         {/* H3 — 16px / 600 for partner name (caption context) */}

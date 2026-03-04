@@ -10,28 +10,21 @@ const {
   togglePublish,
 } = require("../services/blogController");
 const { protect, authorize } = require("../Middleware/authMiddleware");
+const { cacheMiddleware, invalidateCache } = require("../Middleware/cache");
 
-// Public routes - no authentication required
-// Get all published blogs (public-facing)
-router.get("/", getPublishedBlogs);
+// Public routes - cached for 60s
+router.get("/", cacheMiddleware(60, 'blogs'), getPublishedBlogs);
 
-// Protected routes - require authentication
-// Admin & Super Admin can view all blogs including drafts (must come before /:identifier)
+// Protected routes
 router.get("/all", protect, authorize("Admin", "Super Admin"), getAllBlogs);
 
-// Public route - Get single blog by ID or slug
-router.get("/:identifier", getBlogById);
+// Public route - cached for 120s
+router.get("/:identifier", cacheMiddleware(120, 'blogs'), getBlogById);
 
-// Admin & Super Admin can create blogs
-router.post("/", protect, authorize("Admin", "Super Admin"), createBlog);
-
-// Admin & Super Admin can update blogs
-router.put("/:id", protect, authorize("Admin", "Super Admin"), updateBlog);
-
-// Admin & Super Admin can toggle publish status
-router.patch("/:id/publish", protect, authorize("Admin", "Super Admin"), togglePublish);
-
-// Only Super Admin can delete blogs
-router.delete("/:id", protect, authorize("Super Admin"), deleteBlog);
+// Write operations invalidate blog cache
+router.post("/", protect, authorize("Admin", "Super Admin"), invalidateCache('blogs'), createBlog);
+router.put("/:id", protect, authorize("Admin", "Super Admin"), invalidateCache('blogs'), updateBlog);
+router.patch("/:id/publish", protect, authorize("Admin", "Super Admin"), invalidateCache('blogs'), togglePublish);
+router.delete("/:id", protect, authorize("Super Admin"), invalidateCache('blogs'), deleteBlog);
 
 module.exports = router;

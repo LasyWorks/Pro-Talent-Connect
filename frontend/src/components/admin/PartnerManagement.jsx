@@ -32,6 +32,7 @@ const EMPTY_FORM = {
   type: "",
   description: "",
   avatar: "",
+  logoUrl: "",
   avatarColor: COLOR_PRESETS[0].avatarColor,
   borderColor: COLOR_PRESETS[0].borderColor,
   accentColor: COLOR_PRESETS[0].accentColor,
@@ -97,6 +98,7 @@ const PartnerModal = ({ initial, onSave, onClose }) => {
     if (!initial) return { ...EMPTY_FORM, social: { ...EMPTY_FORM.social } };
     return {
       ...initial,
+      logoUrl: initial.logoUrl ?? "",
       social: {
         instagram: initial.social?.instagram ?? { handle: "", url: "" },
         twitter:   initial.social?.twitter   ?? { handle: "", url: "" },
@@ -169,41 +171,56 @@ const PartnerModal = ({ initial, onSave, onClose }) => {
             <textarea className={`${inputCls} resize-none`} rows={3} value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Short description of the partner…" required />
           </div>
 
-          {/* Avatar + colour */}
+          {/* Logo / Avatar */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Avatar Initials *</label>
+              <label className={labelCls}>Logo Image URL</label>
+              <input
+                className={inputCls}
+                value={form.logoUrl}
+                onChange={(e) => set("logoUrl", e.target.value)}
+                placeholder="https://example.com/logo.png"
+                type="url"
+              />
+              {/* Live preview */}
+              <div className={`mt-2 w-12 h-12 rounded-xl bg-gradient-to-br ${form.avatarColor} border ${form.borderColor} flex items-center justify-center overflow-hidden`}>
+                {form.logoUrl ? (
+                  <img src={form.logoUrl} alt="Logo preview" className="w-full h-full object-contain rounded-xl" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                ) : null}
+                <span className={`text-xs font-bold tracking-wide ${form.accentColor} ${form.logoUrl ? 'hidden' : ''}`} style={form.logoUrl ? { display: 'none' } : {}}>{form.avatar || "???"}</span>
+              </div>
+              <p className="text-xs text-gray-600 mt-1">Paste an image URL for the partner logo. Falls back to initials if empty.</p>
+            </div>
+            <div>
+              <label className={labelCls}>Avatar Initials (fallback)</label>
               <input
                 className={inputCls}
                 value={form.avatar}
                 onChange={(e) => set("avatar", e.target.value.toUpperCase().slice(0, 4))}
                 placeholder="e.g. ESN"
                 maxLength={4}
-                required
               />
-              {/* Live preview */}
-              <div className={`mt-2 w-12 h-12 rounded-xl bg-gradient-to-br ${form.avatarColor} border ${form.borderColor} flex items-center justify-center`}>
-                <span className={`text-xs font-bold tracking-wide ${form.accentColor}`}>{form.avatar || "???"}</span>
-              </div>
             </div>
-            <div>
-              <label className={labelCls}>Colour Scheme</label>
-              <div className="flex flex-wrap gap-2 mt-1">
-                {COLOR_PRESETS.map((p) => (
-                  <button
-                    type="button"
-                    key={p.label}
-                    onClick={() => applyPreset(p)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
-                      currentPreset.label === p.label
-                        ? `bg-gradient-to-br ${p.avatarColor} ${p.borderColor} ${p.accentColor} border-opacity-60`
-                        : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
+          </div>
+
+          {/* Colour scheme */}
+          <div>
+            <label className={labelCls}>Colour Scheme</label>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {COLOR_PRESETS.map((p) => (
+                <button
+                  type="button"
+                  key={p.label}
+                  onClick={() => applyPreset(p)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+                    currentPreset.label === p.label
+                      ? `bg-gradient-to-br ${p.avatarColor} ${p.borderColor} ${p.accentColor} border-opacity-60`
+                      : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -259,8 +276,12 @@ const PartnerRow = ({ partner, onEdit, onDelete }) => {
   return (
     <div className="group flex items-center gap-4 p-4 bg-white/3 border border-white/8 rounded-xl hover:bg-white/5 hover:border-white/15 transition-all">
       {/* Avatar */}
-      <div className={`w-11 h-11 rounded-lg bg-gradient-to-br ${partner.avatarColor} border ${partner.borderColor} flex items-center justify-center shrink-0`}>
-        <span className={`text-xs font-bold tracking-wide ${partner.accentColor}`}>{partner.avatar}</span>
+      <div className={`w-11 h-11 rounded-lg bg-gradient-to-br ${partner.avatarColor} border ${partner.borderColor} flex items-center justify-center shrink-0 overflow-hidden`}>
+        {partner.logoUrl ? (
+          <img src={partner.logoUrl} alt={partner.name} className="w-full h-full object-contain rounded-lg" />
+        ) : (
+          <span className={`text-xs font-bold tracking-wide ${partner.accentColor}`}>{partner.avatar}</span>
+        )}
       </div>
 
       {/* Info */}

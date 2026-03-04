@@ -2,17 +2,15 @@ const Player = require("../Models/Players");
 const Otp = require("../Models/Otp");
 const { logAction } = require("../Middleware/auditLogger");
 const { calculateScoutReport } = require("./scoutReportCalculator");
+const { AppError, catchAsync } = require("../Middleware/errorHandler");
 
 // @desc    Create a new player
 // @route   POST /api/players
 // @access  Private / Super Admin Only
-const createPlayer = async (req, res) => {
-  try {
+const createPlayer = catchAsync(async (req, res) => {
     // Only Super Admin can create players
     if (req.user.role !== "Super Admin") {
-      return res.status(403).json({
-        message: "Access denied. Only Super Admin can create players.",
-      });
+      throw new AppError("Access denied. Only Super Admin can create players.", 403);
     }
 
     const {
@@ -59,9 +57,7 @@ const createPlayer = async (req, res) => {
       !mobileNumber ||
       !email
     ) {
-      return res
-        .status(400)
-        .json({ message: "Please provide all required fields" });
+      throw new AppError("Please provide all required fields", 400);
     }
 
     // Verify that OTP was confirmed for this player email
@@ -72,10 +68,7 @@ const createPlayer = async (req, res) => {
     });
 
     if (!verifiedOtp || verifiedOtp.expiresAt < new Date()) {
-      return res.status(400).json({
-        message:
-          "Email OTP verification is required before creating a player profile",
-      });
+      throw new AppError("Email OTP verification is required before creating a player profile", 400);
     }
 
     // Clean up the used OTP
@@ -99,7 +92,7 @@ const createPlayer = async (req, res) => {
     });
 
     if (existingPlayer) {
-      return res.status(400).json({ message: "Duplicate playerId or email" });
+      throw new AppError("Duplicate playerId or email", 400);
     }
 
     // Build player data and auto-calculate Scout Report
@@ -199,20 +192,12 @@ const createPlayer = async (req, res) => {
     });
 
     res.status(201).json(player);
-  } catch (error) {
-    console.error("Create player error:", error.message);
-    if (error.code === 11000) {
-      return res.status(400).json({ message: "Duplicate playerId or email" });
-    }
-    res.status(500).json({ message: "Server error" });
-  }
-};
+});
 
 // @desc    Get all players (with optional filters & pagination)
 // @route   GET /api/players
 // @access  Private / Admin & Super Admin
-const getAllPlayers = async (req, res) => {
-  try {
+const getAllPlayers = catchAsync(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -263,17 +248,12 @@ const getAllPlayers = async (req, res) => {
       hasNextPage: page < totalPages,
       hasPrevPage: page > 1,
     });
-  } catch (error) {
-    console.error("Get players error:", error.message);
-    res.status(500).json({ message: "Server error" });
-  }
-};
+});
 
 // @desc    Search players by multiple criteria
 // @route   GET /api/players/search
 // @access  Private / Admin & Super Admin
-const searchPlayers = async (req, res) => {
-  try {
+const searchPlayers = catchAsync(async (req, res) => {
     const { name, city, age_group, position, gender } = req.query;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -311,10 +291,7 @@ const searchPlayers = async (req, res) => {
 
     // If no search criteria provided
     if (!name && !city && !age_group && !position && !gender) {
-      return res.status(400).json({
-        message:
-          "Please provide at least one search parameter: name, city, age_group, position, or gender",
-      });
+      throw new AppError("Please provide at least one search parameter: name, city, age_group, position, or gender", 400);
     }
 
     const totalResults = await Player.countDocuments(filter);
@@ -342,17 +319,12 @@ const searchPlayers = async (req, res) => {
       currentPage: page,
       players,
     });
-  } catch (error) {
-    console.error("Search players error:", error.message);
-    res.status(500).json({ message: "Server error" });
-  }
-};
+});
 
 // @desc    Get single player by ID
 // @route   GET /api/players/:id
 // @access  Private / Admin & Super Admin
-const getPlayerById = async (req, res) => {
-  try {
+const getPlayerById = catchAsync(async (req, res) => {
     const player = await Player.findOne({
       _id: req.params.id,
       isDeleted: { $ne: true },
@@ -369,31 +341,23 @@ const getPlayerById = async (req, res) => {
       });
 
     if (!player) {
-      return res.status(404).json({ message: "Player not found" });
+      throw new AppError("Player not found", 404);
     }
 
     res.status(200).json(player);
-  } catch (error) {
-    console.error("Get player error:", error.message);
-    if (error.kind === "ObjectId") {
-      return res.status(404).json({ message: "Player not found" });
-    }
-    res.status(500).json({ message: "Server error" });
-  }
-};
+});
 
 // @desc    Update a player
 // @route   PUT /api/players/:id
 // @access  Private / Admin & Super Admin
-const updatePlayer = async (req, res) => {
-  try {
+const updatePlayer = catchAsync(async (req, res) => {
     const player = await Player.findOne({
       _id: req.params.id,
       isDeleted: { $ne: true },
     });
 
     if (!player) {
-      return res.status(404).json({ message: "Player not found" });
+      throw new AppError("Player not found", 404);
     }
 
     // Update only provided fields
@@ -485,27 +449,19 @@ const updatePlayer = async (req, res) => {
     });
 
     res.status(200).json(updatedPlayer);
-  } catch (error) {
-    console.error("Update player error:", error.message);
-    if (error.code === 11000) {
-      return res.status(400).json({ message: "Duplicate playerId or email" });
-    }
-    res.status(500).json({ message: "Server error" });
-  }
-};
+});
 
 // @desc    Delete a player
 // @route   DELETE /api/players/:id
 // @access  Private / Admin & Super Admin
-const deletePlayer = async (req, res) => {
-  try {
+const deletePlayer = catchAsync(async (req, res) => {
     const player = await Player.findOne({
       _id: req.params.id,
       isDeleted: { $ne: true },
     });
 
     if (!player) {
-      return res.status(404).json({ message: "Player not found" });
+      throw new AppError("Player not found", 404);
     }
 
     // Soft delete
@@ -526,11 +482,7 @@ const deletePlayer = async (req, res) => {
     });
 
     res.status(200).json({ message: "Player deleted successfully" });
-  } catch (error) {
-    console.error("Delete player error:", error.message);
-    res.status(500).json({ message: "Server error" });
-  }
-};
+});
 
 module.exports = {
   createPlayer,

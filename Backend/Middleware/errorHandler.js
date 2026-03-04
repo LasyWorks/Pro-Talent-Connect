@@ -43,6 +43,14 @@ const handleJWTError = () =>
 const handleJWTExpiredError = () =>
   new AppError('Your token has expired. Please log in again.', 401);
 
+// Handle syntax / JSON parse errors
+const handleSyntaxError = () =>
+  new AppError('Invalid JSON in request body.', 400);
+
+// Handle payload too large
+const handlePayloadTooLarge = () =>
+  new AppError('Request payload is too large.', 413);
+
 // Send error response in development
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
@@ -80,9 +88,12 @@ const errorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
+  // Log all errors server-side
+  logger.error(`${err.statusCode} ${req.method} ${req.originalUrl} - ${err.message}`);
+
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res);
-  } else if (process.env.NODE_ENV === 'production') {
+  } else {
     let error = { ...err };
     error.message = err.message;
 
@@ -91,6 +102,8 @@ const errorHandler = (err, req, res, next) => {
     if (err.name === 'ValidationError') error = handleValidationErrorDB(err);
     if (err.name === 'JsonWebTokenError') error = handleJWTError();
     if (err.name === 'TokenExpiredError') error = handleJWTExpiredError();
+    if (err.type === 'entity.parse.failed') error = handleSyntaxError();
+    if (err.type === 'entity.too.large') error = handlePayloadTooLarge();
 
     sendErrorProd(error, res);
   }

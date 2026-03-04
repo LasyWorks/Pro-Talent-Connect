@@ -1,11 +1,59 @@
 /**
  * Centralized API Configuration
  * Single source of truth for all API calls
+ * Includes response caching and request deduplication
  */
 
 import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
+// ─── In-Memory Response Cache ────────────────────────────
+class ApiCache {
+  constructor() {
+    this.cache = new Map();
+  }
+
+  get(key) {
+    const item = this.cache.get(key);
+    if (!item) return null;
+    if (Date.now() > item.expiry) {
+      this.cache.delete(key);
+      return null;
+    }
+    return item.data;
+  }
+
+  set(key, data, ttlMs = 30000) {
+    this.cache.set(key, { data, expiry: Date.now() + ttlMs });
+  }
+
+  invalidate(prefix) {
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(prefix)) this.cache.delete(key);
+    }
+  }
+
+  flush() {
+    this.cache.clear();
+  }
+}
+
+const apiCache = new ApiCache();
+
+// ─── Request Deduplication ───────────────────────────────
+const pendingRequests = new Map();
+
+function deduplicateRequest(key, requestFn) {
+  if (pendingRequests.has(key)) {
+    return pendingRequests.get(key);
+  }
+  const promise = requestFn().finally(() => {
+    pendingRequests.delete(key);
+  });
+  pendingRequests.set(key, promise);
+  return promise;
+}
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -65,12 +113,36 @@ apiClient.interceptors.response.use(
   }
 );
 
+// ─── Cached GET helper ─────────────────────────────────
+function cachedGet(url, options = {}, ttlMs = 30000) {
+  const { signal, ...params } = options;
+  const cacheKey = `${url}:${JSON.stringify(params)}`;
+
+  const cached = apiCache.get(cacheKey);
+  if (cached && !signal) return Promise.resolve(cached);
+
+  return deduplicateRequest(cacheKey, () =>
+    apiClient.get(url, { params, signal }).then((res) => {
+      apiCache.set(cacheKey, res, ttlMs);
+      return res;
+    })
+  );
+}
+
+// ─── Write helper with cache invalidation ─────────────
+function mutate(method, url, data, invalidatePrefixes = []) {
+  return apiClient[method](url, data).then((res) => {
+    invalidatePrefixes.forEach((p) => apiCache.invalidate(p));
+    return res;
+  });
+}
+
 // API methods
 export const api = {
   // ─── Auth ───
   login: (credentials) => apiClient.post('/auth/login', credentials),
-  logout: () => apiClient.post('/auth/logout'),
-  getProfile: () => apiClient.get('/auth/profile'),
+  logout: () => { apiCache.flush(); return apiClient.post('/auth/logout'); },
+  getProfile: () => cachedGet('/auth/profile', {}, 60000),
   changePassword: (data) => apiClient.put('/auth/change-password', data),
   changeAdminRole: (id, role) => apiClient.put(`/auth/admin/${id}/role`, { role }),
   refreshToken: () => apiClient.post('/auth/refresh'),
@@ -82,77 +154,66 @@ export const api = {
   sendPasswordOtp: () => apiClient.post('/otp/send-password-otp'),
   verifyPasswordOtp: (otp) => apiClient.post('/otp/verify-password-otp', { otp }),
 
-  // ─── Players ───
-  getPlayers: (options = {}) => {
-    const { signal, ...params } = options;
-    return apiClient.get('/players', { params, signal });
-  },
-  getPlayer: (id) => apiClient.get(`/players/${id}`),
-  createPlayer: (data) => apiClient.post('/players', data),
-  updatePlayer: (id, data) => apiClient.put(`/players/${id}`, data),
-  deletePlayer: (id) => apiClient.delete(`/players/${id}`),
-  searchPlayers: (params) => apiClient.get('/players/search', { params }),
+  // ─── Players (cached 30s) ───
+  getPlayers: (options = {}) => cachedGet('/players', options, 30000),
+  getPlayer: (id) => cachedGet(`/players/${id}`, {}, 60000),
+  createPlayer: (data) => mutate('post', '/players', data, ['/players']),
+  updatePlayer: (id, data) => mutate('put', `/players/${id}`, data, ['/players']),
+  deletePlayer: (id) => { apiCache.invalidate('/players'); return apiClient.delete(`/players/${id}`); },
+  searchPlayers: (params) => cachedGet('/players/search', params, 30000),
 
-  // ─── Blogs ───
-  getBlogs: (params) => apiClient.get('/blogs', { params }),
-  getBlog: (id) => apiClient.get(`/blogs/${id}`),
-  createBlog: (data) => apiClient.post('/blogs', data),
-  updateBlog: (id, data) => apiClient.put(`/blogs/${id}`, data),
-  deleteBlog: (id) => apiClient.delete(`/blogs/${id}`),
-  getAllBlogs: (params) => apiClient.get('/blogs/all', { params }),
-  publishBlog: (id) => apiClient.patch(`/blogs/${id}/publish`),
+  // ─── Blogs (cached 60s) ───
+  getBlogs: (params) => cachedGet('/blogs', params, 60000),
+  getBlog: (id) => cachedGet(`/blogs/${id}`, {}, 120000),
+  createBlog: (data) => mutate('post', '/blogs', data, ['/blogs']),
+  updateBlog: (id, data) => mutate('put', `/blogs/${id}`, data, ['/blogs']),
+  deleteBlog: (id) => { apiCache.invalidate('/blogs'); return apiClient.delete(`/blogs/${id}`); },
+  getAllBlogs: (params) => cachedGet('/blogs/all', params, 30000),
+  publishBlog: (id) => { apiCache.invalidate('/blogs'); return apiClient.patch(`/blogs/${id}/publish`); },
 
-  // ─── About ───
-  getAbout: () => apiClient.get('/about'),
-  updateAbout: (data) => apiClient.put('/about', data),
-  addAboutImages: (images) => apiClient.post('/about/images', { images }),
+  // ─── About (cached 5 min) ───
+  getAbout: () => cachedGet('/about', {}, 300000),
+  updateAbout: (data) => mutate('put', '/about', data, ['/about']),
+  addAboutImages: (images) => mutate('post', '/about/images', { images }, ['/about']),
 
-  // ─── Services ───
-  getServices: (options = {}) => {
-    const { signal } = options;
-    return apiClient.get('/services', { signal });
-  },
-  getService: (id) => apiClient.get(`/services/${id}`),
-  createService: (data) => apiClient.post('/services', data),
-  updateService: (id, data) => apiClient.put(`/services/${id}`, data),
-  deleteService: (id) => apiClient.delete(`/services/${id}`),
+  // ─── Services (cached 5 min) ───
+  getServices: (options = {}) => cachedGet('/services', options, 300000),
+  getService: (id) => cachedGet(`/services/${id}`, {}, 300000),
+  createService: (data) => mutate('post', '/services', data, ['/services']),
+  updateService: (id, data) => mutate('put', `/services/${id}`, data, ['/services']),
+  deleteService: (id) => { apiCache.invalidate('/services'); return apiClient.delete(`/services/${id}`); },
 
-  // ─── How It Works ───
-  getHowItWorks: () => apiClient.get('/how-it-works'),
-  createHowItWork: (data) => apiClient.post('/how-it-works', data),
-  updateHowItWork: (id, data) => apiClient.put(`/how-it-works/${id}`, data),
-  deleteHowItWork: (id) => apiClient.delete(`/how-it-works/${id}`),
+  // ─── How It Works (cached 5 min) ───
+  getHowItWorks: () => cachedGet('/how-it-works', {}, 300000),
+  createHowItWork: (data) => mutate('post', '/how-it-works', data, ['/how-it-works']),
+  updateHowItWork: (id, data) => mutate('put', `/how-it-works/${id}`, data, ['/how-it-works']),
+  deleteHowItWork: (id) => { apiCache.invalidate('/how-it-works'); return apiClient.delete(`/how-it-works/${id}`); },
 
   // ─── Contact / Enquiries ───
   submitEnquiry: (data) => apiClient.post('/contact/enquiry', data),
   submitProfileRequest: (data) => apiClient.post('/contact/profile-request', data),
-  getEnquiries: (options = {}) => {
-    const { signal, ...params } = options;
-    return apiClient.get('/contact/enquiries', { params, signal });
-  },
-  getProfileRequests: (options = {}) => {
-    const { signal, ...params } = options;
-    return apiClient.get('/contact/profile-requests', { params, signal });
-  },
-  updateEnquiryStatus: (id, status) => apiClient.put(`/contact/enquiries/${id}`, { status }),
-  updateProfileStatus: (id, status, adminNotes) => apiClient.put(`/contact/profile-requests/${id}`, { status, adminNotes }),
+  getEnquiries: (options = {}) => cachedGet('/contact/enquiries', options, 15000),
+  getProfileRequests: (options = {}) => cachedGet('/contact/profile-requests', options, 15000),
+  updateEnquiryStatus: (id, status) => mutate('put', `/contact/enquiries/${id}`, { status }, ['/contact']),
+  updateProfileStatus: (id, status, adminNotes) => mutate('put', `/contact/profile-requests/${id}`, { status, adminNotes }, ['/contact', '/players']),
 
-  // ─── Dashboard ───
-  getDashboardStats: (options = {}) => {
-    const { signal } = options;
-    return apiClient.get('/dashboard/stats', { signal });
-  },
+  // ─── Dashboard (cached 15s) ───
+  getDashboardStats: (options = {}) => cachedGet('/dashboard/stats', options, 15000),
 
   // ─── Admin Management (Super Admin) ───
-  getAdmins: (params) => apiClient.get('/admins', { params }),
-  getAdmin: (id) => apiClient.get(`/admins/${id}`),
-  createAdmin: (data) => apiClient.post('/admins', data),
-  updateAdmin: (id, data) => apiClient.put(`/admins/${id}`, data),
-  demoteAdmin: (id) => apiClient.patch(`/admins/${id}/demote`),
-  deleteAdmin: (id) => apiClient.delete(`/admins/${id}`),
+  getAdmins: (params) => cachedGet('/admins', params, 30000),
+  getAdmin: (id) => cachedGet(`/admins/${id}`, {}, 30000),
+  createAdmin: (data) => mutate('post', '/admins', data, ['/admins']),
+  updateAdmin: (id, data) => mutate('put', `/admins/${id}`, data, ['/admins']),
+  demoteAdmin: (id) => { apiCache.invalidate('/admins'); return apiClient.patch(`/admins/${id}/demote`); },
+  deleteAdmin: (id) => { apiCache.invalidate('/admins'); return apiClient.delete(`/admins/${id}`); },
 
   // ─── Audit Logs (Super Admin) ───
-  getAuditLogs: (params) => apiClient.get('/audit-logs', { params }),
+  getAuditLogs: (params) => cachedGet('/audit-logs', params, 10000),
+
+  // ─── Cache Control ───
+  clearCache: () => apiCache.flush(),
+  invalidateCache: (prefix) => apiCache.invalidate(prefix),
 };
 
 export default apiClient;

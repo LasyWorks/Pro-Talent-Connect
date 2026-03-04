@@ -1,18 +1,16 @@
 const Enquiry = require("../Models/Enquiry");
 const ProfileRequest = require("../Models/ProfileRequest");
+const { calculateScoutReport } = require("./scoutReportCalculator");
 const Player = require("../Models/Players");
+const { AppError, catchAsync } = require("../Middleware/errorHandler");
 
 // Submit enquiry form
-const submitEnquiry = async (req, res) => {
-  try {
+const submitEnquiry = catchAsync(async (req, res) => {
     const { name, email, phone, subject, message } = req.body;
 
     // Validate required fields
     if (!name || !email || !subject || !message) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide all required fields",
-      });
+      throw new AppError("Please provide all required fields", 400);
     }
 
     const enquiry = await Enquiry.create({
@@ -28,19 +26,10 @@ const submitEnquiry = async (req, res) => {
       message: "Enquiry submitted successfully. We'll get back to you soon!",
       enquiry,
     });
-  } catch (error) {
-    console.error("Error submitting enquiry:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error submitting enquiry",
-      error: error.message,
-    });
-  }
-};
+});
 
 // Submit profile creation request
-const submitProfileRequest = async (req, res) => {
-  try {
+const submitProfileRequest = catchAsync(async (req, res) => {
     const {
       fullName,
       email,
@@ -72,10 +61,7 @@ const submitProfileRequest = async (req, res) => {
       !weight ||
       !yearsOfExperience
     ) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide all required fields",
-      });
+      throw new AppError("Please provide all required fields", 400);
     }
 
     const profileRequest = await ProfileRequest.create({
@@ -101,19 +87,10 @@ const submitProfileRequest = async (req, res) => {
         "Profile creation request submitted successfully! Our team will review your information and contact you within 2-3 business days.",
       profileRequest,
     });
-  } catch (error) {
-    console.error("Error submitting profile request:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error submitting profile request",
-      error: error.message,
-    });
-  }
-};
+});
 
 // Get all enquiries (Admin only)
-const getAllEnquiries = async (req, res) => {
-  try {
+const getAllEnquiries = catchAsync(async (req, res) => {
     const filter = { isDeleted: false };
     if (req.query.status) {
       filter.status = req.query.status;
@@ -127,19 +104,10 @@ const getAllEnquiries = async (req, res) => {
       count: enquiries.length,
       enquiries,
     });
-  } catch (error) {
-    console.error("Error fetching enquiries:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error fetching enquiries",
-      error: error.message,
-    });
-  }
-};
+});
 
 // Get all profile requests (Admin only)
-const getAllProfileRequests = async (req, res) => {
-  try {
+const getAllProfileRequests = catchAsync(async (req, res) => {
     const filter = { isDeleted: false };
     if (req.query.status) {
       filter.status = req.query.status;
@@ -153,19 +121,10 @@ const getAllProfileRequests = async (req, res) => {
       count: requests.length,
       requests,
     });
-  } catch (error) {
-    console.error("Error fetching profile requests:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error fetching profile requests",
-      error: error.message,
-    });
-  }
-};
+});
 
 // Update enquiry status (Admin only)
-const updateEnquiryStatus = async (req, res) => {
-  try {
+const updateEnquiryStatus = catchAsync(async (req, res) => {
     const { status } = req.body;
 
     const enquiry = await Enquiry.findByIdAndUpdate(
@@ -175,10 +134,7 @@ const updateEnquiryStatus = async (req, res) => {
     );
 
     if (!enquiry) {
-      return res.status(404).json({
-        success: false,
-        message: "Enquiry not found",
-      });
+      throw new AppError("Enquiry not found", 404);
     }
 
     res.status(200).json({
@@ -186,20 +142,11 @@ const updateEnquiryStatus = async (req, res) => {
       message: "Enquiry status updated",
       enquiry,
     });
-  } catch (error) {
-    console.error("Error updating enquiry:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error updating enquiry",
-      error: error.message,
-    });
-  }
-};
+});
 
 // Update profile request status (Admin only)
 // If approved, automatically create a Player record
-const updateProfileRequestStatus = async (req, res) => {
-  try {
+const updateProfileRequestStatus = catchAsync(async (req, res) => {
     const { status, adminNotes } = req.body;
 
     const updateData = { status };
@@ -214,10 +161,7 @@ const updateProfileRequestStatus = async (req, res) => {
     );
 
     if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: "Profile request not found",
-      });
+      throw new AppError("Profile request not found", 404);
     }
 
     // If approved, create a Player record from the profile request data
@@ -246,7 +190,8 @@ const updateProfileRequestStatus = async (req, res) => {
           // Generate a unique player ID
           const playerId = `PTC-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
-          createdPlayer = await Player.create({
+          // Build player data
+          const playerData = {
             name: request.fullName,
             age,
             age_group,
@@ -264,7 +209,21 @@ const updateProfileRequestStatus = async (req, res) => {
             career_history: request.currentClub ? `Current Club: ${request.currentClub}` : "",
             scouting_notes: request.achievements || "",
             media_links: request.videoLink ? [request.videoLink] : [],
-          });
+          };
+
+          // Auto-calculate scout report scores
+          try {
+            playerData.scoutReport = calculateScoutReport({
+              age,
+              height: request.height,
+              weight: request.weight,
+              playingPosition: request.playingPosition,
+            });
+          } catch (scoreErr) {
+            console.error("Error calculating scout report for approved profile:", scoreErr.message);
+          }
+
+          createdPlayer = await Player.create(playerData);
         }
       } catch (playerErr) {
         console.error("Error creating player from approved request:", playerErr.message);
@@ -280,15 +239,7 @@ const updateProfileRequestStatus = async (req, res) => {
       request,
       ...(createdPlayer && { player: createdPlayer }),
     });
-  } catch (error) {
-    console.error("Error updating profile request:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error updating profile request",
-      error: error.message,
-    });
-  }
-};
+});
 
 module.exports = {
   submitEnquiry,

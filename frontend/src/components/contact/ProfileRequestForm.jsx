@@ -68,9 +68,16 @@ function validate(d) {
   if (!d.fullName.trim()) errs.fullName = "Full name is required.";
   if (!d.email.trim()) errs.email = "Email is required.";
   else if (!emailRe.test(d.email)) errs.email = "Enter a valid email.";
+  if (!d.phone.trim()) errs.phone = "Phone number is required.";
+  if (!d.dateOfBirth) errs.dateOfBirth = "Date of birth is required.";
+  if (!d.nationality.trim()) errs.nationality = "Nationality is required.";
+  if (!d.city.trim()) errs.city = "City is required.";
   if (!d.playingPosition) errs.playingPosition = "Please select your position.";
   if (!d.preferredFoot)
     errs.preferredFoot = "Please select your preferred foot.";
+  if (!d.height) errs.height = "Height is required.";
+  if (!d.weight) errs.weight = "Weight is required.";
+  if (!d.yearsOfExperience && d.yearsOfExperience !== 0) errs.yearsOfExperience = "Years of experience is required.";
   return errs;
 }
 
@@ -104,16 +111,13 @@ const ProfileRequestForm = () => {
     const val = e.target.value;
     setFormData((prev) => ({ ...prev, [field]: val }));
     if (touched[field]) {
-      setErrors((prev) => ({
-        ...prev,
-        ...validate({ ...formData, [field]: val }),
-      }));
+      setErrors(validate({ ...formData, [field]: val }));
     }
   };
 
   const blur = (field) => () => {
     setTouched((prev) => ({ ...prev, [field]: true }));
-    setErrors((prev) => ({ ...prev, ...validate(formData) }));
+    setErrors(validate(formData));
   };
 
   const handleSubmit = async (e) => {
@@ -121,8 +125,15 @@ const ProfileRequestForm = () => {
     const allTouched = {
       fullName: true,
       email: true,
+      phone: true,
+      dateOfBirth: true,
+      nationality: true,
+      city: true,
       playingPosition: true,
       preferredFoot: true,
+      height: true,
+      weight: true,
+      yearsOfExperience: true,
     };
     setTouched(allTouched);
     const errs = validate(formData);
@@ -283,6 +294,117 @@ const ProfileRequestForm = () => {
         </Field>
       </div>
 
+      {/* ── Required personal details ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Field id="phone" label="Phone Number" required half error={touched.phone && errors.phone}>
+          <input
+            id="phone"
+            type="tel"
+            autoComplete="tel"
+            value={formData.phone}
+            onChange={set("phone")}
+            onBlur={blur("phone")}
+            aria-invalid={!!(touched.phone && errors.phone)}
+            className={`${inputBase} ${errBorder("phone")}`}
+            placeholder="+1 (555) 000-0000"
+          />
+        </Field>
+
+        <Field id="dateOfBirth" label="Date of Birth" required half error={touched.dateOfBirth && errors.dateOfBirth}>
+          <input
+            id="dateOfBirth"
+            type="date"
+            value={formData.dateOfBirth}
+            onChange={set("dateOfBirth")}
+            onBlur={blur("dateOfBirth")}
+            aria-invalid={!!(touched.dateOfBirth && errors.dateOfBirth)}
+            className={`${inputBase} ${errBorder("dateOfBirth")}`}
+          />
+        </Field>
+
+        <Field id="nationality" label="Nationality" required half error={touched.nationality && errors.nationality}>
+          <input
+            id="nationality"
+            type="text"
+            value={formData.nationality}
+            onChange={set("nationality")}
+            onBlur={blur("nationality")}
+            aria-invalid={!!(touched.nationality && errors.nationality)}
+            className={`${inputBase} ${errBorder("nationality")}`}
+            placeholder="e.g., Brazilian"
+          />
+        </Field>
+
+        <Field id="city" label="City" required half error={touched.city && errors.city}>
+          <input
+            id="city"
+            type="text"
+            value={formData.city}
+            onChange={set("city")}
+            onBlur={blur("city")}
+            aria-invalid={!!(touched.city && errors.city)}
+            className={`${inputBase} ${errBorder("city")}`}
+            placeholder="Your City"
+          />
+        </Field>
+
+        <Field id="height" label="Height (cm)" required half error={touched.height && errors.height}>
+          <input
+            id="height"
+            type="number"
+            min="100"
+            max="250"
+            value={formData.height}
+            onChange={set("height")}
+            onBlur={blur("height")}
+            aria-invalid={!!(touched.height && errors.height)}
+            className={`${inputBase} ${errBorder("height")}`}
+            placeholder="180"
+          />
+        </Field>
+
+        <Field id="weight" label="Weight (kg)" required half error={touched.weight && errors.weight}>
+          <input
+            id="weight"
+            type="number"
+            min="40"
+            max="150"
+            value={formData.weight}
+            onChange={set("weight")}
+            onBlur={blur("weight")}
+            aria-invalid={!!(touched.weight && errors.weight)}
+            className={`${inputBase} ${errBorder("weight")}`}
+            placeholder="75"
+          />
+        </Field>
+
+        <Field id="yearsOfExperience" label="Years of Experience" required half error={touched.yearsOfExperience && errors.yearsOfExperience}>
+          <input
+            id="yearsOfExperience"
+            type="number"
+            min="0"
+            max="30"
+            value={formData.yearsOfExperience}
+            onChange={set("yearsOfExperience")}
+            onBlur={blur("yearsOfExperience")}
+            aria-invalid={!!(touched.yearsOfExperience && errors.yearsOfExperience)}
+            className={`${inputBase} ${errBorder("yearsOfExperience")}`}
+            placeholder="5"
+          />
+        </Field>
+
+        <Field id="currentClub" label="Current Club" half>
+          <input
+            id="currentClub"
+            type="text"
+            value={formData.currentClub}
+            onChange={set("currentClub")}
+            className={inputBase}
+            placeholder="e.g., FC Barcelona"
+          />
+        </Field>
+      </div>
+
       {/* ── Optional section ── */}
       <div>
         <button
@@ -299,100 +421,6 @@ const ProfileRequestForm = () => {
 
         {showOptional && (
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
-            <Field id="phone" label="Phone Number" half>
-              <input
-                id="phone"
-                type="tel"
-                autoComplete="tel"
-                value={formData.phone}
-                onChange={set("phone")}
-                className={inputBase}
-                placeholder="+1 (555) 000-0000"
-              />
-            </Field>
-
-            <Field id="dateOfBirth" label="Date of Birth" half>
-              <input
-                id="dateOfBirth"
-                type="date"
-                value={formData.dateOfBirth}
-                onChange={set("dateOfBirth")}
-                className={inputBase}
-              />
-            </Field>
-
-            <Field id="nationality" label="Nationality" half>
-              <input
-                id="nationality"
-                type="text"
-                value={formData.nationality}
-                onChange={set("nationality")}
-                className={inputBase}
-                placeholder="e.g., Brazilian"
-              />
-            </Field>
-
-            <Field id="city" label="City" half>
-              <input
-                id="city"
-                type="text"
-                value={formData.city}
-                onChange={set("city")}
-                className={inputBase}
-                placeholder="Your City"
-              />
-            </Field>
-
-            <Field id="height" label="Height (cm)" half>
-              <input
-                id="height"
-                type="number"
-                min="100"
-                max="250"
-                value={formData.height}
-                onChange={set("height")}
-                className={inputBase}
-                placeholder="180"
-              />
-            </Field>
-
-            <Field id="weight" label="Weight (kg)" half>
-              <input
-                id="weight"
-                type="number"
-                min="40"
-                max="150"
-                value={formData.weight}
-                onChange={set("weight")}
-                className={inputBase}
-                placeholder="75"
-              />
-            </Field>
-
-            <Field id="currentClub" label="Current Club" half>
-              <input
-                id="currentClub"
-                type="text"
-                value={formData.currentClub}
-                onChange={set("currentClub")}
-                className={inputBase}
-                placeholder="e.g., FC Barcelona"
-              />
-            </Field>
-
-            <Field id="yearsOfExperience" label="Years of Experience" half>
-              <input
-                id="yearsOfExperience"
-                type="number"
-                min="0"
-                max="30"
-                value={formData.yearsOfExperience}
-                onChange={set("yearsOfExperience")}
-                className={inputBase}
-                placeholder="5"
-              />
-            </Field>
-
             <Field id="achievements" label="Achievements" half={false}>
               <textarea
                 id="achievements"

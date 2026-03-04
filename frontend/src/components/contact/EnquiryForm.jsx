@@ -88,16 +88,13 @@ const EnquiryForm = () => {
     const val = e.target.value;
     setFormData((prev) => ({ ...prev, [field]: val }));
     if (touched[field]) {
-      setErrors((prev) => ({
-        ...prev,
-        ...validate({ ...formData, [field]: val }),
-      }));
+      setErrors(validate({ ...formData, [field]: val }));
     }
   };
 
   const blur = (field) => () => {
     setTouched((prev) => ({ ...prev, [field]: true }));
-    setErrors((prev) => ({ ...prev, ...validate(formData) }));
+    setErrors(validate(formData));
   };
 
   const handleSubmit = async (e) => {

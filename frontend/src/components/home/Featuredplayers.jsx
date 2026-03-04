@@ -113,9 +113,7 @@ const FeaturedPlayers = () => {
         const all = res.data.players || res.data || [];
         const unique = Array.from(new Map(all.map((p) => [p._id, p])).values());
         const sorted = unique
-          .filter((p) => p.scoutReport?.totalScore > 0)
-          .sort((a, b) => (b.scoutReport?.totalScore || 0) - (a.scoutReport?.totalScore || 0))
-          .slice(0, 6);
+          .sort((a, b) => (b.scoutReport?.totalScore || 0) - (a.scoutReport?.totalScore || 0));
         setPlayers(sorted);
       } catch {
         setPlayers([]);

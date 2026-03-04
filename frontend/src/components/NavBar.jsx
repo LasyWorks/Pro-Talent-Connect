@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/Logo@pro_talent_connect.png";
 
@@ -266,12 +266,12 @@ const NavBar = () => {
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   /* desktop links (includes About) */
-  const desktopLinks = [
+  const desktopLinks = useMemo(() => [
     { name: "Home", path: "/" },
     { name: "About", path: "/about" },
     { name: "Players", path: "/players" },
@@ -281,10 +281,10 @@ const NavBar = () => {
     ...(isLoggedIn
       ? [{ name: "Dashboard", path: "/admin" }]
       : [{ name: "Login", path: "/login" }]),
-  ];
+  ], [isLoggedIn]);
 
   /* mobile bottom tab links — 4 primary + 1 More (Hick's Law) */
-  const bottomTabs = [
+  const bottomTabs = useMemo(() => [
     { name: "Home", path: "/", Icon: IconHome },
     { name: "Players", path: "/players", Icon: IconPlayers },
     { name: "Blog", path: "/blog", Icon: IconBlog },
@@ -292,10 +292,10 @@ const NavBar = () => {
       ? [{ name: "Dashboard", path: "/admin", Icon: IconDashboard }]
       : [{ name: "Profile", path: "/login", Icon: IconProfile }]),
     { name: "More", path: null, Icon: IconMore },
-  ];
+  ], [isLoggedIn]);
 
   /* secondary links shown in the More sheet */
-  const moreLinks = [
+  const moreLinks = useMemo(() => [
     {
       name: "Services",
       path: "/services",
@@ -308,12 +308,12 @@ const NavBar = () => {
       Icon: IconContact,
       desc: "Get in touch",
     },
-  ];
+  ], []);
 
-  const getIsActive = (path) => {
+  const getIsActive = useCallback((path) => {
     if (path === "/") return location.pathname === "/";
     return location.pathname === path;
-  };
+  }, [location.pathname]);
 
   return (
     <>

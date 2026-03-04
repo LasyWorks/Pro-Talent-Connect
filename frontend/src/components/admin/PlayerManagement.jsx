@@ -324,21 +324,21 @@ const PlayerManagement = () => {
           <h3 className="text-xl font-bold">Player Management</h3>
           <p className="text-sm text-gray-400">{pagination.totalResults || players.length} players total</p>
         </div>
-        <div className="flex items-center gap-3">
-          <form onSubmit={handleSearch} className="relative">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <form onSubmit={handleSearch} className="relative flex-1 min-w-0 sm:flex-none">
             <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name..."
-              className="pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-red-500 text-white w-48"
+              className="pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-red-500 text-white w-full sm:w-48"
             />
           </form>
-          <select value={posFilter} onChange={(e) => { setPosFilter(e.target.value); setPage(1); }} className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none">
+          <select value={posFilter} onChange={(e) => { setPosFilter(e.target.value); setPage(1); }} className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none flex-1 min-w-0 sm:flex-none">
             <option value="">All Positions</option>
             {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
-          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-sm font-medium transition-all">
+          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-sm font-medium transition-all whitespace-nowrap">
             <PlusIcon className="w-4 h-4" /> Add Player
           </button>
         </div>

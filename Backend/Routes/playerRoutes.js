@@ -15,21 +15,23 @@ const {
   createPlayerSchema,
   updatePlayerSchema,
 } = require("../Middleware/validator");
+const { cacheMiddleware, invalidateCache } = require("../Middleware/cache");
 
-// Public routes - no authentication required
-router.get("/", getAllPlayers);
-router.get("/search", searchPlayers);
-router.get("/:id", getPlayerById);
+// Public routes - cached for 30s
+router.get("/", cacheMiddleware(30, 'players'), getAllPlayers);
+router.get("/search", cacheMiddleware(30, 'players'), searchPlayers);
+router.get("/:id", cacheMiddleware(60, 'players'), getPlayerById);
 
 // Protected routes - require authentication
 router.use(protect);
 
-// Admin & Super Admin can create players
+// Admin & Super Admin can create players (invalidates players cache)
 router.post(
   "/",
   authorize("Admin", "Super Admin"),
   createLimiter,
   validate(createPlayerSchema),
+  invalidateCache('players'),
   createPlayer
 );
 
@@ -38,10 +40,11 @@ router.put(
   "/:id",
   authorize("Admin", "Super Admin"),
   validate(updatePlayerSchema),
+  invalidateCache('players'),
   updatePlayer
 );
 
 // Only Super Admin can delete players
-router.delete("/:id", authorize("Super Admin"), deletePlayer);
+router.delete("/:id", authorize("Super Admin"), invalidateCache('players'), deletePlayer);
 
 module.exports = router;

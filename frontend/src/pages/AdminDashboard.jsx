@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+﻿import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { api } from "../services/api";
 import {
@@ -654,9 +654,8 @@ const ProfileRequestsSection = ({ profileRequests, updateProfileStatus }) => {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {filtered.map((p) => (
-                  <>
+                  <React.Fragment key={p._id}>
                     <tr
-                      key={p._id}
                       className="hover:bg-white/3 transition-colors cursor-pointer"
                       onClick={() =>
                         setExpanded(expanded === p._id ? null : p._id)
@@ -774,7 +773,7 @@ const ProfileRequestsSection = ({ profileRequests, updateProfileStatus }) => {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>

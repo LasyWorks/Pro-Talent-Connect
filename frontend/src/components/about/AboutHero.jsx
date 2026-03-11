@@ -64,10 +64,10 @@ const AboutHero = ({ orgName }) => {
         </p>
 
         {/* CTAs — Fitts's Law: min 48px height */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4">
           <Link
             to="/players"
-            className="inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200 hover:opacity-90 active:scale-[0.98] w-full sm:w-auto"
             style={{
               fontSize: "16px",
               height: "52px",
@@ -94,7 +94,7 @@ const AboutHero = ({ orgName }) => {
 
           <Link
             to="/contact"
-            className="inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 hover:bg-white/10"
+            className="inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 hover:bg-white/10 w-full sm:w-auto"
             style={{
               fontSize: "16px",
               height: "52px",

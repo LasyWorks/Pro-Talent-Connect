@@ -13,7 +13,7 @@ const Contact = () => {
   const [activeTab, setActiveTab] = useState("enquiry");
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-900 via-black to-gray-950 text-white">
+    <div className="min-h-screen bg-linear-to-b from-gray-900 via-black to-gray-950 text-white overflow-x-hidden">
       <FloatingShapes />
 
       <main className="relative z-10">

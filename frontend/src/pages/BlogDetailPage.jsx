@@ -91,7 +91,7 @@ const BlogDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-950">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-950 overflow-x-hidden">
       {/* Back Button */}
       <div className="pt-32 pb-8 px-4">
         <div className="max-w-2xl mx-auto">

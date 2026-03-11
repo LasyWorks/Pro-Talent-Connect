@@ -38,14 +38,14 @@ const ICON_MAP = {
   CheckBadgeIcon,
 };
 
-// Static fallbacks (one per title — deduped)
+// Static fallbacks (one per title ï¿½ deduped)
 const DEFAULT_SERVICES = [
   { _id: "s1", title: "Player Discovery", description: "Instantly search verified players by position, age, and performance metrics.", icon: "MagnifyingGlassIcon", group: "Discovery" },
   { _id: "s2", title: "Advanced Search", description: "Filter talent by region, club history, and scouting reports.", icon: "MagnifyingGlassIcon", group: "Discovery" },
   { _id: "s3", title: "Profile Management", description: "Build a dynamic profile with career history, highlights, and live stats.", icon: "UserCircleIcon", group: "Profile & Data" },
   { _id: "s4", title: "Achievement Tracking", description: "Showcase awards, milestones, and team accomplishments in one place.", icon: "TrophyIcon", group: "Profile & Data" },
   { _id: "s5", title: "Career Analytics", description: "Track performance trends and career progression with actionable data.", icon: "ChartBarIcon", group: "Analytics & Trust" },
-  { _id: "s6", title: "Verified Profiles", description: "Every profile is verified for accuracy — scouts trust what they see.", icon: "ShieldCheckIcon", group: "Analytics & Trust" },
+  { _id: "s6", title: "Verified Profiles", description: "Every profile is verified for accuracy ï¿½ scouts trust what they see.", icon: "ShieldCheckIcon", group: "Analytics & Trust" },
 ];
 
 const DEFAULT_STEPS = [
@@ -205,7 +205,7 @@ const Services = () => {
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen overflow-x-hidden"
       style={{ background: "linear-gradient(160deg, #0a0a0f 0%, #0d0d14 50%, #0a0a0b 100%)" }}
     >
       {/* Ambient glow */}
@@ -234,17 +234,17 @@ const Services = () => {
         <p className="mb-10" style={{ fontSize: "15px", lineHeight: "1.7", color: "rgba(255,255,255,0.42)", maxWidth: "480px" }}>
           A data-driven platform connecting football talent with clubs and scouts worldwide.
         </p>
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Link
             to="/players"
-            className="inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+            className="inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 hover:opacity-90 active:scale-[0.98] w-full sm:w-auto"
             style={{ fontSize: "15px", height: "48px", padding: "0 26px", backgroundColor: "#C4161C", color: "#fff", boxShadow: "0 4px 18px rgba(196,22,28,0.28)", minWidth: "160px" }}
           >
             Explore Platform
           </Link>
           <Link
             to="/contact"
-            className="inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 hover:bg-white/10"
+            className="inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 hover:bg-white/10 w-full sm:w-auto"
             style={{ fontSize: "15px", height: "48px", padding: "0 26px", ...GLASS, color: "rgba(255,255,255,0.75)", minWidth: "160px" }}
           >
             Request Demo
@@ -419,7 +419,7 @@ const Services = () => {
                 Stay Ahead of the Game
               </h2>
               <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.38)", lineHeight: "1.6" }}>
-                Transfer news, platform updates, and scouting insights — weekly.
+                Transfer news, platform updates, and scouting insights ï¿½ weekly.
               </p>
             </div>
             <div className="flex-1" style={{ maxWidth: "420px" }}>

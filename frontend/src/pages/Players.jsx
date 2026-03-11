@@ -1389,7 +1389,7 @@ const Players = () => {
 
   return (
     <div
-      className="min-h-screen text-white"
+      className="min-h-screen text-white overflow-x-hidden"
       style={{
         background:
           "linear-gradient(160deg, #0a0a0f 0%, #0d0d14 50%, #0a0a0b 100%)",

@@ -146,7 +146,7 @@ const HeroSection = () => {
 
         {/* ── CTA Buttons — side by side ────────────────────────────────── */}
         <div
-          className="flex flex-row mx-auto"
+          className="flex flex-row flex-wrap mx-auto"
           style={{ gap: "12px", maxWidth: "360px", width: "100%" }}
         >
           {/* Primary — solid red */}

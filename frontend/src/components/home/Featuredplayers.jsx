@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
-/* --- Grade colour map ---------------------------------------- */
+/* â”€â”€â”€ Grade colour map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const GRADE_MAP = {
   A: { bg: "#10b981", glow: "rgba(16,185,129,0.35)", label: "Elite" },
   B: { bg: "#3b82f6", glow: "rgba(59,130,246,0.35)", label: "Pro" },
@@ -14,7 +14,7 @@ const GRADE_MAP = {
 };
 const getGrade = (g) => GRADE_MAP[g] || null;
 
-/* --- Position colour + short label --------------------------- */
+/* â”€â”€â”€ Position colour + short label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const POS_MAP = {
   FORWARD:    { color: "rgba(239,68,68,0.9)",    short: "FWD" },
   WINGER:     { color: "rgba(249,115,22,0.9)",   short: "WNG" },
@@ -23,7 +23,7 @@ const POS_MAP = {
   GOALKEEPER: { color: "rgba(168,85,247,0.9)",   short: "GK"  },
 };
 
-/* --- Lazy image with blur-up --------------------------------- */
+/* â”€â”€â”€ Lazy image with blur-up â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const PlayerAvatar = ({ src, alt }) => {
   const [loaded, setLoaded] = useState(false);
   const fallback =
@@ -55,20 +55,24 @@ const PlayerAvatar = ({ src, alt }) => {
   );
 };
 
-/* --- Animated score bar ------------------------------------- */
-const ScoreBar = ({ score, grade, isActive }) => {
+/* â”€â”€â”€ Animated score bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+const ScoreBar = ({ score, grade }) => {
+  const barRef = useRef(null);
   const [animated, setAnimated] = useState(false);
   const gradeData = getGrade(grade);
 
   useEffect(() => {
-    if (!isActive) return;
-    setAnimated(false);
-    const t = setTimeout(() => setAnimated(true), 80);
-    return () => clearTimeout(t);
-  }, [isActive]);
+    if (!barRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setAnimated(true); },
+      { threshold: 0.6 },
+    );
+    observer.observe(barRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="mt-2.5">
+    <div ref={barRef} className="mt-2.5">
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-white/40 text-[11px] font-medium">Scout Score</span>
         <span className="text-white text-[11px] font-bold tabular-nums">{score}/100</span>
@@ -91,9 +95,9 @@ const ScoreBar = ({ score, grade, isActive }) => {
   );
 };
 
-/* ============================================================ */
-/*                    FEATURED PLAYERS                          */
-/* ============================================================ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/*                    FEATURED PLAYERS                         */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const FeaturedPlayers = () => {
   const scrollRef = useRef(null);
   const [players, setPlayers] = useState([]);
@@ -109,8 +113,7 @@ const FeaturedPlayers = () => {
         const all = res.data.players || res.data || [];
         const unique = Array.from(new Map(all.map((p) => [p._id, p])).values());
         const sorted = unique
-          .sort((a, b) => (b.scoutReport?.totalScore || 0) - (a.scoutReport?.totalScore || 0))
-          .slice(0, 6);
+          .sort((a, b) => (b.scoutReport?.totalScore || 0) - (a.scoutReport?.totalScore || 0));
         setPlayers(sorted);
       } catch {
         setPlayers([]);
@@ -143,7 +146,7 @@ const FeaturedPlayers = () => {
     el.scrollTo({ left: idx * (cardW + 12), behavior: "smooth" });
   };
 
-  /* -- LOADING -- */
+  /* â”€â”€ LOADING â”€â”€ */
   if (loading) {
     return (
       <section className="bg-[#0B0B0B] py-6" aria-label="Featured players loading">
@@ -160,7 +163,7 @@ const FeaturedPlayers = () => {
     );
   }
 
-  /* -- EMPTY -- */
+  /* â”€â”€ EMPTY â”€â”€ */
   if (!featured.length) {
     return (
       <section className="bg-[#0B0B0B] py-10 px-5" aria-label="Featured players">
@@ -175,11 +178,11 @@ const FeaturedPlayers = () => {
     );
   }
 
-  /* -- RENDER -- */
+  /* â”€â”€ RENDER â”€â”€ */
   return (
     <section className="bg-[#0B0B0B] pt-7 pb-5" aria-label="Featured players">
 
-      {/* -- Header -- */}
+      {/* â”€â”€ Header â”€â”€ */}
       <div className="flex items-center justify-between px-5 mb-4">
         <div>
           <h2 className="text-white font-bold m-0 leading-tight" style={{ fontSize: "clamp(20px,5vw,26px)" }}>
@@ -189,6 +192,7 @@ const FeaturedPlayers = () => {
             Top rated talent &amp; curated profiles
           </p>
         </div>
+        {/* Fitts's Law â€” big enough tap target */}
         <Link
           to="/players"
           className="shrink-0 flex items-center justify-center font-semibold text-white text-[13px] px-4 rounded-lg no-underline"
@@ -202,7 +206,7 @@ const FeaturedPlayers = () => {
         </Link>
       </div>
 
-      {/* -- Carousel -- */}
+      {/* â”€â”€ Carousel â€” peek pattern shows ~15% of next card (Zeigarnik affordance) â”€â”€ */}
       <div
         ref={scrollRef}
         className="no-scrollbar flex overflow-x-auto overflow-y-visible"
@@ -217,11 +221,10 @@ const FeaturedPlayers = () => {
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {featured.map((player, i) => {
+        {featured.map((player) => {
           const gradeData = getGrade(player.scoutReport?.grade);
           const lastClub = player.clubsPlayed?.[player.clubsPlayed.length - 1]?.clubName;
-          const rawPos = (player.playingPosition || "").toUpperCase().split("/")[0].trim();
-          const posData = POS_MAP[rawPos] || { color: "rgba(107,114,128,0.85)", short: rawPos || "-" };
+          const posData = POS_MAP[player.playingPosition] || { color: "rgba(107,114,128,0.85)", short: player.playingPosition };
 
           return (
             <article
@@ -230,15 +233,15 @@ const FeaturedPlayers = () => {
               aria-label={`${player.name}, ${player.playingPosition}`}
               className="shrink-0 rounded-2xl overflow-hidden cursor-pointer"
               style={{
+                /* 72vw card + 8% right peek = natural affordance to swipe */
                 width: "min(72vw, 260px)",
                 scrollSnapAlign: "start",
-                scrollSnapStop: "always",
                 background: "linear-gradient(160deg,rgba(255,255,255,0.08) 0%,rgba(255,255,255,0.03) 100%)",
                 border: "1px solid rgba(255,255,255,0.1)",
                 boxShadow: "0 6px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07)",
               }}
             >
-              {/* -- Avatar zone -- */}
+              {/* â”€â”€ Avatar zone â€” shorter on mobile for card economy â”€â”€ */}
               <div className="relative" style={{ height: "160px" }}>
                 <PlayerAvatar src={player.profileImage} alt={`Photo of ${player.name}`} />
 
@@ -248,7 +251,7 @@ const FeaturedPlayers = () => {
                   style={{ height: "64px", background: "linear-gradient(to bottom,transparent,rgba(11,11,11,0.92))" }}
                 />
 
-                {/* Position chip - top-left */}
+                {/* Position chip â€” top-left */}
                 <span
                   className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md text-white text-[10px] font-bold uppercase tracking-wider"
                   style={{ background: posData.color, backdropFilter: "blur(4px)" }}
@@ -256,7 +259,7 @@ const FeaturedPlayers = () => {
                   {posData.short}
                 </span>
 
-                {/* Grade + score chip - top-right */}
+                {/* Grade + score chip â€” top-right */}
                 {gradeData && (
                   <span
                     className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md text-white text-[10px] font-bold"
@@ -268,25 +271,29 @@ const FeaturedPlayers = () => {
                 )}
               </div>
 
-              {/* -- Card body -- */}
+              {/* â”€â”€ Card body â”€â”€ */}
               <div className="px-3.5 pt-3 pb-4">
+                {/* Name â€” visual anchor (Serial Position: primacy) */}
                 <h3 className="text-white font-bold text-[16px] m-0 leading-snug truncate">
                   {player.name}
                 </h3>
 
+                {/* Club + location â€” secondary info */}
                 <p className="text-white/50 text-[12px] m-0 mt-0.5 truncate">
                   {lastClub || "Free Agent"}
                 </p>
                 <p className="text-white/30 text-[11px] m-0 truncate">
-                  {[player.state, player.nationality].filter(Boolean).join(", ") || "-"}
+                  {[player.state, player.nationality].filter(Boolean).join(", ") || "—"}
                 </p>
 
+                {/* Score bar */}
                 {player.scoutReport?.totalScore > 0 && (
-                  <ScoreBar score={player.scoutReport.totalScore} grade={player.scoutReport.grade} isActive={i === activeIdx} />
+                  <ScoreBar score={player.scoutReport.totalScore} grade={player.scoutReport.grade} />
                 )}
 
+                {/* CTA â€” Fitts's Law: full-width, 48px tall = easy thumb tap */}
                 <Link
-                  to={`/players/${player._id}`}
+                  to="/players"
                   className="mt-3.5 flex items-center justify-center text-white text-[14px] font-bold no-underline rounded-xl transition-opacity duration-200 active:opacity-80"
                   style={{
                     height: "48px",
@@ -303,14 +310,14 @@ const FeaturedPlayers = () => {
         })}
       </div>
 
-      {/* -- Scroll dots -- */}
+      {/* â”€â”€ Scroll dots â”€â”€ */}
       <div className="flex items-center justify-center mt-4" style={{ gap: "7px" }} aria-hidden="true">
         {featured.map((_, i) => (
           <button
             key={i}
             onClick={() => scrollTo(i)}
             aria-label={`Go to player ${i + 1}`}
-            className="border-none bg-transparent p-0 cursor-pointer rounded-full transition-all duration-300"
+            className="border-none p-0 cursor-pointer rounded-full transition-all duration-300"
             style={{
               width: i === activeIdx ? "20px" : "6px",
               height: "6px",

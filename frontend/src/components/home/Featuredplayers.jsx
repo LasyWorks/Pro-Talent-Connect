@@ -283,7 +283,7 @@ const FeaturedPlayers = () => {
                   {lastClub || "Free Agent"}
                 </p>
                 <p className="text-white/30 text-[11px] m-0 truncate">
-                  {[player.city, player.nationality].filter(Boolean).join(", ") || "â€”"}
+                  {[player.state, player.nationality].filter(Boolean).join(", ") || "—"}
                 </p>
 
                 {/* Score bar */}

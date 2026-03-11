@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { api } from "../services/api";
+import { useAbout } from "../context/AboutContext";
 import AboutHero from "../components/about/AboutHero";
 import MissionVision from "../components/about/MissionVision";
 import ImpactStats from "../components/about/ImpactStats";
 import CoreValues from "../components/about/CoreValues";
 import Partners from "../components/about/Partners";
+import ProTalentPlus from "../components/about/ProTalentPlus";
 
 /* ── Thin rule between sections ── */
 const Divider = () => (
@@ -59,7 +59,7 @@ const CTASection = () => (
             style={{
               fontSize: "clamp(28px, 3.5vw, 40px)",
               lineHeight: "1.2",
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Poppins', sans-serif",
             }}
           >
             Ready to Be Discovered?
@@ -128,19 +128,7 @@ const CTASection = () => (
 );
 
 const About = () => {
-  const [aboutData, setAboutData] = useState(null);
-
-  useEffect(() => {
-    const fetchAbout = async () => {
-      try {
-        const res = await api.getAbout();
-        setAboutData(res.data.about || res.data);
-      } catch (err) {
-        console.error("Error fetching about data:", err);
-      }
-    };
-    fetchAbout();
-  }, []);
+  const aboutData = useAbout();
 
   return (
     <div className="min-h-screen bg-linear-to-b from-gray-900 via-black to-gray-950 text-white relative overflow-x-hidden">
@@ -171,6 +159,8 @@ const About = () => {
         <ImpactStats />
         <Divider />
         <CoreValues credentials={aboutData?.credentials} />
+        <Divider />
+        <ProTalentPlus data={aboutData?.pro_talent_plus} />
         <Divider />
         <Partners />
         <Divider />

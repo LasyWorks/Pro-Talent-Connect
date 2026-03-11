@@ -117,7 +117,7 @@ const ImpactStats = () => {
           style={{
             fontSize: "clamp(28px, 3.5vw, 36px)",
             lineHeight: "1.25",
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "'Poppins', sans-serif",
           }}
         >
           Our{" "}

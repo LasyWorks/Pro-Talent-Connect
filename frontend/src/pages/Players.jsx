@@ -5,17 +5,16 @@ import {
   EnvelopeIcon,
   ArrowTopRightOnSquareIcon,
   Squares2X2Icon,
-  ListBulletIcon,
-  ChevronDownIcon,
-  XMarkIcon,
-  BookmarkIcon,
-  AdjustmentsHorizontalIcon,
   ChevronRightIcon,
+  ChevronDownIcon,
+  AdjustmentsHorizontalIcon,
+  ListBulletIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { api } from "../services/api";
 import PlayerDetailPage from "../components/players/PlayerDetailPage";
 
-// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Constants ────────────────────────────────────────────────────────────────
 const GLASS = {
   background: "rgba(255,255,255,0.06)",
   backdropFilter: "blur(12px)",
@@ -72,7 +71,7 @@ const POSITION_COLORS = {
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400";
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 const getGradeStyle = (grade) => {
   const map = {
     A: { color: "#34D399", label: "Elite" },
@@ -93,7 +92,7 @@ const getPositionStyle = (position) =>
     border: "rgba(107,114,128,0.3)",
   };
 
-// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Sub-components ────────────────────────────────────────────────────────────
 
 const FilterSection = ({ title, children, defaultOpen = true }) => {
   const [open, setOpen] = useState(defaultOpen);
@@ -226,7 +225,7 @@ const SkeletonCard = () => (
   </div>
 );
 
-/* ── Mobile skeleton row ─────────────────────────────────────── */
+/* -- Mobile skeleton row --------------------------------------- */
 const MobileSkeletonCard = () => (
   <div
     className="flex items-center gap-3 px-4 py-3 rounded-2xl animate-pulse"
@@ -285,16 +284,16 @@ const MobileSkeletonCard = () => (
   </div>
 );
 
-/* ── Mobile Player Card ──────────────────────────────────────── */
+/* -- Mobile Player Card ---------------------------------------- */
 /*
   UX Laws applied:
-  • Fitts's Law       — entire row tappable, min ~88px touch height
-  • Miller's Law      — 3 lines of info max, short position codes
-  • Serial Position   — name (most important) in top-left anchor
-  • Von Restorff      — grade badge stands out with brand color
-  • Gestalt Proximity — related info grouped tightly in 3 rows
-  • Zeigarnik Effect  — score bar implies incompleteness → drives tap
-  • Aesthetic-Usability— consistent spacing, clear type hierarchy
+  � Fitts's Law       � entire row tappable, min ~88px touch height
+  � Miller's Law      � 3 lines of info max, short position codes
+  � Serial Position   � name (most important) in top-left anchor
+  � Von Restorff      � grade badge stands out with brand color
+  � Gestalt Proximity � related info grouped tightly in 3 rows
+  � Zeigarnik Effect  � score bar implies incompleteness ? drives tap
+  � Aesthetic-Usability� consistent spacing, clear type hierarchy
 */
 const POS_CODES = {
   goalkeeper: "GK",
@@ -318,7 +317,7 @@ const MobilePlayerCard = ({ player, onViewProfile }) => {
   const posCode =
     POS_CODES[player.playingPosition?.toLowerCase()] ||
     player.playingPosition?.slice(0, 3).toUpperCase() ||
-    "—";
+    "�";
 
   return (
     <div
@@ -341,7 +340,7 @@ const MobilePlayerCard = ({ player, onViewProfile }) => {
         WebkitTapHighlightColor: "transparent",
       }}
     >
-      {/* ── Avatar (68×68, rounded-xl) ── */}
+      {/* -- Avatar (68�68, rounded-xl) -- */}
       <div
         className="relative shrink-0 rounded-xl overflow-hidden"
         style={{
@@ -372,7 +371,7 @@ const MobilePlayerCard = ({ player, onViewProfile }) => {
               "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 55%)",
           }}
         />
-        {/* Age pill — bottom center */}
+        {/* Age pill � bottom center */}
         {player.age && (
           <span
             className="absolute bottom-1 left-0 right-0 text-center font-bold text-white"
@@ -383,7 +382,7 @@ const MobilePlayerCard = ({ player, onViewProfile }) => {
         )}
       </div>
 
-      {/* ── Content — 3 tight rows ── */}
+      {/* -- Content � 3 tight rows -- */}
       <div className="flex-1 min-w-0">
         {/* Row 1 : Name  +  Grade badge (Von Restorff) */}
         <div className="flex items-center justify-between gap-2">
@@ -437,7 +436,7 @@ const MobilePlayerCard = ({ player, onViewProfile }) => {
             className="text-[11px] truncate"
             style={{ color: "rgba(255,255,255,0.28)" }}
           >
-            {[player.city, player.nationality].filter(Boolean).join(", ") || ""}
+            {[player.state, player.nationality].filter(Boolean).join(", ") || ""}
           </span>
           {score > 0 && (
             <div className="flex items-center gap-1.5 shrink-0">
@@ -471,7 +470,7 @@ const MobilePlayerCard = ({ player, onViewProfile }) => {
         </div>
       </div>
 
-      {/* ── Chevron affordance ── */}
+      {/* -- Chevron affordance -- */}
       <ChevronRightIcon
         className="w-4 h-4 shrink-0"
         style={{ color: "rgba(255,255,255,0.2)" }}
@@ -480,7 +479,7 @@ const MobilePlayerCard = ({ player, onViewProfile }) => {
   );
 };
 
-/* ── Mobile Filter Drawer (bottom sheet) ────────────────────── */
+/* -- Mobile Filter Drawer (bottom sheet) ---------------------- */
 /* Hick's Law: filters grouped, progressive disclosure           */
 const MobileFilterDrawer = ({
   open,
@@ -509,7 +508,7 @@ const MobileFilterDrawer = ({
       ageMax: "",
       heightMin: "",
       heightMax: "",
-      city: "",
+      state: "",
       searchQuery: filters.searchQuery,
     };
     setLocalFilters(empty);
@@ -710,9 +709,9 @@ const MobileFilterDrawer = ({
               <div className="pb-4">
                 <input
                   type="text"
-                  placeholder="City or country…"
-                  value={localFilters.city}
-                  onChange={(e) => localSet("city", e.target.value)}
+                  placeholder="e.g. Kerala"
+                  value={localFilters.state}
+                  onChange={(e) => localSet("state", e.target.value)}
                   style={{
                     width: "100%",
                     height: "48px",
@@ -731,7 +730,7 @@ const MobileFilterDrawer = ({
           </div>
         </div>
 
-        {/* Apply CTA — Fitts's Law: full-width, 56px */}
+        {/* Apply CTA � Fitts's Law: full-width, 56px */}
         <div
           className="px-5 pt-3 pb-4 shrink-0"
           style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
@@ -776,7 +775,7 @@ const NoResults = ({ onReset }) => (
         fontSize: "20px",
         fontWeight: 600,
         color: "rgba(255,255,255,0.8)",
-        fontFamily: "'Playfair Display', serif",
+        fontFamily: "'Poppins', sans-serif",
       }}
       className="mb-2"
     >
@@ -803,12 +802,12 @@ const NoResults = ({ onReset }) => (
         cursor: "pointer",
       }}
     >
-      Reset all filters â†’
+      Reset all filters →
     </button>
   </div>
 );
 
-// â”€â”€â”€ Player Card (Grid) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Player Card (Grid) ───────────────────────────────────────────────────────
 const PlayerCardGrid = ({ player, onViewProfile }) => {
   const [hovered, setHovered] = useState(false);
   const currentClub =
@@ -829,7 +828,7 @@ const PlayerCardGrid = ({ player, onViewProfile }) => {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Image â€” 3:4 ratio */}
+      {/* Image — 3:4 ratio */}
       <div
         className="relative overflow-hidden"
         style={{ aspectRatio: "3/4", maxHeight: "260px" }}
@@ -859,7 +858,7 @@ const PlayerCardGrid = ({ player, onViewProfile }) => {
               fontSize: "11px",
             }}
           >
-            {player.playingPosition || "â€”"}
+            {player.playingPosition || "—"}
           </span>
         </div>
         {/* Grade badge top-right */}
@@ -889,7 +888,7 @@ const PlayerCardGrid = ({ player, onViewProfile }) => {
               fontSize: "18px",
               fontWeight: 600,
               lineHeight: 1.3,
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Poppins', sans-serif",
             }}
           >
             {player.name}
@@ -906,7 +905,7 @@ const PlayerCardGrid = ({ player, onViewProfile }) => {
               {currentClub}
             </p>
           )}
-          {player.city && (
+          {player.state && (
             <p
               className="truncate"
               style={{
@@ -915,7 +914,7 @@ const PlayerCardGrid = ({ player, onViewProfile }) => {
                 marginTop: "2px",
               }}
             >
-              {player.city}
+              {player.state}
               {player.nationality ? `, ${player.nationality}` : ""}
             </p>
           )}
@@ -992,22 +991,6 @@ const PlayerCardGrid = ({ player, onViewProfile }) => {
                 />
               </a>
             )}
-            <button
-              className="flex items-center justify-center rounded-lg ml-auto transition-colors hover:bg-white/10"
-              style={{
-                width: "32px",
-                height: "32px",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                cursor: "pointer",
-              }}
-              title="Save player"
-            >
-              <BookmarkIcon
-                className="w-3.5 h-3.5"
-                style={{ color: "rgba(255,255,255,0.35)" }}
-              />
-            </button>
           </div>
           {/* CTA */}
           <button
@@ -1036,7 +1019,7 @@ const PlayerCardGrid = ({ player, onViewProfile }) => {
   );
 };
 
-// â”€â”€â”€ Player Card (List) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Player Card (List) ───────────────────────────────────────────────────────
 const PlayerCardList = ({ player, onViewProfile }) => {
   const [hovered, setHovered] = useState(false);
   const currentClub =
@@ -1082,7 +1065,7 @@ const PlayerCardList = ({ player, onViewProfile }) => {
             fontSize: "15px",
             fontWeight: 600,
             lineHeight: 1.3,
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "'Poppins', sans-serif",
           }}
         >
           {player.name}
@@ -1096,7 +1079,7 @@ const PlayerCardList = ({ player, onViewProfile }) => {
             fontWeight: 500,
           }}
         >
-          {player.playingPosition || "â€”"}
+          {player.playingPosition || "—"}
         </span>
       </div>
 
@@ -1107,7 +1090,7 @@ const PlayerCardList = ({ player, onViewProfile }) => {
           className="truncate"
           style={{ fontSize: "14px", color: "rgba(255,255,255,0.6)" }}
         >
-          {currentClub || "â€”"}
+          {currentClub || "—"}
         </p>
       </div>
 
@@ -1120,9 +1103,9 @@ const PlayerCardList = ({ player, onViewProfile }) => {
           className="truncate"
           style={{ fontSize: "14px", color: "rgba(255,255,255,0.6)" }}
         >
-          {player.city
-            ? `${player.city}${player.nationality ? `, ${player.nationality}` : ""}`
-            : "â€”"}
+          {player.state
+            ? `${player.state}${player.nationality ? `, ${player.nationality}` : ""}`
+            : "—"}
         </p>
       </div>
 
@@ -1136,7 +1119,7 @@ const PlayerCardList = ({ player, onViewProfile }) => {
             color: "rgba(255,255,255,0.7)",
           }}
         >
-          {player.age || "â€”"}
+          {player.age || "—"}
         </p>
       </div>
 
@@ -1153,7 +1136,7 @@ const PlayerCardList = ({ player, onViewProfile }) => {
               color: gradeStyle.color,
             }}
           >
-            {player.scoutReport?.totalScore ?? "â€”"}
+            {player.scoutReport?.totalScore ?? "—"}
             <span
               style={{
                 fontSize: "11px",
@@ -1251,7 +1234,7 @@ const Players = () => {
     ageMax: "",
     heightMin: "",
     heightMax: "",
-    city: "",
+    state: "",
     searchQuery: "",
   });
 
@@ -1291,16 +1274,20 @@ const Players = () => {
         (p) =>
           p.name?.toLowerCase().includes(q) ||
           p.playingPosition?.toLowerCase().includes(q) ||
-          p.city?.toLowerCase().includes(q) ||
+          p.state?.toLowerCase().includes(q) ||
           p.nationality?.toLowerCase().includes(q),
       );
     }
-    if (filters.position)
+    if (filters.position) {
+      // Normalise both sides to a common root so "MIDFIELD" matches
+      // the "Midfielder" filter option, "FORWARD" matches "Forward", etc.
+      const normalisePos = (str = "") =>
+        str.toLowerCase().replace(/keeper$/, "").replace(/er$/, "").replace(/or$/, "").trim();
+      const filterRoot = normalisePos(filters.position);
       result = result.filter((p) =>
-        p.playingPosition
-          ?.toLowerCase()
-          .includes(filters.position.toLowerCase()),
+        normalisePos(p.playingPosition).includes(filterRoot),
       );
+    }
     if (filters.ageMin)
       result = result.filter((p) => p.age >= parseInt(filters.ageMin));
     if (filters.ageMax)
@@ -1309,9 +1296,9 @@ const Players = () => {
       result = result.filter((p) => p.height >= parseInt(filters.heightMin));
     if (filters.heightMax)
       result = result.filter((p) => p.height <= parseInt(filters.heightMax));
-    if (filters.city)
+    if (filters.state)
       result = result.filter((p) =>
-        p.city?.toLowerCase().includes(filters.city.toLowerCase()),
+        p.state?.toLowerCase().includes(filters.state.toLowerCase()),
       );
     result.sort((a, b) => {
       if (sortBy === "name") return a.name.localeCompare(b.name);
@@ -1338,7 +1325,7 @@ const Players = () => {
       ageMax: "",
       heightMin: "",
       heightMax: "",
-      city: "",
+      state: "",
       searchQuery: "",
     });
 
@@ -1357,12 +1344,12 @@ const Players = () => {
     },
     (filters.ageMin || filters.ageMax) && {
       key: "age",
-      label: `Age: ${filters.ageMin || "any"}â€“${filters.ageMax || "any"}`,
+      label: `Age: ${filters.ageMin || "any"}–${filters.ageMax || "any"}`,
     },
-    filters.city && { key: "city", label: `City: ${filters.city}` },
+    filters.state && { key: "state", label: `State: ${filters.state}` },
     (filters.heightMin || filters.heightMax) && {
       key: "height",
-      label: `Height: ${filters.heightMin || "any"}â€“${filters.heightMax || "any"} cm`,
+      label: `Height: ${filters.heightMin || "any"}–${filters.heightMax || "any"} cm`,
     },
   ].filter(Boolean);
 
@@ -1408,7 +1395,7 @@ const Players = () => {
           "linear-gradient(160deg, #0a0a0f 0%, #0d0d14 50%, #0a0a0b 100%)",
       }}
     >
-      {/* Ambient glow â€” 30% dimmer than before */}
+      {/* Ambient glow — 30% dimmer than before */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-160 h-95 rounded-full opacity-25"
@@ -1419,8 +1406,8 @@ const Players = () => {
         />
       </div>
 
-      {/* â”€â”€ Header â”€â”€ */}
-      {/* ═══════════════ MOBILE LAYOUT (< md) ═══════════════ */}
+      {/* ── Header ── */}
+      {/* --------------- MOBILE LAYOUT (< md) --------------- */}
       <div className="md:hidden flex flex-col" style={{ minHeight: "100dvh" }}>
         {/* Sticky mobile top bar */}
         <div
@@ -1640,7 +1627,7 @@ const Players = () => {
         />
       </div>
 
-      {/* ═══════════════ DESKTOP LAYOUT (≥ md) ═══════════════ */}
+      {/* --------------- DESKTOP LAYOUT (= md) --------------- */}
       <div className="hidden md:block">
         <div className="relative pt-32 pb-8 px-4 sm:px-6">
           <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -1663,7 +1650,7 @@ const Players = () => {
                     fontSize: "clamp(36px, 5vw, 48px)",
                     fontWeight: 600,
                     lineHeight: 1.1,
-                    fontFamily: "'Playfair Display', serif",
+                    fontFamily: "'Poppins', sans-serif",
                   }}
                 >
                   Player <span style={{ color: "#C4161C" }}>Database</span>
@@ -1677,14 +1664,14 @@ const Players = () => {
                   }}
                 >
                   {loading
-                    ? "Loading playersâ€¦"
+                    ? "Loading players…"
                     : `${filteredPlayers.length} verified player${filteredPlayers.length !== 1 ? "s" : ""}`}
                 </p>
               </div>
 
               {/* Controls */}
               <div className="flex flex-wrap items-center gap-3">
-                {/* Search â€” Fitts's Law: 48px height */}
+                {/* Search — Fitts's Law: 48px height */}
                 <div
                   className="relative"
                   style={{ minWidth: "260px", flex: "1 1 260px" }}
@@ -1866,11 +1853,11 @@ const Players = () => {
           />
         </div>
 
-        {/* â”€â”€ Main Content â”€â”€ */}
+        {/* ── Main Content ── */}
         <div className="relative px-4 sm:px-6 pb-24">
           <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
             <div className="flex gap-8">
-              {/* â”€â”€ Filter Sidebar â”€â”€ */}
+              {/* ── Filter Sidebar ── */}
               <aside
                 className={`${showFilters ? "block" : "hidden"} lg:block shrink-0`}
                 style={{ width: "232px" }}
@@ -1966,9 +1953,9 @@ const Players = () => {
                   <FilterSection title="Location">
                     <input
                       type="text"
-                      placeholder="e.g. London"
-                      value={filters.city}
-                      onChange={(e) => set("city", e.target.value)}
+                      placeholder="e.g. Kerala"
+                      value={filters.state}
+                      onChange={(e) => set("state", e.target.value)}
                       style={inputStyle}
                       className="placeholder:text-white/20"
                     />
@@ -2033,7 +2020,7 @@ const Players = () => {
                 </div>
               </aside>
 
-              {/* â”€â”€ Player Grid / List â”€â”€ */}
+              {/* ── Player Grid / List ── */}
               <main className="flex-1 min-w-0">
                 {loading ? (
                   <div

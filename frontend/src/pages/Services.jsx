@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   MagnifyingGlassIcon,
@@ -38,14 +38,14 @@ const ICON_MAP = {
   CheckBadgeIcon,
 };
 
-// Static fallbacks (one per title — deduped)
+// Static fallbacks (one per title � deduped)
 const DEFAULT_SERVICES = [
   { _id: "s1", title: "Player Discovery", description: "Instantly search verified players by position, age, and performance metrics.", icon: "MagnifyingGlassIcon", group: "Discovery" },
   { _id: "s2", title: "Advanced Search", description: "Filter talent by region, club history, and scouting reports.", icon: "MagnifyingGlassIcon", group: "Discovery" },
   { _id: "s3", title: "Profile Management", description: "Build a dynamic profile with career history, highlights, and live stats.", icon: "UserCircleIcon", group: "Profile & Data" },
   { _id: "s4", title: "Achievement Tracking", description: "Showcase awards, milestones, and team accomplishments in one place.", icon: "TrophyIcon", group: "Profile & Data" },
   { _id: "s5", title: "Career Analytics", description: "Track performance trends and career progression with actionable data.", icon: "ChartBarIcon", group: "Analytics & Trust" },
-  { _id: "s6", title: "Verified Profiles", description: "Every profile is verified for accuracy — scouts trust what they see.", icon: "ShieldCheckIcon", group: "Analytics & Trust" },
+  { _id: "s6", title: "Verified Profiles", description: "Every profile is verified for accuracy � scouts trust what they see.", icon: "ShieldCheckIcon", group: "Analytics & Trust" },
 ];
 
 const DEFAULT_STEPS = [
@@ -101,7 +101,7 @@ const ServiceCard = ({ service }) => {
       {/* Title */}
       <h3
         className="text-white font-semibold"
-        style={{ fontSize: "18px", lineHeight: "1.4", fontFamily: "'Playfair Display', serif" }}
+        style={{ fontSize: "18px", lineHeight: "1.4", fontFamily: "'Poppins', sans-serif" }}
       >
         {service.title}
       </h3>
@@ -142,7 +142,7 @@ const StepCard = ({ step, isLast }) => {
       >
         <span
           className="font-semibold text-white"
-          style={{ fontSize: "18px", fontFamily: "'Playfair Display', serif" }}
+          style={{ fontSize: "18px", fontFamily: "'Poppins', sans-serif" }}
         >
           {step.stepNumber}
         </span>
@@ -157,7 +157,7 @@ const StepCard = ({ step, isLast }) => {
       {/* Title */}
       <h3
         className="text-white font-semibold mb-2"
-        style={{ fontSize: "17px", fontFamily: "'Playfair Display', serif", lineHeight: "1.4" }}
+        style={{ fontSize: "17px", fontFamily: "'Poppins', sans-serif", lineHeight: "1.4" }}
       >
         {step.title}
       </h3>
@@ -216,14 +216,14 @@ const Services = () => {
         />
       </div>
 
-      {/* ── Hero ─────────────────────────────────────── */}
+      {/* -- Hero --------------------------------------- */}
       <section className="relative pt-36 pb-16 px-4 sm:px-6" style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <p className="uppercase tracking-widest mb-5" style={{ fontSize: "12px", fontWeight: 500, color: "rgba(255,255,255,0.28)", letterSpacing: "0.16em" }}>
           What We Offer
         </p>
         <h1
           className="font-semibold text-white mb-5"
-          style={{ fontSize: "clamp(36px, 5vw, 52px)", lineHeight: "1.14", fontFamily: "'Playfair Display', serif", maxWidth: "640px" }}
+          style={{ fontSize: "clamp(36px, 5vw, 52px)", lineHeight: "1.14", fontFamily: "'Poppins', sans-serif", maxWidth: "640px" }}
         >
           Professional Tools for{" "}
           <span className="relative inline-block">
@@ -252,7 +252,7 @@ const Services = () => {
         </div>
       </section>
 
-      {/* ── Who We Serve ─────────────────────────────── */}
+      {/* -- Who We Serve ------------------------------- */}
       <section className="relative py-16 px-4 sm:px-6" style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <p className="uppercase tracking-widest mb-8" style={{ fontSize: "11px", fontWeight: 500, color: "rgba(255,255,255,0.22)", letterSpacing: "0.16em" }}>
           Who We Serve
@@ -263,7 +263,7 @@ const Services = () => {
             <p className="uppercase tracking-widest mb-4" style={{ fontSize: "11px", fontWeight: 600, color: "rgba(196,22,28,0.85)", letterSpacing: "0.14em" }}>
               For Players
             </p>
-            <h3 className="text-white font-semibold mb-5" style={{ fontSize: "20px", fontFamily: "'Playfair Display', serif", lineHeight: "1.35" }}>
+            <h3 className="text-white font-semibold mb-5" style={{ fontSize: "20px", fontFamily: "'Poppins', sans-serif", lineHeight: "1.35" }}>
               Build your profile. Get discovered.
             </h3>
             <ul className="space-y-3">
@@ -283,7 +283,7 @@ const Services = () => {
             <p className="uppercase tracking-widest mb-4" style={{ fontSize: "11px", fontWeight: 600, color: "rgba(96,165,250,0.85)", letterSpacing: "0.14em" }}>
               For Clubs & Scouts
             </p>
-            <h3 className="text-white font-semibold mb-5" style={{ fontSize: "20px", fontFamily: "'Playfair Display', serif", lineHeight: "1.35" }}>
+            <h3 className="text-white font-semibold mb-5" style={{ fontSize: "20px", fontFamily: "'Poppins', sans-serif", lineHeight: "1.35" }}>
               Find the right talent, faster.
             </h3>
             <ul className="space-y-3">
@@ -300,12 +300,12 @@ const Services = () => {
         </div>
       </section>
 
-      {/* ── Core Services ────────────────────────────── */}
+      {/* -- Core Services ------------------------------ */}
       <section className="relative py-16 px-4 sm:px-6" style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <p className="uppercase tracking-widest mb-3" style={{ fontSize: "11px", fontWeight: 500, color: "rgba(255,255,255,0.22)", letterSpacing: "0.16em" }}>
           Core Services
         </p>
-        <h2 className="font-semibold text-white mb-12" style={{ fontSize: "clamp(26px, 3.5vw, 34px)", fontFamily: "'Playfair Display', serif", lineHeight: "1.25" }}>
+        <h2 className="font-semibold text-white mb-12" style={{ fontSize: "clamp(26px, 3.5vw, 34px)", fontFamily: "'Poppins', sans-serif", lineHeight: "1.25" }}>
           Everything You Need on One Platform
         </h2>
 
@@ -341,12 +341,12 @@ const Services = () => {
         )}
       </section>
 
-      {/* ── How It Works ─────────────────────────────── */}
+      {/* -- How It Works ------------------------------- */}
       <section className="relative py-16 px-4 sm:px-6" style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <p className="uppercase tracking-widest mb-3" style={{ fontSize: "11px", fontWeight: 500, color: "rgba(255,255,255,0.22)", letterSpacing: "0.16em" }}>
           The Process
         </p>
-        <h2 className="font-semibold text-white mb-14" style={{ fontSize: "clamp(26px, 3.5vw, 34px)", fontFamily: "'Playfair Display', serif", lineHeight: "1.25" }}>
+        <h2 className="font-semibold text-white mb-14" style={{ fontSize: "clamp(26px, 3.5vw, 34px)", fontFamily: "'Poppins', sans-serif", lineHeight: "1.25" }}>
           How It Works
         </h2>
 
@@ -363,7 +363,7 @@ const Services = () => {
         )}
       </section>
 
-      {/* ── CTA ──────────────────────────────────────── */}
+      {/* -- CTA ---------------------------------------- */}
       <section className="relative py-16 px-4 sm:px-6">
         <div
           className="rounded-2xl text-center"
@@ -381,7 +381,7 @@ const Services = () => {
           </p>
           <h2
             className="font-semibold text-white mb-4"
-            style={{ fontSize: "clamp(28px, 4vw, 42px)", fontFamily: "'Playfair Display', serif", lineHeight: "1.2" }}
+            style={{ fontSize: "clamp(28px, 4vw, 42px)", fontFamily: "'Poppins', sans-serif", lineHeight: "1.2" }}
           >
             Ready to Get Discovered?
           </h2>
@@ -407,7 +407,7 @@ const Services = () => {
         </div>
       </section>
 
-      {/* ── Newsletter ────────────────────────────────── */}
+      {/* -- Newsletter ---------------------------------- */}
       <section className="relative px-4 sm:px-6" style={{ paddingTop: "32px", paddingBottom: "80px" }}>
         <div className="rounded-2xl" style={{ maxWidth: "1200px", margin: "0 auto", ...GLASS, padding: "clamp(28px, 5vw, 44px) clamp(24px, 5vw, 48px)" }}>
           <div className="flex flex-col lg:flex-row lg:items-center gap-8">
@@ -415,11 +415,11 @@ const Services = () => {
               <p className="uppercase tracking-widest mb-3" style={{ fontSize: "11px", fontWeight: 500, color: "rgba(255,255,255,0.26)", letterSpacing: "0.15em" }}>
                 Newsletter
               </p>
-              <h2 className="font-semibold text-white mb-2" style={{ fontSize: "clamp(20px, 2.8vw, 26px)", fontFamily: "'Playfair Display', serif", lineHeight: "1.3" }}>
+              <h2 className="font-semibold text-white mb-2" style={{ fontSize: "clamp(20px, 2.8vw, 26px)", fontFamily: "'Poppins', sans-serif", lineHeight: "1.3" }}>
                 Stay Ahead of the Game
               </h2>
               <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.38)", lineHeight: "1.6" }}>
-                Transfer news, platform updates, and scouting insights — weekly.
+                Transfer news, platform updates, and scouting insights � weekly.
               </p>
             </div>
             <div className="flex-1" style={{ maxWidth: "420px" }}>

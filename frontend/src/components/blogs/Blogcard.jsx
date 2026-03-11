@@ -1,4 +1,4 @@
-ï»¿import { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 // Shared design tokens
@@ -126,7 +126,7 @@ const BlogCard = ({ blog }) => {
             <span>{formatDate(blog.createdAt || blog.published_at)}</span>
             {blog.readTime && (
               <>
-                <span>Â·</span>
+                <span>·</span>
                 <span>{blog.readTime} min read</span>
               </>
             )}
@@ -138,13 +138,13 @@ const BlogCard = ({ blog }) => {
             style={{
               fontSize: "18px",
               lineHeight: "1.4",
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Poppins', sans-serif",
             }}
           >
             {blog.title}
           </h3>
 
-          {/* Excerpt â€” max 2 lines */}
+          {/* Excerpt — max 2 lines */}
           <p
             className="line-clamp-2 flex-1"
             style={{

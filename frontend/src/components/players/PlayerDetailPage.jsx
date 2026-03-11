@@ -1,9 +1,10 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+﻿import { useState, useEffect, lazy, Suspense } from "react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import {
   ArrowLeftIcon,
   EnvelopeIcon,
   ArrowTopRightOnSquareIcon,
-  BookmarkIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 
@@ -32,7 +33,6 @@ const TabFallback = () => (
 ----------------------------------------------------------- */
 const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
   const [activeTab, setActiveTab]     = useState("overview");
-  const [watchlisted, setWatchlisted] = useState(false);
 
   // Escape key to close
   useEffect(() => {
@@ -52,35 +52,259 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
 
   const handleDownloadReport = () => {
     if (!player) return;
-    const txt = [
-      `PLAYER REPORT � Pro Talent Connect`,
-      `Generated: ${new Date().toLocaleDateString()}`,
-      `---`,
-      `Name: ${player.name}`,
-      `Position: ${player.playingPosition}`,
-      `Age: ${player.age || "�"}`,
-      `Nationality: ${player.nationality || "�"}`,
-      `City: ${player.city || "�"}`,
-      `Club: ${currentClub || "�"}`,
-      `Height: ${player.height ? player.height + " cm" : "�"}`,
-      `Weight: ${player.weight ? player.weight + " kg" : "�"}`,
-      `Preferred Foot: ${player.preferredFoot || "�"}`,
-      ``,
-      `Scout Score: ${player.scoutReport?.totalScore ?? "�"}/100 (Grade ${player.scoutReport?.grade ?? "�"})`,
-      ``,
-      `Clubs: ${player.clubsPlayed?.map((c) => c.clubName).join(", ") || "�"}`,
-      `Competitions: ${player.competitions?.map((c) => `${c.name} (${c.result || "Participant"})`).join(", ") || "�"}`,
-      ``,
-      `Notes: ${player.scouting_notes || "�"}`,
-    ].join("\n");
 
-    const blob = new Blob([txt], { type: "text/plain" });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
-    a.href     = url;
-    a.download = `${player.name?.replace(/\s+/g, "_")}_report.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const W = doc.internal.pageSize.getWidth();
+    const red   = [196, 22, 28];   // #C4161C
+    const dark  = [15, 15, 17];    // near-black bg
+    const white = [255, 255, 255];
+    const gray  = [160, 160, 160];
+    const lightGray = [240, 240, 240];
+
+    const GRADE_COLORS = {
+      A: [52, 211, 153],   // emerald
+      B: [96, 165, 250],   // blue
+      C: [251, 191, 36],   // yellow
+      D: [251, 146, 60],   // orange
+      E: [248, 113, 113],  // red
+    };
+    const GRADE_LABELS = { A: "Elite", B: "Professional", C: "Semi-Pro", D: "Amateur", E: "Semi-Amateur" };
+
+    const grade       = player.scoutReport?.grade;
+    const gradeColor  = GRADE_COLORS[grade] || [156, 163, 175];
+    const totalScore  = player.scoutReport?.totalScore ?? 0;
+    const sr          = player.scoutReport || {};
+
+    // ── Header banner ──────────────────────────────────────────
+    doc.setFillColor(...dark);
+    doc.rect(0, 0, W, 32, "F");
+
+    // Red accent bar on left
+    doc.setFillColor(...red);
+    doc.rect(0, 0, 4, 32, "F");
+
+    // Brand name
+    doc.setTextColor(...red);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.text("PRO TALENT CONNECT", 10, 13);
+
+    doc.setTextColor(...gray);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("OFFICIAL PLAYER SCOUTING REPORT", 10, 19);
+    doc.text(`Generated: ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}`, 10, 24);
+
+    // ── Grade badge (top-right) ─────────────────────────────────
+    if (grade) {
+      doc.setFillColor(...gradeColor);
+      doc.roundedRect(W - 36, 4, 28, 24, 3, 3, "F");
+      doc.setTextColor(15, 15, 17);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text(grade, W - 26, 18, { align: "center" });
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "normal");
+      doc.text(GRADE_LABELS[grade] || "", W - 22, 24, { align: "center" });
+    }
+
+    let y = 40;
+
+    // ── Player name + position ──────────────────────────────────
+    doc.setTextColor(20, 20, 20);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text(player.name || "", 14, y);
+    y += 7;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(...gray);
+    const subParts = [player.playingPosition, player.nationality, player.state].filter(Boolean);
+    doc.text(subParts.join("  ·  "), 14, y);
+    y += 10;
+
+    // ── Score bar ───────────────────────────────────────────────
+    if (totalScore > 0) {
+      const barW = W - 28;
+      const fillW = (totalScore / 100) * barW;
+      doc.setFillColor(...lightGray);
+      doc.roundedRect(14, y, barW, 5, 2, 2, "F");
+      doc.setFillColor(...gradeColor);
+      doc.roundedRect(14, y, fillW, 5, 2, 2, "F");
+      doc.setTextColor(...gradeColor);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.text(`${totalScore}/100`, W - 14, y + 4, { align: "right" });
+      y += 12;
+    }
+
+    // ── Divider ─────────────────────────────────────────────────
+    doc.setDrawColor(220, 220, 220);
+    doc.line(14, y, W - 14, y);
+    y += 7;
+
+    // ── Basic info grid (2 columns) ─────────────────────────────
+    const infoLeft = [
+      ["Player ID",      player.playerId  || "—"],
+      ["Date of Birth",  player.dateOfBirth ? new Date(player.dateOfBirth).toLocaleDateString("en-GB") : "—"],
+      ["Age",            player.age ? `${player.age} years` : "—"],
+      ["Gender",         player.gender    || "—"],
+      ["Nationality",    player.nationality || "—"],
+      ["State",          player.state     || "—"],
+    ];
+    const infoRight = [
+      ["Height",         player.height  ? `${player.height} cm` : "—"],
+      ["Weight",         player.weight  ? `${player.weight} kg` : "—"],
+      ["Preferred Foot", player.preferredFoot || "—"],
+      ["Current Club",   currentClub    || "—"],
+      ["Current League", player.currentLeague || "—"],
+      ["State League",   player.stateLeague   || "—"],
+    ];
+
+    const colMid = W / 2;
+    doc.setFontSize(9);
+    infoLeft.forEach(([label, val], i) => {
+      const iy = y + i * 8;
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...gray);
+      doc.text(label, 14, iy);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(30, 30, 30);
+      doc.text(val, 60, iy);
+    });
+    infoRight.forEach(([label, val], i) => {
+      const iy = y + i * 8;
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...gray);
+      doc.text(label, colMid, iy);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(30, 30, 30);
+      doc.text(val, colMid + 40, iy);
+    });
+    y += infoLeft.length * 8 + 6;
+
+    // ── Scout Report Scores table ───────────────────────────────
+    doc.setDrawColor(220, 220, 220);
+    doc.line(14, y, W - 14, y);
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(20, 20, 20);
+    doc.text("Scout Report Scores", 14, y);
+    y += 5;
+
+    const scoreRows = [
+      ["Age Score",            `${sr.ageScore ?? 0}`,            "/5"],
+      ["Physical Profile",     `${sr.physicalScore ?? 0}`,       "/5"],
+      ["Transfer Market",      `${sr.transferMarketScore ?? 0}`, "/7.5"],
+      ["Competition Level",    `${sr.competitionScore ?? 0}`,    "/50"],
+      ["Championship Bonus",   `${sr.championshipBonus ?? 0}`,   "bonus"],
+      ["State League Bonus",   `${sr.stateLeagueBonus ?? 0}`,    "/2"],
+      ["Club Reputation",      `${sr.clubReputationBonus ?? 0}`, "/3"],
+      ["Speed (Sprint 30m)",   `${sr.speedScore ?? 0}`,          "/2"],
+      ["Mentality",            `${sr.mentalityAssessment ?? 0}`, "/2"],
+      ["Total Score",          `${totalScore}`,                  "/100"],
+    ];
+
+    autoTable(doc, {
+      startY: y,
+      margin: { left: 14, right: 14 },
+      head: [["Category", "Score", "Max"]],
+      body: scoreRows,
+      theme: "grid",
+      headStyles: { fillColor: dark, textColor: white, fontStyle: "bold", fontSize: 9 },
+      bodyStyles: { fontSize: 9, textColor: [30, 30, 30] },
+      alternateRowStyles: { fillColor: [248, 248, 248] },
+      columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 25, halign: "right" }, 2: { cellWidth: 20, halign: "center", textColor: gray } },
+      didParseCell(data) {
+        // Highlight the total row
+        if (data.row.index === scoreRows.length - 1) {
+          data.cell.styles.fontStyle = "bold";
+          data.cell.styles.fillColor = [...gradeColor, 40];
+        }
+      },
+    });
+
+    y = doc.lastAutoTable.finalY + 10;
+
+    // ── Clubs Played ────────────────────────────────────────────
+    if (player.clubsPlayed?.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(20, 20, 20);
+      doc.text("Clubs Played", 14, y);
+      y += 4;
+      autoTable(doc, {
+        startY: y,
+        margin: { left: 14, right: 14 },
+        head: [["Club", "Duration"]],
+        body: player.clubsPlayed.map((c) => [c.clubName || "", c.duration || "—"]),
+        theme: "grid",
+        headStyles: { fillColor: dark, textColor: white, fontStyle: "bold", fontSize: 9 },
+        bodyStyles: { fontSize: 9, textColor: [30, 30, 30] },
+        alternateRowStyles: { fillColor: [248, 248, 248] },
+      });
+      y = doc.lastAutoTable.finalY + 10;
+    }
+
+    // ── Competitions ─────────────────────────────────────────────
+    if (player.competitions?.length > 0) {
+      // New page if not enough space
+      if (y > 230) { doc.addPage(); y = 20; }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(20, 20, 20);
+      doc.text("Competitions", 14, y);
+      y += 4;
+      autoTable(doc, {
+        startY: y,
+        margin: { left: 14, right: 14 },
+        head: [["Competition", "Type", "Year", "Result"]],
+        body: player.competitions.map((c) => [
+          c.name || "",
+          c.type || "—",
+          c.year ? String(c.year) : "—",
+          c.result || "Participant",
+        ]),
+        theme: "grid",
+        headStyles: { fillColor: dark, textColor: white, fontStyle: "bold", fontSize: 9 },
+        bodyStyles: { fontSize: 9, textColor: [30, 30, 30] },
+        alternateRowStyles: { fillColor: [248, 248, 248] },
+      });
+      y = doc.lastAutoTable.finalY + 10;
+    }
+
+    // ── Scouting Notes ───────────────────────────────────────────
+    if (player.scouting_notes) {
+      if (y > 240) { doc.addPage(); y = 20; }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(20, 20, 20);
+      doc.text("Scouting Notes", 14, y);
+      y += 6;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(50, 50, 50);
+      const noteLines = doc.splitTextToSize(player.scouting_notes, W - 28);
+      doc.text(noteLines, 14, y);
+      y += noteLines.length * 5 + 6;
+    }
+
+    // ── Footer on every page ─────────────────────────────────────
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setDrawColor(220, 220, 220);
+      doc.line(14, 285, W - 14, 285);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(...gray);
+      doc.text("Pro Talent Connect — Confidential Scouting Report", 14, 290);
+      doc.text(`Page ${i} of ${pageCount}`, W - 14, 290, { align: "right" });
+    }
+
+    doc.save(`${player.name?.replace(/\s+/g, "_")}_report.pdf`);
   };
 
   return (
@@ -180,7 +404,7 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
                     )}
                     {player.age && <span>{player.age} years</span>}
                     {player.nationality && <span>{player.nationality}</span>}
-                    {player.city && <span>{player.city}</span>}
+                    {player.state && <span>{player.state}</span>}
                     {player.preferredFoot && (
                       <span>{player.preferredFoot} foot</span>
                     )}
@@ -217,17 +441,6 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
                       <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                       Download Report
                     </button>
-                    <button
-                      onClick={() => setWatchlisted((v) => !v)}
-                      className={`h-8 px-4 rounded-lg border text-xs font-semibold transition-colors flex items-center gap-1.5 ${
-                        watchlisted
-                          ? "bg-[#C4161C]/10 border-[#C4161C]/30 text-red-400 hover:bg-[#C4161C]/20"
-                          : "bg-white/[0.04] border-white/[0.07] text-gray-300 hover:bg-white/[0.08]"
-                      }`}
-                    >
-                      <BookmarkIcon className="w-3.5 h-3.5" />
-                      {watchlisted ? "Watchlisted" : "Add to Watchlist"}
-                    </button>
                     {player.email && (
                       <a
                         href={`mailto:${player.email}`}
@@ -257,8 +470,6 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
               <OverviewTab
                 player={player}
                 onDownload={handleDownloadReport}
-                onWatchlist={() => setWatchlisted((v) => !v)}
-                watchlisted={watchlisted}
               />
             )}
 
@@ -279,17 +490,6 @@ const PlayerDetailPage = ({ player, onClose, isLoading = false }) => {
             >
               <ArrowDownTrayIcon className="w-4 h-4" />
               Download
-            </button>
-            <button
-              onClick={() => setWatchlisted((v) => !v)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-bold transition-colors ${
-                watchlisted
-                  ? "bg-[#C4161C]/10 border-[#C4161C]/30 text-red-400"
-                  : "bg-white/[0.05] border-white/[0.1] text-gray-300"
-              }`}
-            >
-              <BookmarkIcon className="w-4 h-4" />
-              {watchlisted ? "Saved" : "Watchlist"}
             </button>
             {player.email && (
               <a

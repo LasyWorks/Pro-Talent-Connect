@@ -119,10 +119,21 @@ function cachedGet(url, options = {}, ttlMs = 30000) {
   const cacheKey = `${url}:${JSON.stringify(params)}`;
 
   const cached = apiCache.get(cacheKey);
-  if (cached && !signal) return Promise.resolve(cached);
+  if (cached) return Promise.resolve(cached);
+
+  // Never deduplicate when a signal is present.
+  // If the original in-flight request was aborted (e.g. React strict-mode
+  // double-invocation), the shared promise would reject with AbortError and
+  // every subsequent caller would incorrectly see a "Failed to load" error.
+  if (signal) {
+    return apiClient.get(url, { params, signal }).then((res) => {
+      apiCache.set(cacheKey, res, ttlMs);
+      return res;
+    });
+  }
 
   return deduplicateRequest(cacheKey, () =>
-    apiClient.get(url, { params, signal }).then((res) => {
+    apiClient.get(url, { params }).then((res) => {
       apiCache.set(cacheKey, res, ttlMs);
       return res;
     })
@@ -172,8 +183,11 @@ export const api = {
   publishBlog: (id) => { apiCache.invalidate('/blogs'); return apiClient.patch(`/blogs/${id}/publish`); },
 
   // ─── About (cached 5 min) ───
-  getAbout: () => cachedGet('/about', {}, 300000),
-  updateAbout: (data) => mutate('put', '/about', data, ['/about']),
+  getAbout: () => cachedGet('/about', {}, 0),
+  updateAbout: (data) => mutate('put', '/about', data, ['/about']).then((res) => {
+    window.dispatchEvent(new CustomEvent('about:updated'));
+    return res;
+  }),
   addAboutImages: (images) => mutate('post', '/about/images', { images }, ['/about']),
 
   // ─── Services (cached 5 min) ───
@@ -210,6 +224,12 @@ export const api = {
 
   // ─── Audit Logs (Super Admin) ───
   getAuditLogs: (params) => cachedGet('/audit-logs', params, 10000),
+
+  // ─── Leagues ───
+  getLeagues: () => cachedGet('/leagues', {}, 120000),
+  createLeague: (data) => mutate('post', '/leagues', data, ['/leagues']),
+  updateLeague: (id, data) => mutate('put', `/leagues/${id}`, data, ['/leagues']),
+  deleteLeague: (id) => { apiCache.invalidate('/leagues'); return apiClient.delete(`/leagues/${id}`); },
 
   // ─── Cache Control ───
   clearCache: () => apiCache.flush(),

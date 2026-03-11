@@ -15,6 +15,7 @@ const auditLogRoutes = require("./Routes/auditLogRoutes");
 const serviceRoutes = require("./Routes/serviceRoutes");
 const contactRoutes = require("./Routes/contactRoutes");
 const otpRoutes = require("./Routes/otpRoutes");
+const leagueRoutes = require("./Routes/leagueRoutes");
 
 // Middleware
 const { apiLimiter } = require("./Middleware/rateLimiter");
@@ -121,6 +122,7 @@ app.use("/api/v1/audit-logs", auditLogRoutes);
 app.use("/api/v1", serviceRoutes);
 app.use("/api/v1/contact", contactRoutes);
 app.use("/api/v1/otp", otpRoutes);
+app.use("/api/v1/leagues", leagueRoutes);
 
 // Legacy routes (for backward compatibility - to be deprecated)
 app.use("/api/auth", authRoutes);
@@ -133,6 +135,7 @@ app.use("/api/audit-logs", auditLogRoutes);
 app.use("/api", serviceRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/otp", otpRoutes);
+app.use("/api/leagues", leagueRoutes);
 
 // 404 handler
 app.use(notFound);

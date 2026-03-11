@@ -57,7 +57,7 @@ const CoreValues = ({ credentials }) => (
         style={{
           fontSize: "clamp(28px, 3.5vw, 36px)",
           lineHeight: "1.25",
-          fontFamily: "'Playfair Display', serif",
+          fontFamily: "'Poppins', sans-serif",
         }}
       >
         Core{" "}
@@ -102,7 +102,7 @@ const CoreValues = ({ credentials }) => (
               className="font-semibold text-white"
               style={{
                 fontSize: "20px",
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: "'Poppins', sans-serif",
               }}
             >
               {title}
@@ -140,7 +140,7 @@ const CoreValues = ({ credentials }) => (
             className="font-semibold text-white mb-3"
             style={{
               fontSize: "20px",
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Poppins', sans-serif",
             }}
           >
             Our Credentials

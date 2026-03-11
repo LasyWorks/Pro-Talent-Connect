@@ -43,7 +43,7 @@ const createPlayerSchema = Joi.object({
   gender: Joi.string().valid('Male', 'Female', 'Other').required(),
   jersey_no: Joi.number().integer().min(0).max(99).allow(null, ''),
   size: Joi.string().valid('XS', 'S', 'M', 'L', 'XL', 'XXL').allow('', null),
-  city: Joi.string().allow('', null).trim(),
+  state: Joi.string().allow('', null).trim(),
   address: Joi.string().max(500).allow('', null).trim(),
   mobileNumber: Joi.string().pattern(/^[0-9+\-\s()]+$/).required(),
   email: Joi.string().email().required().trim().lowercase(),
@@ -55,27 +55,13 @@ const createPlayerSchema = Joi.object({
   competitions: Joi.array().items(
     Joi.object({
       name: Joi.string().required().trim(),
-      type: Joi.string().valid(
-        'National Team',
-        'Santosh Trophy',
-        'I-League Senior',
-        'I-League 2',
-        'I-League 3',
-        'State Franchise League',
-        'Elite Youth I-League',
-        'National Youth Championships',
-        'Foreign Exposure',
-        'RFDL',
-        'State League',
-        'State Youth League',
-        'District League',
-        'Other'
-      ).required(),
-      year: Joi.number().integer().min(1900).max(2100),
-      result: Joi.string().valid('Champion', 'Runner-up', 'Third', 'Participant', '').allow(''),
+      type: Joi.string().max(100).allow('', null).trim(),
+      year: Joi.number().integer().min(1900).max(2100).allow(null, ''),
+      result: Joi.string().valid('Champion', 'Runner-up', 'Third', 'Participant', '').allow('', null),
     })
   ),
-  stateLeague: Joi.string().allow('', null).trim(),
+  stateLeague: Joi.string().max(200).allow('', null).trim(),
+  currentLeague: Joi.string().max(200).allow('', null).trim(),
   clubTier: Joi.string().valid('', 'Tier 1', 'Tier 2', 'Tier 3').allow('', null),
   sprint30m: Joi.number().min(0).max(10).allow(null, ''),
   sprint50m: Joi.number().min(0).max(15).allow(null, ''),
@@ -83,8 +69,8 @@ const createPlayerSchema = Joi.object({
   clubsPlayed: Joi.array().items(
     Joi.object({
       clubName: Joi.string().required().trim(),
-      clubLogo: Joi.string().allow('').trim(),
-      duration: Joi.string().trim(),
+      clubLogo: Joi.string().allow('', null).trim(),
+      duration: Joi.string().allow('', null).trim(),
     })
   ),
   featured: Joi.boolean(),
@@ -106,7 +92,7 @@ const updatePlayerSchema = Joi.object({
   gender: Joi.string().valid('Male', 'Female', 'Other').allow('', null),
   jersey_no: Joi.number().integer().min(0).max(99).allow(null, ''),
   size: Joi.string().valid('XS', 'S', 'M', 'L', 'XL', 'XXL').allow('', null),
-  city: Joi.string().allow('', null).trim(),
+  state: Joi.string().allow('', null).trim(),
   address: Joi.string().max(500).allow('', null).trim(),
   mobileNumber: Joi.string().pattern(/^[0-9+\-\s()]+$/).allow('', null),
   email: Joi.string().email().trim().lowercase(),
@@ -118,27 +104,13 @@ const updatePlayerSchema = Joi.object({
   competitions: Joi.array().items(
     Joi.object({
       name: Joi.string().required().trim(),
-      type: Joi.string().valid(
-        'National Team',
-        'Santosh Trophy',
-        'I-League Senior',
-        'I-League 2',
-        'I-League 3',
-        'State Franchise League',
-        'Elite Youth I-League',
-        'National Youth Championships',
-        'Foreign Exposure',
-        'RFDL',
-        'State League',
-        'State Youth League',
-        'District League',
-        'Other'
-      ).required(),
-      year: Joi.number().integer().min(1900).max(2100),
-      result: Joi.string().valid('Champion', 'Runner-up', 'Third', 'Participant', '').allow(''),
+      type: Joi.string().max(100).allow('', null).trim(),
+      year: Joi.number().integer().min(1900).max(2100).allow(null, ''),
+      result: Joi.string().valid('Champion', 'Runner-up', 'Third', 'Participant', '').allow('', null),
     })
   ),
-  stateLeague: Joi.string().allow('', null).trim(),
+  stateLeague: Joi.string().max(200).allow('', null).trim(),
+  currentLeague: Joi.string().max(200).allow('', null).trim(),
   clubTier: Joi.string().valid('', 'Tier 1', 'Tier 2', 'Tier 3').allow('', null),
   sprint30m: Joi.number().min(0).max(10).allow(null, ''),
   sprint50m: Joi.number().min(0).max(15).allow(null, ''),
@@ -146,8 +118,8 @@ const updatePlayerSchema = Joi.object({
   clubsPlayed: Joi.array().items(
     Joi.object({
       clubName: Joi.string().required().trim(),
-      clubLogo: Joi.string().allow('').trim(),
-      duration: Joi.string().trim(),
+      clubLogo: Joi.string().allow('', null).trim(),
+      duration: Joi.string().allow('', null).trim(),
     })
   ),
   featured: Joi.boolean(),

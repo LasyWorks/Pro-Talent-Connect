@@ -41,8 +41,19 @@ const CareerTab = ({ player }) => {
                     </td>
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center shrink-0">
-                          <TrophyIcon className="w-3.5 h-3.5 text-gray-600" />
+                        <div className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.07] flex items-center justify-center shrink-0 overflow-hidden">
+                          {club.clubLogo ? (
+                            <img
+                              src={club.clubLogo}
+                              alt={club.clubName}
+                              className="w-full h-full object-contain"
+                              onError={e => { e.currentTarget.style.display = "none"; e.currentTarget.nextSibling.style.display = "flex"; }}
+                            />
+                          ) : null}
+                          <TrophyIcon
+                            className="w-3.5 h-3.5 text-gray-600"
+                            style={{ display: club.clubLogo ? "none" : "block" }}
+                          />
                         </div>
                         <span className="text-sm font-semibold text-gray-100">
                           {club.clubName}

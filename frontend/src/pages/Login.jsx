@@ -182,14 +182,6 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
-            <p className="text-xs text-gray-400 mb-2">Demo Credentials:</p>
-            <p className="text-xs text-gray-300">
-              Email: superadmin@protalent.com
-            </p>
-            <p className="text-xs text-gray-300">Password: SuperAdmin@123</p>
-          </div>
         </div>
 
         {/* Footer */}

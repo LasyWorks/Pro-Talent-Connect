@@ -33,7 +33,7 @@ const AboutHero = ({ orgName }) => {
           style={{
             fontSize: "clamp(40px, 5.5vw, 56px)",
             lineHeight: "1.15",
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "'Poppins', sans-serif",
           }}
         >
           Connecting Football Talent

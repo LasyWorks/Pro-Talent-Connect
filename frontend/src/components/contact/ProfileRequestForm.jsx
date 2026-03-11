@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDownIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { api } from "../../services/api";
+import DOBCalendarPicker from "../common/DOBCalendarPicker";
 
 /* ── shared styles ─────────────────────────────────────────── */
 const inputBase =
@@ -311,14 +312,12 @@ const ProfileRequestForm = () => {
         </Field>
 
         <Field id="dateOfBirth" label="Date of Birth" required half error={touched.dateOfBirth && errors.dateOfBirth}>
-          <input
-            id="dateOfBirth"
-            type="date"
+          <DOBCalendarPicker
+            required
             value={formData.dateOfBirth}
-            onChange={set("dateOfBirth")}
-            onBlur={blur("dateOfBirth")}
-            aria-invalid={!!(touched.dateOfBirth && errors.dateOfBirth)}
-            className={`${inputBase} ${errBorder("dateOfBirth")}`}
+            onChange={(v) => { set("dateOfBirth")({ target: { value: v } }); blur("dateOfBirth")(); }}
+            minYear={1935}
+            error={!!(touched.dateOfBirth && errors.dateOfBirth)}
           />
         </Field>
 

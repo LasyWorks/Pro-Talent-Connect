@@ -42,6 +42,7 @@ const AboutManagement = () => {
         contact_email: data.contact_email,
         contact_phone: data.contact_phone,
         location: data.location,
+        pro_talent_plus: data.pro_talent_plus,
         social_links: data.social_links,
       });
       setSuccess("About page updated successfully!");
@@ -72,6 +73,13 @@ const AboutManagement = () => {
     setData(prev => ({
       ...prev,
       social_links: { ...prev.social_links, [field]: value },
+    }));
+  };
+
+  const updatePlus = (field, value) => {
+    setData(prev => ({
+      ...prev,
+      pro_talent_plus: { ...prev.pro_talent_plus, [field]: value },
     }));
   };
 
@@ -132,6 +140,25 @@ const AboutManagement = () => {
         <div>
           <label className="text-xs text-gray-400 mb-1 block">Credentials</label>
           <textarea rows={3} value={data.credentials || ""} onChange={e => update("credentials", e.target.value)} className={inputCls} />
+        </div>
+      </div>
+
+      {/* Pro Talent Connect Plus */}
+      <div className="bg-white/5 rounded-xl p-4 border border-white/10 space-y-4">
+        <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Pro Talent Connect Plus</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Title</label>
+            <input value={data.pro_talent_plus?.title || ""} onChange={e => updatePlus("title", e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Logo URL</label>
+            <input value={data.pro_talent_plus?.logo_url || ""} onChange={e => updatePlus("logo_url", e.target.value)} className={inputCls} placeholder="https://example.com/logo.png" />
+          </div>
+        </div>
+        <div>
+          <label className="text-xs text-gray-400 mb-1 block">Description</label>
+          <textarea rows={3} value={data.pro_talent_plus?.description || ""} onChange={e => updatePlus("description", e.target.value)} className={inputCls} />
         </div>
       </div>
 

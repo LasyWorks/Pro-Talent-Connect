@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { api } from "../../services/api";
+import DOBCalendarPicker from "../common/DOBCalendarPicker";
 import {
   PlusIcon,
   PencilSquareIcon,
@@ -16,16 +17,7 @@ const AGE_GROUPS = ["U13", "U15", "U17", "U19", "Senior"];
 const GENDERS = ["Male", "Female", "Other"];
 const FEET = ["Left", "Right", "Both"];
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
-const COMPETITION_TYPES = [
-  "National Team", "Santosh Trophy", "I-League Senior", "I-League 2", "I-League 3",
-  "State Franchise League", "Elite Youth I-League", "National Youth Championships",
-  "Foreign Exposure", "RFDL", "State League", "State Youth League", "District League", "Other",
-];
 const COMP_RESULTS = ["Champion", "Runner-up", "Third", "Participant", ""];
-const STATE_LEAGUES = [
-  "", "Calcutta Premier Division", "Mizoram PL", "BDFA Super Division", "Goa Pro League",
-  "Kerala PL", "Shillong PL", "Assam PL", "INAL", "Delhi PL", "Mumbai Elite",
-];
 const CLUB_TIERS = ["", "Tier 1", "Tier 2", "Tier 3"];
 
 const gradeColors = {
@@ -49,9 +41,9 @@ const emptyForm = {
   name: "", age: "", age_group: "Senior", playingPosition: "FORWARD",
   alternativePosition: "", preferredFoot: "Right", transferMarketLink: "",
   playerId: "", dateOfBirth: "", nationality: "Indian", weight: "", height: "",
-  gender: "Male", jersey_no: "", size: "M", city: "", address: "",
+  gender: "Male", jersey_no: "", size: "M", state: "", address: "",
   mobileNumber: "", email: "", profileImage: "", scouting_notes: "",
-  career_history: "", plId: "", stateLeague: "", clubTier: "",
+  career_history: "", plId: "", currentLeague: "", stateLeague: "", clubTier: "",
   sprint30m: "", sprint50m: "", mentalityScore: 0, featured: false,
   competitions: [], clubsPlayed: [],
 };
@@ -70,14 +62,15 @@ const PlayerManagement = () => {
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({});
   const [posFilter, setPosFilter] = useState("");
+  const [leagues, setLeagues] = useState([]);
 
-  // OTP state for player creation
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [otpValue, setOtpValue] = useState("");
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [otpError, setOtpError] = useState("");
-  const [otpSuccess, setOtpSuccess] = useState("");
+  // Refs for auto-scroll when adding competition/club rows
+  const competitionsEndRef = useRef(null);
+  const clubsEndRef = useRef(null);
+  const competitionsContainerRef = useRef(null);
+  const clubsContainerRef = useRef(null);
+
+
 
   const fetchPlayers = useCallback(async () => {
     try {
@@ -98,6 +91,14 @@ const PlayerManagement = () => {
 
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
 
+  // Fetch dynamic leagues for dropdowns
+  useEffect(() => {
+    api.getLeagues().then((res) => setLeagues(res.data || [])).catch(() => {});
+  }, []);
+
+  const leagueOptions = leagues.filter((l) => l.active);
+  const stateLeagueOptions = leagues.filter((l) => l.active && l.tier === "State Tier");
+
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
@@ -108,11 +109,6 @@ const PlayerManagement = () => {
     setEditingPlayer(null);
     setFormData({ ...emptyForm });
     setError("");
-    setOtpSent(false);
-    setOtpVerified(false);
-    setOtpValue("");
-    setOtpError("");
-    setOtpSuccess("");
     setShowModal(true);
   };
 
@@ -134,7 +130,7 @@ const PlayerManagement = () => {
       gender: player.gender || "Male",
       jersey_no: player.jersey_no || "",
       size: player.size || "M",
-      city: player.city || "",
+      state: player.state || "",
       address: player.address || "",
       mobileNumber: player.mobileNumber || "",
       email: player.email || "",
@@ -142,6 +138,7 @@ const PlayerManagement = () => {
       scouting_notes: player.scouting_notes || "",
       career_history: player.career_history || "",
       plId: player.plId || "",
+      currentLeague: player.currentLeague || "",
       stateLeague: player.stateLeague || "",
       clubTier: player.clubTier || "",
       sprint30m: player.sprint30m || "",
@@ -155,59 +152,27 @@ const PlayerManagement = () => {
     setShowModal(true);
   };
 
-  // OTP handlers for player creation
-  const handleSendPlayerOtp = async () => {
-    if (!formData.email) {
-      setOtpError("Please enter the player's email first");
-      return;
-    }
-    setOtpLoading(true);
-    setOtpError("");
-    setOtpSuccess("");
-    try {
-      await api.sendPlayerOtp(formData.email);
-      setOtpSent(true);
-      setOtpSuccess("OTP sent to " + formData.email + ". Check inbox.");
-    } catch (err) {
-      const errMsg = err.response?.data?.message || "Failed to send OTP. Check server email config.";
-      setOtpError(errMsg);
-      // Still show OTP input so user can retry
-      setOtpSent(true);
-    } finally {
-      setOtpLoading(false);
-    }
-  };
 
-  const handleVerifyPlayerOtp = async () => {
-    if (!otpValue || otpValue.length !== 6) {
-      setOtpError("Please enter a valid 6-digit OTP");
-      return;
-    }
-    setOtpLoading(true);
-    setOtpError("");
-    try {
-      await api.verifyPlayerOtp(formData.email, otpValue);
-      setOtpVerified(true);
-      setOtpSuccess("Email verified successfully!");
-      setOtpError("");
-    } catch (err) {
-      setOtpError(err.response?.data?.message || "Invalid or expired OTP");
-    } finally {
-      setOtpLoading(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setError("");
 
-    // Require OTP verification for new player creation (not editing)
-    if (!editingPlayer && !otpVerified) {
-      setError("Please verify the player's email with OTP before creating the profile");
+    // Client-side validation with clear error messages
+    const missing = [];
+    if (!formData.name?.trim())         missing.push("Full Name");
+    if (!formData.playerId?.trim())     missing.push("Player ID");
+    if (!formData.dateOfBirth)          missing.push("Date of Birth");
+    if (!formData.email?.trim())        missing.push("Email");
+    if (!formData.mobileNumber?.trim()) missing.push("Mobile Number");
+
+    if (missing.length > 0) {
+      setError(`Please fill in the required fields: ${missing.join(", ")}`);
       setSaving(false);
       return;
     }
+
 
     try {
       // Auto-calculate age from dateOfBirth
@@ -229,17 +194,24 @@ const PlayerManagement = () => {
         sprint30m: formData.sprint30m ? Number(formData.sprint30m) : undefined,
         sprint50m: formData.sprint50m ? Number(formData.sprint50m) : undefined,
         mentalityScore: Number(formData.mentalityScore),
+        // Filter out incomplete competition and club entries
+        competitions: (formData.competitions || []).filter((c) => c.name?.trim()),
+        clubsPlayed: (formData.clubsPlayed || []).filter((c) => c.clubName?.trim()),
       };
 
       // Remove undefined/empty optional fields so Joi doesn't choke on them
-      Object.keys(payload).forEach(key => {
+      Object.keys(payload).forEach((key) => {
         if (payload[key] === undefined || payload[key] === "") delete payload[key];
       });
-      // Restore required fields that may be empty strings
-      if (!payload.name) payload.name = formData.name;
-      if (!payload.playerId) payload.playerId = formData.playerId;
-      if (!payload.email) payload.email = formData.email;
-      if (!payload.mobileNumber) payload.mobileNumber = formData.mobileNumber;
+      // Restore required fields
+      payload.name        = formData.name;
+      payload.playerId    = formData.playerId;
+      payload.email       = formData.email;
+      payload.mobileNumber = formData.mobileNumber;
+      payload.gender      = formData.gender;
+      payload.age_group   = formData.age_group;
+      payload.playingPosition = formData.playingPosition;
+      payload.preferredFoot   = formData.preferredFoot;
 
       if (editingPlayer) {
         await api.updatePlayer(editingPlayer._id, payload);
@@ -249,10 +221,9 @@ const PlayerManagement = () => {
       setShowModal(false);
       fetchPlayers();
     } catch (err) {
-      // Show field-level validation errors if available
       const data = err.response?.data;
       if (data?.errors && Array.isArray(data.errors)) {
-        const msgs = data.errors.map(e => `${e.field}: ${e.message}`).join('\n');
+        const msgs = data.errors.map((e) => `${e.field}: ${e.message}`).join("\n");
         setError(msgs);
       } else {
         setError(data?.message || err.message || "Failed to save player");
@@ -263,7 +234,7 @@ const PlayerManagement = () => {
   };
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Delete player "${name}"? This is a soft delete.`)) return;
+    if (!window.confirm(`Delete player "${name}"? This cannot be undone.`)) return;
     try {
       await api.deletePlayer(id);
       fetchPlayers();
@@ -273,10 +244,14 @@ const PlayerManagement = () => {
   };
 
   const addCompetition = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      competitions: [...prev.competitions, { name: "", type: "Other", year: new Date().getFullYear(), result: "Participant" }],
+      competitions: [...prev.competitions, { name: "", type: "", year: new Date().getFullYear(), result: "Participant" }],
     }));
+    // Auto-scroll to bottom of competitions list after state update
+    setTimeout(() => {
+      competitionsEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 50);
   };
 
   const removeCompetition = (idx) => {
@@ -295,10 +270,14 @@ const PlayerManagement = () => {
   };
 
   const addClub = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       clubsPlayed: [...prev.clubsPlayed, { clubName: "", clubLogo: "", duration: "" }],
     }));
+    // Auto-scroll to bottom of clubs list after state update
+    setTimeout(() => {
+      clubsEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 50);
   };
 
   const removeClub = (idx) => {
@@ -385,7 +364,7 @@ const PlayerManagement = () => {
                       {player.playerId?.startsWith("TEMP") ? "No ID" : player.playerId}
                     </span>
                   </td>
-                  <td className="py-3 px-3 text-gray-300">{player.city || "N/A"}</td>
+                  <td className="py-3 px-3 text-gray-300">{player.state || "N/A"}</td>
                   <td className="py-3 px-3 text-center">
                     <span className={`px-2 py-0.5 rounded text-xs font-bold ${gradeColors[player.scoutReport?.grade] || gradeColors["N/A"]}`}>
                       {player.scoutReport?.grade || "N/A"}
@@ -444,7 +423,7 @@ const PlayerManagement = () => {
                   ["DOB", viewPlayer.dateOfBirth?.slice(0, 10)],
                   ["Height", viewPlayer.height ? `${viewPlayer.height} cm` : "N/A"],
                   ["Weight", viewPlayer.weight ? `${viewPlayer.weight} kg` : "N/A"],
-                  ["City", viewPlayer.city],
+                  ["State", viewPlayer.state],
                   ["Nationality", viewPlayer.nationality],
                   ["Email", viewPlayer.email],
                   ["Phone", viewPlayer.mobileNumber],
@@ -503,7 +482,23 @@ const PlayerManagement = () => {
                     <input value={formData.plId} onChange={e => setFormData(p => ({ ...p, plId: e.target.value }))} className={inputCls} />
                   </Field>
                   <Field label="Date of Birth *">
-                    <input type="date" required value={formData.dateOfBirth} onChange={e => setFormData(p => ({ ...p, dateOfBirth: e.target.value }))} className={inputCls} />
+                    <DOBCalendarPicker
+                      required
+                      value={formData.dateOfBirth}
+                      onChange={v => {
+                        // Auto-calculate age from DOB
+                        let age = "";
+                        if (v) {
+                          const dob = new Date(v);
+                          const today = new Date();
+                          age = today.getFullYear() - dob.getFullYear();
+                          const m = today.getMonth() - dob.getMonth();
+                          if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+                        }
+                        setFormData(p => ({ ...p, dateOfBirth: v, age: age !== "" ? String(age) : p.age }));
+                      }}
+                      minYear={1950}
+                    />
                   </Field>
                   <Field label="Age">
                     <input type="number" value={formData.age} onChange={e => setFormData(p => ({ ...p, age: e.target.value }))} className={inputCls} />
@@ -521,8 +516,8 @@ const PlayerManagement = () => {
                   <Field label="Nationality">
                     <input value={formData.nationality} onChange={e => setFormData(p => ({ ...p, nationality: e.target.value }))} className={inputCls} />
                   </Field>
-                  <Field label="City">
-                    <input value={formData.city} onChange={e => setFormData(p => ({ ...p, city: e.target.value }))} className={inputCls} />
+                  <Field label="State">
+                    <input value={formData.state} onChange={e => setFormData(p => ({ ...p, state: e.target.value }))} className={inputCls} />
                   </Field>
                 </div>
               </div>
@@ -566,69 +561,12 @@ const PlayerManagement = () => {
                 <h4 className="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wider">Contact</h4>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Email *">
-                    <input type="email" required value={formData.email} onChange={e => { setFormData(p => ({ ...p, email: e.target.value })); if (!editingPlayer) { setOtpSent(false); setOtpVerified(false); setOtpValue(""); setOtpError(""); setOtpSuccess(""); } }} className={inputCls} />
+                    <input type="email" required value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} className={inputCls} />
                   </Field>
                   <Field label="Mobile Number *">
                     <input required value={formData.mobileNumber} onChange={e => setFormData(p => ({ ...p, mobileNumber: e.target.value }))} className={inputCls} />
                   </Field>
 
-                  {/* OTP Verification Section - Only for new player creation */}
-                  {!editingPlayer && (
-                    <div className="col-span-2">
-                      <div className="p-3 rounded-lg border border-white/10 bg-white/5">
-                        <p className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wider">Email OTP Verification</p>
-                        {otpError && <p className="text-xs text-red-400 mb-2">{otpError}</p>}
-                        {otpSuccess && <p className="text-xs text-green-400 mb-2">{otpSuccess}</p>}
-
-                        {!otpVerified ? (
-                          <div className="flex items-center gap-2">
-                            {!otpSent ? (
-                              <button
-                                type="button"
-                                onClick={handleSendPlayerOtp}
-                                disabled={otpLoading || !formData.email}
-                                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-xs font-medium transition-all disabled:opacity-50 whitespace-nowrap"
-                              >
-                                {otpLoading ? "Sending..." : "Send OTP"}
-                              </button>
-                            ) : (
-                              <>
-                                <input
-                                  type="text"
-                                  maxLength={6}
-                                  placeholder="Enter 6-digit OTP"
-                                  value={otpValue}
-                                  onChange={e => setOtpValue(e.target.value.replace(/\D/g, ""))}
-                                  className="w-36 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 focus:border-blue-500 focus:outline-none text-sm text-white tracking-widest text-center"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={handleVerifyPlayerOtp}
-                                  disabled={otpLoading || otpValue.length !== 6}
-                                  className="px-4 py-1.5 bg-green-600 hover:bg-green-700 rounded-lg text-xs font-medium transition-all disabled:opacity-50 whitespace-nowrap"
-                                >
-                                  {otpLoading ? "Verifying..." : "Verify OTP"}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={handleSendPlayerOtp}
-                                  disabled={otpLoading}
-                                  className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs text-gray-400 transition-all disabled:opacity-50 whitespace-nowrap"
-                                >
-                                  Resend
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 text-green-400">
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                            <span className="text-xs font-medium">Email verified</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
 
                   <Field label="Address" span={2}>
                     <input value={formData.address} onChange={e => setFormData(p => ({ ...p, address: e.target.value }))} className={inputCls} />
@@ -643,9 +581,16 @@ const PlayerManagement = () => {
                   <Field label="Transfer Market Link">
                     <input value={formData.transferMarketLink} onChange={e => setFormData(p => ({ ...p, transferMarketLink: e.target.value }))} className={inputCls} placeholder="https://..." />
                   </Field>
-                  <Field label="State League">
+                  <Field label="Current League">
+                    <select value={formData.currentLeague} onChange={e => setFormData(p => ({ ...p, currentLeague: e.target.value }))} className={selectCls}>
+                      <option value="">None</option>
+                      {leagueOptions.map(l => <option key={l._id} value={l.name}>{l.name} ({l.tier})</option>)}
+                    </select>
+                  </Field>
+                  <Field label="State / Previous League">
                     <select value={formData.stateLeague} onChange={e => setFormData(p => ({ ...p, stateLeague: e.target.value }))} className={selectCls}>
-                      {STATE_LEAGUES.map(s => <option key={s} value={s}>{s || "None"}</option>)}
+                      <option value="">None</option>
+                      {stateLeagueOptions.map(l => <option key={l._id} value={l.name}>{l.name}</option>)}
                     </select>
                   </Field>
                   <Field label="Club Tier">
@@ -677,17 +622,22 @@ const PlayerManagement = () => {
                     <PlusIcon className="w-3 h-3" /> Add
                   </button>
                 </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
+                <div ref={competitionsContainerRef} className="space-y-2 max-h-60 overflow-y-auto">
                   {formData.competitions.map((comp, idx) => (
                     <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-white/5 rounded-lg p-2">
                       <div className="col-span-4">
                         <label className="text-[10px] text-gray-500">Name</label>
-                        <input value={comp.name} onChange={e => updateCompetition(idx, "name", e.target.value)} className={inputCls} />
+                        <input value={comp.name} onChange={e => updateCompetition(idx, "name", e.target.value)} className={inputCls} placeholder="Competition name" />
                       </div>
                       <div className="col-span-3">
-                        <label className="text-[10px] text-gray-500">Type</label>
+                        <label className="text-[10px] text-gray-500">League / Type</label>
                         <select value={comp.type} onChange={e => updateCompetition(idx, "type", e.target.value)} className={selectCls}>
-                          {COMPETITION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                          <option value="">Select...</option>
+                          {leagueOptions.map(l => <option key={l._id} value={l.name}>{l.name}</option>)}
+                          <option value="National Team">National Team</option>
+                          <option value="Santosh Trophy">Santosh Trophy</option>
+                          <option value="District League">District League</option>
+                          <option value="Other">Other</option>
                         </select>
                       </div>
                       <div className="col-span-2">
@@ -705,6 +655,7 @@ const PlayerManagement = () => {
                       </div>
                     </div>
                   ))}
+                  <div ref={competitionsEndRef} />
                 </div>
               </div>
 
@@ -716,7 +667,7 @@ const PlayerManagement = () => {
                     <PlusIcon className="w-3 h-3" /> Add
                   </button>
                 </div>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+                <div ref={clubsContainerRef} className="space-y-2 max-h-48 overflow-y-auto">
                   {formData.clubsPlayed.map((club, idx) => (
                     <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-white/5 rounded-lg p-2">
                       <div className="col-span-5">
@@ -736,6 +687,7 @@ const PlayerManagement = () => {
                       </div>
                     </div>
                   ))}
+                  <div ref={clubsEndRef} />
                 </div>
               </div>
 
@@ -764,9 +716,8 @@ const PlayerManagement = () => {
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm transition-all">Cancel</button>
                 <button
                   type="submit"
-                  disabled={saving || (!editingPlayer && !otpVerified)}
+                  disabled={saving}
                   className="px-6 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-sm font-medium transition-all disabled:opacity-50"
-                  title={!editingPlayer && !otpVerified ? "Verify player email OTP first" : ""}
                 >
                   {saving ? "Saving..." : editingPlayer ? "Update Player" : "Create Player"}
                 </button>

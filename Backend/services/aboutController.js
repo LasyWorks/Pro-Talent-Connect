@@ -29,12 +29,15 @@ const updateAbout = catchAsync(async (req, res) => {
     "contact_phone",
     "location",
     "images",
+    "pro_talent_plus",
     "social_links",
   ];
 
   updatableFields.forEach((field) => {
     if (req.body[field] !== undefined) {
       about[field] = req.body[field];
+      // Mongoose won't auto-detect nested object mutations — mark them explicitly
+      about.markModified(field);
     }
   });
 

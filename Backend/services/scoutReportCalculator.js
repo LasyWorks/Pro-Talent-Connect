@@ -113,21 +113,41 @@ function calcChampionshipBonus(competitions) {
 
 // ─── 4.6 State League Recognition (max 2) ───
 const STATE_LEAGUE_POINTS = {
+  // Short names (original calculator names)
   "Calcutta Premier Division": 2,
-  "Mizoram PL": 2,
-  "BDFA Super Division": 2,
-  "Goa Pro League": 2,
-  "Kerala PL": 1.5,
-  "Shillong PL": 1.5,
-  "Assam PL": 1.5,
-  INAL: 1,
-  "Delhi PL": 0.5,
-  "Mumbai Elite": 0.5,
+  "Mizoram PL":                2,
+  "BDFA Super Division":       2,
+  "Goa Pro League":            2,
+  "Kerala PL":                 1.5,
+  "Shillong PL":               1.5,
+  "Assam PL":                  1.5,
+  INAL:                        1,
+  "Delhi PL":                  0.5,
+  "Mumbai Elite":              0.5,
+  // Full names (as stored in the Leagues DB / dropdown)
+  "Calcutta Football League":  2,
+  "Mizoram Premier League":    2,
+  "Goa Professional League":   2,
+  "Kerala Premier League":     1.5,
+  "Punjab State Super League": 1,
+  "Bangalore Super Division":  1,
+  "Manipur State League":      1,
+  "Delhi Premier League":      0.5,
+  "Mumbai Premier League":     0.5,
 };
 
-function calcStateLeagueBonus(stateLeague) {
-  if (!stateLeague || typeof stateLeague !== "string") return 0;
-  return STATE_LEAGUE_POINTS[stateLeague] || 0;
+function calcStateLeagueBonus(stateLeague, currentLeague) {
+  // Check stateLeague first, then fall back to currentLeague
+  const candidates = [stateLeague, currentLeague].filter(
+    (v) => v && typeof v === "string" && v.trim().length > 0
+  );
+  for (const league of candidates) {
+    const normalized = league.trim().toLowerCase();
+    for (const [key, pts] of Object.entries(STATE_LEAGUE_POINTS)) {
+      if (key.toLowerCase() === normalized) return pts;
+    }
+  }
+  return 0;
 }
 
 // ─── 4.7 Club Reputation — Auto-detected from clubsPlayed (max 12) ───
@@ -270,7 +290,7 @@ function calculateScoutReport(player) {
     const transferMarketScore = calcTransferMarketScore(player.transferMarketLink);
     const competitionScore    = calcCompetitionScore(player.competitions);
     const championshipBonus   = calcChampionshipBonus(player.competitions);
-    const stateLeagueBonus    = calcStateLeagueBonus(player.stateLeague);
+    const stateLeagueBonus    = calcStateLeagueBonus(player.stateLeague, player.currentLeague);
     const clubReputationBonus = calcClubReputationBonus(player.clubsPlayed, player.clubTier);
     const speedScore          = calcSpeedScore(player.sprint30m);
     const mentalityAssessment = calcMentalityScore(player.mentalityScore);

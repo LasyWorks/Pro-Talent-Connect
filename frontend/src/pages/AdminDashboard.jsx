@@ -23,8 +23,10 @@ import {
   Bars3Icon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import logoImg from "../assets/Logo@pro_talent_connect.png";
 import BlogManagement from "../components/blogs/BlogManagement";
 import PlayerManagement from "../components/admin/PlayerManagement";
+import LeagueManagement from "../components/admin/LeagueManagement";
 import ServiceManagement from "../components/admin/ServiceManagement";
 import AboutManagement from "../components/admin/AboutManagement";
 import AdminManagement from "../components/admin/AdminManagement";
@@ -84,6 +86,7 @@ const NAV_GROUPS = [
     items: [
       { id: "overview", label: "Overview", icon: ChartBarIcon },
       { id: "players", label: "Players", icon: TrophyIcon },
+      { id: "leagues", label: "Leagues", icon: TrophyIcon },
       { id: "enquiries", label: "Enquiries", icon: EnvelopeIcon },
       { id: "profiles", label: "Profile Requests", icon: UserCircleIcon },
     ],
@@ -110,10 +113,8 @@ const Sidebar = ({ activeTab, setActiveTab, isSuperAdmin, onLogout }) => (
     {/* Logo */}
     <div className="px-4 py-5 border-b border-white/8">
       <Link to="/" className="flex items-center gap-2 group" tabIndex={-1}>
-        <div className="w-7 h-7 rounded-lg bg-red-500/90 flex items-center justify-center">
-          <TrophyIcon className="w-4 h-4 text-white" />
-        </div>
-        <span className="text-sm font-semibold text-white">Pro Talent</span>
+        <img src={logoImg} alt="Pro Talent Connect" className="h-7 w-auto object-contain" />
+        <span className="text-sm font-semibold text-white">Pro Talent Connect</span>
       </Link>
     </div>
 
@@ -277,9 +278,7 @@ const MobileHeader = ({ activeTab, onOpenDrawer }) => (
       <Bars3Icon className="w-5 h-5" />
     </button>
     <div className="flex items-center gap-1.5">
-      <div className="w-5 h-5 rounded-md bg-red-500/90 flex items-center justify-center">
-        <TrophyIcon className="w-3 h-3 text-white" />
-      </div>
+      <img src={logoImg} alt="Pro Talent Connect" className="h-5 w-auto object-contain" />
       <span className="text-sm font-semibold text-white">
         {BREADCRUMB_LABELS[activeTab] ?? "Dashboard"}
       </span>
@@ -320,10 +319,8 @@ const MobileDrawer = ({
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-white/8">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-7 h-7 rounded-lg bg-red-500/90 flex items-center justify-center">
-              <TrophyIcon className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-sm font-semibold text-white">Pro Talent</span>
+            <img src={logoImg} alt="Pro Talent Connect" className="h-7 w-auto object-contain" />
+            <span className="text-sm font-semibold text-white">Pro Talent Connect</span>
           </Link>
           <button
             type="button"
@@ -767,7 +764,7 @@ const ProfileRequestsSection = ({ profileRequests, updateProfileStatus }) => {
                               rel="noopener noreferrer"
                               className="text-xs text-red-400 hover:underline"
                             >
-                              View highlight video â†’
+                              View highlight video →
                             </a>
                           )}
                         </td>
@@ -857,7 +854,7 @@ const OverviewPane = ({ stats, enquiries, profileRequests, setActiveTab }) => (
             onClick={() => setActiveTab("enquiries")}
             className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors"
           >
-            View all â†’
+            View all →
           </button>
         </div>
         {enquiries.length === 0 ? (
@@ -895,7 +892,7 @@ const OverviewPane = ({ stats, enquiries, profileRequests, setActiveTab }) => (
             onClick={() => setActiveTab("profiles")}
             className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors"
           >
-            View all â†’
+            View all →
           </button>
         </div>
         {profileRequests.length === 0 ? (
@@ -1288,6 +1285,7 @@ const SettingsPane = ({ adminData }) => {
 const ContentPanel = ({ activeTab }) => (
   <div className={`${card} p-6`}>
     {activeTab === "players" && <PlayerManagement />}
+    {activeTab === "leagues" && <LeagueManagement />}
     {activeTab === "blogs" && <BlogManagement />}
     {activeTab === "services" && <ServiceManagement />}
     {activeTab === "about" && <AboutManagement />}
@@ -1424,6 +1422,7 @@ const AdminDashboard = () => {
 
   const PANEL_TABS = [
     "players",
+    "leagues",
     "blogs",
     "services",
     "about",

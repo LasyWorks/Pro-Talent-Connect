@@ -40,6 +40,23 @@ const aboutSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    pro_talent_plus: {
+      title: {
+        type: String,
+        trim: true,
+        default: "Pro Talent Connect Plus",
+      },
+      description: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+      logo_url: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+    },
     social_links: {
       instagram: {
         type: String,
@@ -78,6 +95,11 @@ aboutSchema.statics.getSingleton = async function () {
       contact_phone: "",
       location: "",
       images: [],
+      pro_talent_plus: {
+        title: "Pro Talent Connect Plus",
+        description: "",
+        logo_url: "",
+      },
       social_links: {},
     });
   }

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   MagnifyingGlassIcon,
@@ -97,7 +97,7 @@ const SkeletonCard = () => (
 );
 
 /*
-  ── Mobile Skeleton Row ──────────────────────────────────────────
+  -- Mobile Skeleton Row ------------------------------------------
   Mirrors MobileBlogCard proportions during loading.
 */
 const MobileSkeletonRow = () => (
@@ -144,12 +144,12 @@ const MobileSkeletonRow = () => (
 );
 
 /*
-  ── Mobile Featured Hero Card ─────────────────────────────────── 
+  -- Mobile Featured Hero Card ----------------------------------- 
   UX Laws:
-  • Fitts's Law        — full-width tappable card, 48px CTA
-  • Serial Position    — featured first, biggest visual weight
-  • Von Restorff       — "Featured" label + red overlay CTA stands out
-  • Aesthetic-Usability— text overlaid on image = compact, no extra scroll
+  � Fitts's Law        � full-width tappable card, 48px CTA
+  � Serial Position    � featured first, biggest visual weight
+  � Von Restorff       � "Featured" label + red overlay CTA stands out
+  � Aesthetic-Usability� text overlaid on image = compact, no extra scroll
 */
 const MobileFeaturedCard = ({ blog }) => {
   const cs = catStyle(blog.category);
@@ -211,7 +211,7 @@ const MobileFeaturedCard = ({ blog }) => {
             style={{
               fontSize: "18px",
               lineHeight: 1.3,
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Poppins', sans-serif",
             }}
           >
             {blog.title}
@@ -219,7 +219,7 @@ const MobileFeaturedCard = ({ blog }) => {
           <div className="flex items-center justify-between">
             <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>
               {formatDate(blog.createdAt || blog.published_at)}
-              {blog.readTime ? ` · ${blog.readTime} min read` : ""}
+              {blog.readTime ? ` � ${blog.readTime} min read` : ""}
             </span>
             <span
               className="flex items-center gap-1 font-semibold rounded-xl px-3"
@@ -241,13 +241,13 @@ const MobileFeaturedCard = ({ blog }) => {
 };
 
 /*
-  ── Mobile Blog Card (horizontal row) ────────────────────────── 
+  -- Mobile Blog Card (horizontal row) -------------------------- 
   UX Laws:
-  • Fitts's Law        — full row tappable, min ~86px touch height
-  • Miller's Law       — title only (2 lines max) + date: 3 data points
-  • Gestalt Proximity  — category + date grouped in one meta row
-  • Progressive Disc.  — no excerpt shown; detail revealed on tap
-  • Aesthetic-Usability— tight spacing, clear hierarchy, press state
+  � Fitts's Law        � full row tappable, min ~86px touch height
+  � Miller's Law       � title only (2 lines max) + date: 3 data points
+  � Gestalt Proximity  � category + date grouped in one meta row
+  � Progressive Disc.  � no excerpt shown; detail revealed on tap
+  � Aesthetic-Usability� tight spacing, clear hierarchy, press state
 */
 const MobileBlogCard = ({ blog }) => {
   const cs = catStyle(blog.category);
@@ -320,10 +320,10 @@ const MobileBlogCard = ({ blog }) => {
               style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)" }}
             >
               {formatDate(blog.createdAt || blog.published_at)}
-              {blog.readTime ? ` · ${blog.readTime}m` : ""}
+              {blog.readTime ? ` � ${blog.readTime}m` : ""}
             </span>
           </div>
-          {/* Title — 2 lines max */}
+          {/* Title � 2 lines max */}
           <h3
             className="text-white font-semibold line-clamp-2"
             style={{ fontSize: "14px", lineHeight: 1.4 }}
@@ -404,7 +404,7 @@ const FeaturedCard = ({ blog }) => {
               style={{
                 fontSize: "clamp(20px, 2.4vw, 28px)",
                 lineHeight: "1.3",
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: "'Poppins', sans-serif",
               }}
             >
               {blog.title}
@@ -426,7 +426,7 @@ const FeaturedCard = ({ blog }) => {
               <span>{formatDate(blog.createdAt || blog.published_at)}</span>
               {blog.readTime && (
                 <>
-                  <span style={{ opacity: 0.4 }}>·</span>
+                  <span style={{ opacity: 0.4 }}>�</span>
                   <span>{blog.readTime} min read</span>
                 </>
               )}
@@ -510,7 +510,7 @@ const BlogCard = ({ blog }) => {
             <span>{formatDate(blog.createdAt || blog.published_at)}</span>
             {blog.readTime && (
               <>
-                <span>·</span>
+                <span>�</span>
                 <span>{blog.readTime} min read</span>
               </>
             )}
@@ -520,7 +520,7 @@ const BlogCard = ({ blog }) => {
             style={{
               fontSize: "18px",
               lineHeight: "1.4",
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Poppins', sans-serif",
             }}
           >
             {blog.title}
@@ -556,11 +556,11 @@ const BlogCard = ({ blog }) => {
 const NoResults = ({ category, onReset }) => (
   <div className="text-center py-24">
     <p className="mb-4" style={{ fontSize: "44px" }}>
-      📰
+      ??
     </p>
     <p
       className="font-semibold text-white mb-2"
-      style={{ fontSize: "18px", fontFamily: "'Playfair Display', serif" }}
+      style={{ fontSize: "18px", fontFamily: "'Poppins', sans-serif" }}
     >
       No articles in &ldquo;{category}&rdquo;
     </p>
@@ -643,7 +643,7 @@ const BlogPage = () => {
   const totalPages = Math.ceil(gridBlogs.length / PAGE_SIZE);
   const paginated = gridBlogs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // Mobile — show more on each "load more" tap
+  // Mobile � show more on each "load more" tap
   const mobileTotalPages = Math.ceil(gridBlogs.length / MOBILE_PAGE_SIZE);
   const mobilePaginated = gridBlogs.slice(0, mobilePage * MOBILE_PAGE_SIZE);
 
@@ -683,18 +683,18 @@ const BlogPage = () => {
         />
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════
+      {/* -----------------------------------------------------------
            MOBILE LAYOUT  (< md)
            UX Laws applied across:
-           • Fitts's Law       — full-width tappables, 48px inputs
-           • Miller's Law      — max 3 data points per card
-           • Serial Position   — featured article anchors top
-           • Jakob's Law       — familiar sticky header + search bar
-           • Aesthetic-Usability — compact, high contrast, no clutter
-           • Hick's Law        — 4 category chips (small choice set)
-      ═══════════════════════════════════════════════════════════ */}
+           � Fitts's Law       � full-width tappables, 48px inputs
+           � Miller's Law      � max 3 data points per card
+           � Serial Position   � featured article anchors top
+           � Jakob's Law       � familiar sticky header + search bar
+           � Aesthetic-Usability � compact, high contrast, no clutter
+           � Hick's Law        � 4 category chips (small choice set)
+      ----------------------------------------------------------- */}
       <div className="md:hidden flex flex-col" style={{ minHeight: "100dvh" }}>
-        {/* ── Sticky top bar ── */}
+        {/* -- Sticky top bar -- */}
         <div
           className="sticky z-30 shrink-0"
           style={{
@@ -728,7 +728,7 @@ const BlogPage = () => {
             </div>
           </div>
 
-          {/* Search bar — Fitts's Law: 48px height, full width */}
+          {/* Search bar � Fitts's Law: 48px height, full width */}
           <div className="px-4 pb-2">
             <div className="relative">
               <MagnifyingGlassIcon
@@ -777,7 +777,7 @@ const BlogPage = () => {
             </div>
           </div>
 
-          {/* Horizontal scrollable category chips — Hick's Law: small choice set */}
+          {/* Horizontal scrollable category chips � Hick's Law: small choice set */}
           <div
             className="px-4 pb-3"
             style={{
@@ -834,7 +834,7 @@ const BlogPage = () => {
           </div>
         </div>
 
-        {/* ── Content list ── */}
+        {/* -- Content list -- */}
         <div
           className="flex-1 px-4 pt-3 pb-28"
           style={{ overscrollBehavior: "contain" }}
@@ -869,7 +869,7 @@ const BlogPage = () => {
             <NoResults category={activeFilter} onReset={resetFilters} />
           ) : (
             <>
-              {/* Featured article — Serial Position: first = most weight */}
+              {/* Featured article � Serial Position: first = most weight */}
               {featured && (
                 <div className="mb-4">
                   <MobileFeaturedCard blog={featured} />
@@ -900,7 +900,7 @@ const BlogPage = () => {
                 </>
               )}
 
-              {/* Load more — avoids heavy pagination on mobile */}
+              {/* Load more � avoids heavy pagination on mobile */}
               {mobilePage < mobileTotalPages && (
                 <button
                   onClick={() => setMobilePage((p) => p + 1)}
@@ -922,9 +922,9 @@ const BlogPage = () => {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════
-           DESKTOP LAYOUT  (≥ md)  — unchanged
-      ═══════════════════════════════════════════════════════════ */}
+      {/* -----------------------------------------------------------
+           DESKTOP LAYOUT  (= md)  � unchanged
+      ----------------------------------------------------------- */}
       <div className="hidden md:block">
         {/* Hero */}
         <section
@@ -947,7 +947,7 @@ const BlogPage = () => {
             style={{
               fontSize: "clamp(36px, 5vw, 52px)",
               lineHeight: "1.14",
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Poppins', sans-serif",
               maxWidth: "680px",
             }}
           >
@@ -1104,13 +1104,13 @@ const BlogPage = () => {
           ) : error ? (
             <div className="text-center py-20">
               <p className="mb-4" style={{ fontSize: "40px" }}>
-                ⚠️
+                ??
               </p>
               <p
                 className="font-semibold text-white mb-2"
                 style={{
                   fontSize: "18px",
-                  fontFamily: "'Playfair Display', serif",
+                  fontFamily: "'Poppins', sans-serif",
                 }}
               >
                 Failed to load articles
@@ -1265,7 +1265,7 @@ const BlogPage = () => {
                   className="font-semibold text-white mb-2"
                   style={{
                     fontSize: "clamp(20px, 2.8vw, 26px)",
-                    fontFamily: "'Playfair Display', serif",
+                    fontFamily: "'Poppins', sans-serif",
                     lineHeight: "1.3",
                   }}
                 >
@@ -1278,7 +1278,7 @@ const BlogPage = () => {
                     lineHeight: "1.6",
                   }}
                 >
-                  Transfers, scouting news, and platform updates — weekly, no
+                  Transfers, scouting news, and platform updates � weekly, no
                   clutter.
                 </p>
               </div>

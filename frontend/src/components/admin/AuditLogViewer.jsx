@@ -1,6 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../../services/api";
 
+const fmt = (d) => d.toISOString().slice(0, 10);
+const today = () => fmt(new Date());
+const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return fmt(d); };
+const firstOfMonth = () => { const d = new Date(); d.setDate(1); return fmt(d); };
+
+const DATE_PRESETS = [
+  { label: "Today",       start: () => today(),         end: () => today() },
+  { label: "Yesterday",   start: () => daysAgo(1),      end: () => daysAgo(1) },
+  { label: "Last 7 days", start: () => daysAgo(6),      end: () => today() },
+  { label: "Last 30 days",start: () => daysAgo(29),     end: () => today() },
+  { label: "This month",  start: () => firstOfMonth(),  end: () => today() },
+];
+
 const ACTION_COLORS = {
   CREATE: "bg-green-500/20 text-green-400",
   UPDATE: "bg-blue-500/20 text-blue-400",
@@ -125,23 +138,34 @@ const AuditLogViewer = () => {
           <option value="About" className="bg-gray-900">About</option>
           <option value="Auth" className="bg-gray-900">Auth</option>
         </select>
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-500">From:</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
-            className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-red-500/50"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-500">To:</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
-            className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-red-500/50"
-          />
+        {/* Quick date presets */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {DATE_PRESETS.map((p) => {
+            const active = startDate === p.start() && endDate === p.end();
+            return (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => { setStartDate(p.start()); setEndDate(p.end()); setPage(1); }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  active
+                    ? "bg-red-500/20 border-red-500/50 text-red-400"
+                    : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {p.label}
+              </button>
+            );
+          })}
+          {(startDate || endDate) && (
+            <button
+              type="button"
+              onClick={() => { setStartDate(""); setEndDate(""); setPage(1); }}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium border border-white/10 bg-white/5 text-gray-500 hover:text-red-400 hover:border-red-500/40 transition-colors"
+            >
+              Clear
+            </button>
+          )}
         </div>
       </div>
 

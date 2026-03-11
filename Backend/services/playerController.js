@@ -1,5 +1,4 @@
 const Player = require("../Models/Players");
-const Otp = require("../Models/Otp");
 const { logAction } = require("../Middleware/auditLogger");
 const { calculateScoutReport } = require("./scoutReportCalculator");
 const { AppError, catchAsync } = require("../Middleware/errorHandler");
@@ -29,7 +28,7 @@ const createPlayer = catchAsync(async (req, res) => {
       gender,
       jersey_no,
       size,
-      city,
+      state,
       address,
       mobileNumber,
       email,
@@ -40,6 +39,7 @@ const createPlayer = catchAsync(async (req, res) => {
       clubsPlayed,
       plId,
       competitions,
+      currentLeague,
       stateLeague,
       clubTier,
       sprint30m,
@@ -59,20 +59,6 @@ const createPlayer = catchAsync(async (req, res) => {
     ) {
       throw new AppError("Please provide all required fields", 400);
     }
-
-    // Verify that OTP was confirmed for this player email
-    const verifiedOtp = await Otp.findOne({
-      email,
-      purpose: "player-creation",
-      verified: true,
-    });
-
-    if (!verifiedOtp || verifiedOtp.expiresAt < new Date()) {
-      throw new AppError("Email OTP verification is required before creating a player profile", 400);
-    }
-
-    // Clean up the used OTP
-    await Otp.deleteMany({ email, purpose: "player-creation" });
 
     // Auto-calculate age from dateOfBirth if not provided
     let calculatedAge = age;
@@ -112,7 +98,7 @@ const createPlayer = catchAsync(async (req, res) => {
       gender,
       jersey_no,
       size,
-      city,
+      state,
       address,
       mobileNumber,
       email,
@@ -123,6 +109,7 @@ const createPlayer = catchAsync(async (req, res) => {
       clubsPlayed,
       plId,
       competitions,
+      currentLeague,
       stateLeague,
       clubTier,
       sprint30m,
@@ -141,6 +128,7 @@ const createPlayer = catchAsync(async (req, res) => {
         playingPosition,
         transferMarketLink,
         competitions,
+        currentLeague,
         stateLeague,
         clubTier,
         clubsPlayed,
@@ -254,7 +242,7 @@ const getAllPlayers = catchAsync(async (req, res) => {
 // @route   GET /api/players/search
 // @access  Private / Admin & Super Admin
 const searchPlayers = catchAsync(async (req, res) => {
-    const { name, city, age_group, position, gender } = req.query;
+    const { name, state, age_group, position, gender } = req.query;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -266,8 +254,8 @@ const searchPlayers = catchAsync(async (req, res) => {
     if (name) {
       orConditions.push({ name: { $regex: name, $options: "i" } });
     }
-    if (city) {
-      orConditions.push({ city: { $regex: city, $options: "i" } });
+    if (state) {
+      orConditions.push({ state: { $regex: state, $options: "i" } });
     }
     if (position) {
       orConditions.push(
@@ -290,8 +278,8 @@ const searchPlayers = catchAsync(async (req, res) => {
     }
 
     // If no search criteria provided
-    if (!name && !city && !age_group && !position && !gender) {
-      throw new AppError("Please provide at least one search parameter: name, city, age_group, position, or gender", 400);
+    if (!name && !state && !age_group && !position && !gender) {
+      throw new AppError("Please provide at least one search parameter: name, state, age_group, position, or gender", 400);
     }
 
     const totalResults = await Player.countDocuments(filter);
@@ -377,7 +365,7 @@ const updatePlayer = catchAsync(async (req, res) => {
       "gender",
       "jersey_no",
       "size",
-      "city",
+      "state",
       "address",
       "mobileNumber",
       "email",
@@ -388,6 +376,7 @@ const updatePlayer = catchAsync(async (req, res) => {
       "clubsPlayed",
       "plId",
       "competitions",
+      "currentLeague",
       "stateLeague",
       "clubTier",
       "sprint30m",
@@ -413,6 +402,7 @@ const updatePlayer = catchAsync(async (req, res) => {
         playingPosition: player.playingPosition,
         transferMarketLink: player.transferMarketLink,
         competitions: player.competitions,
+        currentLeague: player.currentLeague,
         stateLeague: player.stateLeague,
         clubTier: player.clubTier,
         clubsPlayed: player.clubsPlayed,
@@ -455,19 +445,14 @@ const updatePlayer = catchAsync(async (req, res) => {
 // @route   DELETE /api/players/:id
 // @access  Private / Admin & Super Admin
 const deletePlayer = catchAsync(async (req, res) => {
-    const player = await Player.findOne({
-      _id: req.params.id,
-      isDeleted: { $ne: true },
-    });
+    const player = await Player.findById(req.params.id);
 
     if (!player) {
       throw new AppError("Player not found", 404);
     }
 
-    // Soft delete
-    player.isDeleted = true;
-    player.updatedBy = req.user._id;
-    await player.save();
+    // Hard delete — permanently remove from database
+    await Player.deleteOne({ _id: player._id });
 
     // Log player deletion
     await logAction({
@@ -475,9 +460,9 @@ const deletePlayer = catchAsync(async (req, res) => {
       action: "DELETE",
       resourceType: "Player",
       resourceId: player._id.toString(),
-      description: `Player deleted (soft): ${player.name} (ID: ${player.playerId})`,
+      description: `Player deleted: ${player.name} (ID: ${player.playerId})`,
       req,
-      changes: { isDeleted: true },
+      changes: { deleted: true },
       status: "SUCCESS",
     });
 

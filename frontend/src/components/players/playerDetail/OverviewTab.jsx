@@ -1,18 +1,228 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   EnvelopeIcon,
   PhoneIcon,
   ArrowDownTrayIcon,
-  BookmarkIcon,
   ScaleIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  XMarkIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { T, card, tH, tD, tDW, gradeStyle } from "./tokens";
 import { Badge, StatItem, RatingBar } from "./primitives";
+import { api } from "../../../services/api";
 
-const OverviewTab = ({ player, onDownload, onWatchlist, watchlisted }) => {
+const DEFAULT_IMG = "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400";
+
+// ── Compare Modal ──────────────────────────────────────────────────────────
+const CompareModal = ({ basePlayer, onClose }) => {
+  const [step, setStep] = useState("pick"); // "pick" | "result"
+  const [players, setPlayers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [picked, setPicked] = useState(null);
+
+  useEffect(() => {
+    api.getPlayers({ limit: 200 })
+      .then((r) => setPlayers((r.data.players || r.data || []).filter((p) => p._id !== basePlayer._id)))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [basePlayer._id]);
+
+  const filtered = players.filter((p) =>
+    p.name?.toLowerCase().includes(search.toLowerCase()) ||
+    p.playingPosition?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const gs = (g) => gradeStyle(g || "N/A");
+
+  const CmpRow = ({ label, a, b, better }) => {
+    const aNum = parseFloat(a);
+    const bNum = parseFloat(b);
+    const aWins = !isNaN(aNum) && !isNaN(bNum) && (better === "high" ? aNum >= bNum : aNum <= bNum);
+    const bWins = !isNaN(aNum) && !isNaN(bNum) && (better === "high" ? bNum > aNum : bNum < aNum);
+    return (
+      <tr className="border-b border-white/[0.05]">
+        <td className="py-2.5 px-3 text-right text-sm" style={{ color: aWins ? "#34D399" : "rgba(255,255,255,0.65)" }}>
+          <span className={aWins ? "font-bold" : ""}>{a ?? "—"}</span>
+        </td>
+        <td className="py-2.5 px-2 text-center text-[11px] text-gray-500 font-medium whitespace-nowrap">{label}</td>
+        <td className="py-2.5 px-3 text-left text-sm" style={{ color: bWins ? "#34D399" : "rgba(255,255,255,0.65)" }}>
+          <span className={bWins ? "font-bold" : ""}>{b ?? "—"}</span>
+        </td>
+      </tr>
+    );
+  };
+
+  const ScoreBar = ({ score, color }) => (
+    <div className="w-full h-1.5 rounded-full bg-white/[0.08] overflow-hidden mt-1">
+      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${score}%`, background: color || "#C4161C" }} />
+    </div>
+  );
+
+  const PlayerHeader = ({ p }) => {
+    const g = gs(p.scoutReport?.grade);
+    return (
+      <div className="flex flex-col items-center gap-2 px-2">
+        <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/10">
+          <img src={p.profileImage || DEFAULT_IMG} alt={p.name} className="w-full h-full object-cover object-top" />
+        </div>
+        <div className="text-center">
+          <p className="text-white font-bold text-sm leading-tight max-w-[110px] truncate">{p.name}</p>
+          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{p.playingPosition || "—"}</p>
+          {p.scoutReport?.grade && (
+            <span
+              className="inline-block mt-1 text-[10px] font-bold px-1.5 py-0.5 rounded"
+              style={{ color: gs(p.scoutReport.grade).bar, background: `${gs(p.scoutReport.grade).bar}22`, border: `1px solid ${gs(p.scoutReport.grade).bar}44` }}
+            >
+              Grade {p.scoutReport.grade}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)" }}>
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl" style={{ background: "#111118", border: "1px solid rgba(255,255,255,0.1)" }}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.07]">
+          <div className="flex items-center gap-2">
+            <ScaleIcon className="w-5 h-5 text-red-500" />
+            <span className="text-white font-bold text-base">
+              {step === "pick" ? "Compare Player" : `${basePlayer.name} vs ${picked?.name}`}
+            </span>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors" style={{ background: "none", border: "none", cursor: "pointer" }}>
+            <XMarkIcon className="w-5 h-5 text-gray-400" />
+          </button>
+        </div>
+
+        {step === "pick" ? (
+          <div className="p-5">
+            <p className="text-sm text-gray-400 mb-4">Select a player to compare with <span className="text-white font-semibold">{basePlayer.name}</span></p>
+            {/* Search */}
+            <div className="relative mb-4">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "rgba(255,255,255,0.3)" }} />
+              <input
+                type="text"
+                placeholder="Search by name or position..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                autoFocus
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm text-white placeholder:text-white/20 outline-none"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+              />
+            </div>
+            {/* Player list */}
+            {loading ? (
+              <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-14 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.05)" }} />)}</div>
+            ) : filtered.length === 0 ? (
+              <p className="text-center text-gray-500 text-sm py-8">No players found</p>
+            ) : (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {filtered.map((p) => {
+                  const g = gs(p.scoutReport?.grade);
+                  return (
+                    <button
+                      key={p._id}
+                      onClick={() => { setPicked(p); setStep("result"); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all hover:bg-white/[0.07]"
+                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", cursor: "pointer" }}
+                    >
+                      <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
+                        <img src={p.profileImage || DEFAULT_IMG} alt={p.name} className="w-full h-full object-cover object-top" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-sm font-semibold truncate">{p.name}</p>
+                        <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.35)" }}>{p.playingPosition || "—"} · {p.age ? `${p.age}y` : ""}</p>
+                      </div>
+                      {p.scoutReport?.grade && (
+                        <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ color: gs(p.scoutReport.grade).bar, background: `${gs(p.scoutReport.grade).bar}22` }}>{p.scoutReport.grade}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="p-5">
+            {/* Player headers */}
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-5">
+              <PlayerHeader p={basePlayer} />
+              <div className="text-center">
+                <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: "rgba(196,22,28,0.15)", color: "#FCA5A5", border: "1px solid rgba(196,22,28,0.3)" }}>VS</span>
+              </div>
+              <PlayerHeader p={picked} />
+            </div>
+
+            {/* Score bars */}
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {[basePlayer, picked].map((p, i) => {
+                const g = gs(p.scoutReport?.grade);
+                const score = p.scoutReport?.totalScore || 0;
+                return (
+                  <div key={i} className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] text-gray-500 uppercase tracking-wide font-semibold">Scout Score</span>
+                      <span className={`text-base font-black tabular-nums`} style={{ color: g.bar }}>{score}<span className="text-xs text-gray-600 font-normal">/100</span></span>
+                    </div>
+                    <ScoreBar score={score} color={g.bar || "#C4161C"} />
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Comparison table */}
+            <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
+              <table className="w-full">
+                <thead>
+                  <tr style={{ background: "rgba(255,255,255,0.04)" }}>
+                    <th className="py-2.5 px-3 text-right text-[11px] text-gray-500 font-semibold w-[40%] truncate max-w-[110px]">{basePlayer.name.split(" ")[0]}</th>
+                    <th className="py-2.5 px-2 text-center text-[10px] text-gray-600 font-medium uppercase tracking-wide w-[20%]">Stat</th>
+                    <th className="py-2.5 px-3 text-left text-[11px] text-gray-500 font-semibold w-[40%] truncate max-w-[110px]">{picked.name.split(" ")[0]}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <CmpRow label="Age" a={basePlayer.age} b={picked.age} better="low" />
+                  <CmpRow label="Height (cm)" a={basePlayer.height} b={picked.height} better="high" />
+                  <CmpRow label="Weight (kg)" a={basePlayer.weight} b={picked.weight} />
+                  <CmpRow label="Sprint 30m (s)" a={basePlayer.sprint30m} b={picked.sprint30m} better="low" />
+                  <CmpRow label="Mentality Score" a={basePlayer.mentalityScore} b={picked.mentalityScore} better="high" />
+                  <CmpRow label="Scout Score /100" a={basePlayer.scoutReport?.totalScore} b={picked.scoutReport?.totalScore} better="high" />
+                  <CmpRow label="Age Score /5" a={basePlayer.scoutReport?.ageScore} b={picked.scoutReport?.ageScore} better="high" />
+                  <CmpRow label="Physical /5" a={basePlayer.scoutReport?.physicalScore} b={picked.scoutReport?.physicalScore} better="high" />
+                  <CmpRow label="Transfer Mkt /7.5" a={basePlayer.scoutReport?.transferMarketScore} b={picked.scoutReport?.transferMarketScore} better="high" />
+                  <CmpRow label="Competition /50" a={basePlayer.scoutReport?.competitionScore} b={picked.scoutReport?.competitionScore} better="high" />
+                  <CmpRow label="Championship Bonus" a={basePlayer.scoutReport?.championshipBonus} b={picked.scoutReport?.championshipBonus} better="high" />
+                  <CmpRow label="State League /2" a={basePlayer.scoutReport?.stateLeagueBonus} b={picked.scoutReport?.stateLeagueBonus} better="high" />
+                  <CmpRow label="Club Rep. /3" a={basePlayer.scoutReport?.clubReputationBonus} b={picked.scoutReport?.clubReputationBonus} better="high" />
+                  <CmpRow label="Speed /2" a={basePlayer.scoutReport?.speedScore} b={picked.scoutReport?.speedScore} better="high" />
+                  <CmpRow label="Mentality /2" a={basePlayer.scoutReport?.mentalityAssessment} b={picked.scoutReport?.mentalityAssessment} better="high" />
+                </tbody>
+              </table>
+            </div>
+
+            <button
+              onClick={() => { setPicked(null); setStep("pick"); }}
+              className="mt-4 w-full py-2.5 rounded-xl text-sm font-semibold transition-colors"
+              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "rgba(255,255,255,0.55)", cursor: "pointer" }}
+            >
+              ← Pick a different player
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+// ── OverviewTab ────────────────────────────────────────────────────────────
+const OverviewTab = ({ player, onDownload }) => {
   const [notesExpanded, setNotesExpanded] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
   const report = player.scoutReport;
   const gStyle = report?.grade ? gradeStyle(report.grade) : gradeStyle("N/A");
   const score = report?.totalScore ?? 0;
@@ -38,6 +248,7 @@ const OverviewTab = ({ player, onDownload, onWatchlist, watchlisted }) => {
     : [];
 
   return (
+    <>
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_288px] gap-6 items-start">
       {/* ── LEFT COLUMN ── */}
       <div className="space-y-5 min-w-0">
@@ -447,7 +658,7 @@ const OverviewTab = ({ player, onDownload, onWatchlist, watchlisted }) => {
               value={player.age ? `${player.age} years` : null}
             />
             <StatItem label="Nationality" value={player.nationality} />
-            <StatItem label="City" value={player.city} />
+            <StatItem label="State" value={player.state} />
             <StatItem label="State League" value={player.stateLeague || null} />
             <StatItem label="Preferred Foot" value={player.preferredFoot} />
           </div>
@@ -528,7 +739,10 @@ const OverviewTab = ({ player, onDownload, onWatchlist, watchlisted }) => {
         {/* Quick Actions — desktop only; mobile uses sticky bottom bar */}
         <div className={`${card} p-4 space-y-2 hidden sm:block`}>
           <p className={T.labelText + " mb-3"}>Quick Actions</p>
-          <button className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-[#C4161C] hover:bg-[#A81319] text-white text-xs font-bold transition-colors">
+          <button
+            onClick={() => setCompareOpen(true)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-[#C4161C] hover:bg-[#A81319] text-white text-xs font-bold transition-colors"
+          >
             <ScaleIcon className="w-4 h-4" />
             Compare Player
           </button>
@@ -548,20 +762,11 @@ const OverviewTab = ({ player, onDownload, onWatchlist, watchlisted }) => {
               Request Contact
             </a>
           )}
-          <button
-            onClick={onWatchlist}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border text-xs font-semibold transition-colors ${
-              watchlisted
-                ? "bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/15"
-                : "bg-gray-800 hover:bg-gray-700 border-white/[0.08] text-gray-400 hover:text-white"
-            }`}
-          >
-            <BookmarkIcon className="w-4 h-4" />
-            {watchlisted ? "Watchlisted" : "Add to Watchlist"}
-          </button>
         </div>
       </div>
     </div>
+      {compareOpen && <CompareModal basePlayer={player} onClose={() => setCompareOpen(false)} />}
+    </>
   );
 };
 

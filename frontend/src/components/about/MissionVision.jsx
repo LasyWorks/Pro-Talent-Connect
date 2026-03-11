@@ -72,7 +72,7 @@ const MissionVision = ({ mission }) => {
           style={{
             fontSize: "clamp(28px, 3.5vw, 36px)",
             lineHeight: "1.25",
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "'Poppins', sans-serif",
           }}
         >
           Mission &amp;{" "}
@@ -115,7 +115,7 @@ const MissionVision = ({ mission }) => {
                 className="font-semibold text-white"
                 style={{
                   fontSize: "22px",
-                  fontFamily: "'Playfair Display', serif",
+                  fontFamily: "'Poppins', sans-serif",
                 }}
               >
                 Our Mission
@@ -183,7 +183,7 @@ const MissionVision = ({ mission }) => {
                 className="font-semibold text-white"
                 style={{
                   fontSize: "22px",
-                  fontFamily: "'Playfair Display', serif",
+                  fontFamily: "'Poppins', sans-serif",
                 }}
               >
                 Our Vision

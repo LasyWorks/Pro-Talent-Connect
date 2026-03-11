@@ -64,7 +64,7 @@ const playerSchema = new mongoose.Schema(
       type: String,
       enum: ["XS", "S", "M", "L", "XL", "XXL"],
     },
-    city: {
+    state: {
       type: String,
       trim: true,
     },
@@ -111,25 +111,7 @@ const playerSchema = new mongoose.Schema(
     competitions: [
       {
         name: { type: String, required: true },
-        type: {
-          type: String,
-          enum: [
-            "National Team",
-            "Santosh Trophy",
-            "I-League Senior",
-            "I-League 2",
-            "I-League 3",
-            "State Franchise League",
-            "Elite Youth I-League",
-            "National Youth Championships",
-            "Foreign Exposure",
-            "RFDL",
-            "State League",
-            "State Youth League",
-            "District League",
-            "Other",
-          ],
-        },
+        type: { type: String, trim: true, default: "" },
         year: { type: Number },
         result: {
           type: String,
@@ -139,22 +121,17 @@ const playerSchema = new mongoose.Schema(
       },
     ],
 
-    // State league recognition
+    // Current league the player is active in
+    currentLeague: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    // State league recognition (free-form to support dynamic league management)
     stateLeague: {
       type: String,
-      enum: [
-        "",
-        "Calcutta Premier Division",
-        "Mizoram PL",
-        "BDFA Super Division",
-        "Goa Pro League",
-        "Kerala PL",
-        "Shillong PL",
-        "Assam PL",
-        "INAL",
-        "Delhi PL",
-        "Mumbai Elite",
-      ],
+      trim: true,
       default: "",
     },
 
@@ -243,6 +220,6 @@ playerSchema.index({ playingPosition: 1 });
 playerSchema.index({ age_group: 1 });
 playerSchema.index({ gender: 1 });
 playerSchema.index({ featured: 1 });
-playerSchema.index({ name: 'text', city: 'text', nationality: 'text' }); // Text search
+playerSchema.index({ name: 'text', state: 'text', nationality: 'text' }); // Text search
 
 module.exports = mongoose.model("Player", playerSchema);

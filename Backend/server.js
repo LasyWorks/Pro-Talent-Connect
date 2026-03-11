@@ -7,6 +7,7 @@ validateEnv();
 const connectDB = require("./config/DB");
 const app = require("./app");
 const logger = require("./config/logger");
+const { seedLeagues } = require("./services/leagueController");
 
 // Handle uncaught exceptions
 process.on("uncaughtException", (err) => {
@@ -17,7 +18,9 @@ process.on("uncaughtException", (err) => {
 });
 
 // Connect to Database
-connectDB().then(() => {
+connectDB().then(async () => {
+  // Seed default league data if empty
+  await seedLeagues();
   const PORT = process.env.PORT || 5000;
 
   const server = app.listen(PORT, () => {

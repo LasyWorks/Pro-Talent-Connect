@@ -1283,7 +1283,7 @@ const SettingsPane = ({ adminData }) => {
 
 /* â”€â”€ Content wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const ContentPanel = ({ activeTab }) => (
-  <div className={`${card} p-6`}>
+  <div className={`${card} p-4 sm:p-6 overflow-x-hidden`}>
     {activeTab === "players" && <PlayerManagement />}
     {activeTab === "leagues" && <LeagueManagement />}
     {activeTab === "blogs" && <BlogManagement />}

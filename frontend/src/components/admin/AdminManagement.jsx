@@ -147,12 +147,12 @@ const AdminManagement = () => {
           placeholder="Search by name or email..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="flex-1 min-w-[200px] px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 text-sm"
+          className="w-full sm:flex-1 sm:min-w-[160px] px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 text-sm"
         />
         <select
           value={roleFilter}
           onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-          className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-red-500/50"
+          className="w-full sm:w-auto px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-red-500/50"
         >
           <option value="" className="bg-gray-900">All Roles</option>
           <option value="Super Admin" className="bg-gray-900">Super Admin</option>
@@ -161,7 +161,7 @@ const AdminManagement = () => {
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-red-500/50"
+          className="w-full sm:w-auto px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-red-500/50"
         >
           <option value="" className="bg-gray-900">All Status</option>
           <option value="true" className="bg-gray-900">Active</option>
@@ -177,14 +177,14 @@ const AdminManagement = () => {
       ) : (
         <div className="space-y-3">
           {admins.map((admin) => (
-            <div key={admin._id} className="bg-white/5 rounded-xl p-4 flex items-center justify-between gap-4 hover:bg-white/[0.07] transition-all">
+            <div key={admin._id} className="bg-white/5 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-white/[0.07] transition-all">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-1">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
                   <h4 className="font-semibold truncate">{admin.name}</h4>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${roleBadge(admin.role)}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${roleBadge(admin.role)}`}>
                     {admin.role}
                   </span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge(admin.is_active)}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${statusBadge(admin.is_active)}`}>
                     {admin.is_active ? "Active" : "Inactive"}
                   </span>
                 </div>
@@ -196,7 +196,7 @@ const AdminManagement = () => {
               </div>
 
               {admin._id !== currentAdmin?._id && (
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center flex-wrap gap-2">
                   <button
                     onClick={() => openEditModal(admin)}
                     className="px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-sm transition-all border border-white/10"
@@ -220,7 +220,7 @@ const AdminManagement = () => {
                 </div>
               )}
               {admin._id === currentAdmin?._id && (
-                <span className="text-xs text-gray-500 italic shrink-0">You</span>
+                <span className="text-xs text-gray-500 italic">You</span>
               )}
             </div>
           ))}

@@ -127,8 +127,8 @@ const BlogManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <h3 className="text-xl font-bold">Blog Management</h3>
           <p className="text-sm text-gray-400">
             Manage your blog posts, announcements, and news articles
@@ -136,7 +136,7 @@ const BlogManagement = () => {
         </div>
         <button
           onClick={() => openModal()}
-          className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-medium transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-medium transition-all shrink-0"
         >
           <PlusIcon className="w-5 h-5" />
           New Post
@@ -155,7 +155,7 @@ const BlogManagement = () => {
               key={blog._id}
               className="bg-white/5 rounded-lg p-4 border border-white/10 hover:bg-white/10 transition-all"
             >
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 {/* Image */}
                 {blog.image && (
                   <div className="flex-shrink-0">
@@ -169,8 +169,8 @@ const BlogManagement = () => {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
+                  <div className="flex items-start justify-between gap-2 sm:gap-4">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryBadge(blog.category)}`}

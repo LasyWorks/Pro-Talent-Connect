@@ -56,23 +56,19 @@ const PlayerAvatar = ({ src, alt }) => {
 };
 
 /* --- Animated score bar ------------------------------------- */
-const ScoreBar = ({ score, grade }) => {
-  const barRef = useRef(null);
+const ScoreBar = ({ score, grade, isActive }) => {
   const [animated, setAnimated] = useState(false);
   const gradeData = getGrade(grade);
 
   useEffect(() => {
-    if (!barRef.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setAnimated(true); },
-      { threshold: 0.6 },
-    );
-    observer.observe(barRef.current);
-    return () => observer.disconnect();
-  }, []);
+    if (!isActive) return;
+    setAnimated(false);
+    const t = setTimeout(() => setAnimated(true), 80);
+    return () => clearTimeout(t);
+  }, [isActive]);
 
   return (
-    <div ref={barRef} className="mt-2.5">
+    <div className="mt-2.5">
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-white/40 text-[11px] font-medium">Scout Score</span>
         <span className="text-white text-[11px] font-bold tabular-nums">{score}/100</span>
@@ -221,7 +217,7 @@ const FeaturedPlayers = () => {
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {featured.map((player) => {
+        {featured.map((player, i) => {
           const gradeData = getGrade(player.scoutReport?.grade);
           const lastClub = player.clubsPlayed?.[player.clubsPlayed.length - 1]?.clubName;
           const rawPos = (player.playingPosition || "").toUpperCase().split("/")[0].trim();
@@ -286,7 +282,7 @@ const FeaturedPlayers = () => {
                 </p>
 
                 {player.scoutReport?.totalScore > 0 && (
-                  <ScoreBar score={player.scoutReport.totalScore} grade={player.scoutReport.grade} />
+                  <ScoreBar score={player.scoutReport.totalScore} grade={player.scoutReport.grade} isActive={i === activeIdx} />
                 )}
 
                 <Link

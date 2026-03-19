@@ -12,8 +12,57 @@ import {
 import { T, card, tH, tD, tDW, gradeStyle } from "./tokens";
 import { Badge, StatItem, RatingBar } from "./primitives";
 import { api } from "../../../services/api";
+import { VideoPlayer } from "@/components/ui/video-thumbnail-player.jsx";
 
 const DEFAULT_IMG = "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400";
+const DEFAULT_VIDEO_THUMBNAIL =
+  "https://images.unsplash.com/photo-1593642532454-e138e28a63f4?q=80&w=2069&auto=format&fit=crop";
+
+const EMBED_PARAMS = "autoplay=1&rel=0&modestbranding=1&playsinline=1";
+
+const getPlayerVideoLink = (player) => {
+  if (typeof player?.youtubeVideoUrl === "string" && player.youtubeVideoUrl.trim()) {
+    return player.youtubeVideoUrl.trim();
+  }
+
+  const links = Array.isArray(player?.media_links) ? player.media_links : [];
+  const youtubeLink = links.find(
+    (link) => typeof link === "string" && /youtube\.com|youtu\.be/.test(link)
+  );
+  return youtubeLink || "";
+};
+
+const toYoutubeEmbedUrl = (url) => {
+  if (!url || typeof url !== "string") return "";
+
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+
+  if (trimmed.includes("youtube.com/embed/") || trimmed.includes("youtube-nocookie.com/embed/")) {
+    const normalized = trimmed
+      .replace("https://www.youtube.com/embed/", "https://www.youtube-nocookie.com/embed/")
+      .replace("http://www.youtube.com/embed/", "https://www.youtube-nocookie.com/embed/");
+    return normalized.includes("autoplay=") ? normalized : `${normalized}${normalized.includes("?") ? "&" : "?"}${EMBED_PARAMS}`;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    let videoId = "";
+
+    if (parsed.hostname.includes("youtu.be")) {
+      videoId = parsed.pathname.replace("/", "");
+    } else if (parsed.pathname === "/watch") {
+      videoId = parsed.searchParams.get("v") || "";
+    } else if (parsed.pathname.startsWith("/shorts/")) {
+      videoId = parsed.pathname.split("/shorts/")[1]?.split("/")[0] || "";
+    }
+
+    if (!videoId) return "";
+    return `https://www.youtube-nocookie.com/embed/${videoId}?${EMBED_PARAMS}`;
+  } catch {
+    return "";
+  }
+};
 
 // ── Compare Modal ──────────────────────────────────────────────────────────
 const CompareModal = ({ basePlayer, onClose }) => {
@@ -227,6 +276,13 @@ const OverviewTab = ({ player, onDownload }) => {
   const gStyle = report?.grade ? gradeStyle(report.grade) : gradeStyle("N/A");
   const score = report?.totalScore ?? 0;
   const recentComps = [...(player.competitions || [])].slice(-5).reverse();
+  const playerVideoUrl = toYoutubeEmbedUrl(getPlayerVideoLink(player));
+  const playerVideoThumbnail =
+    player.videoThumbnail || player.profileImage || player?.media_links?.[0] || DEFAULT_VIDEO_THUMBNAIL;
+  const playerVideoTitle =
+    player.videoTitle || `${player.name} Highlights`;
+  const playerVideoDescription =
+    player.videoDescription || "Tap to watch in fullscreen modal";
 
   const skillBars = report
     ? [
@@ -641,6 +697,24 @@ const OverviewTab = ({ player, onDownload }) => {
                 </tfoot>
               </table>
             </div>
+          </div>
+        )}
+
+        {playerVideoUrl && (
+          <div className={card + " p-4"}>
+            <div className="mb-4">
+              <p className={T.sectionTitle}>Player Highlight Video</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Embedded video preview below the overview metrics table
+              </p>
+            </div>
+            <VideoPlayer
+              thumbnailUrl={playerVideoThumbnail}
+              videoUrl={playerVideoUrl}
+              title={playerVideoTitle}
+              description={playerVideoDescription}
+              className="rounded-xl"
+            />
           </div>
         )}
       </div>

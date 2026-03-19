@@ -100,8 +100,10 @@ apiClient.interceptors.response.use(
     
     // Handle network errors
     if (!error.response) {
-      console.error('Network error - server may be down');
-      error.message = 'Network error. Please check your connection.';
+      // Ignore canceled requests to avoid noisy logs in React strict mode/navigation.
+      if (error.code !== 'ERR_CANCELED') {
+        error.message = 'Network error. Please check your connection.';
+      }
     }
     
     // Handle rate limiting

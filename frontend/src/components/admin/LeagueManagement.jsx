@@ -36,6 +36,7 @@ export default function LeagueManagement() {
   const [showAdd, setShowAdd]       = useState(false);
   const [addForm, setAddForm]       = useState({ name: "", tier: "State Tier" });
   const [saving, setSaving]         = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, name }
 
   const fetchLeagues = useCallback(async () => {
     try {
@@ -98,12 +99,18 @@ export default function LeagueManagement() {
   };
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Delete league "${name}"?`)) return;
+    setDeleteConfirm({ id, name });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
     try {
-      await api.deleteLeague(id);
+      await api.deleteLeague(deleteConfirm.id);
       fetchLeagues();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to delete league");
+    } finally {
+      setDeleteConfirm(null);
     }
   };
 
@@ -308,6 +315,40 @@ export default function LeagueManagement() {
           ))}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setDeleteConfirm(null)}
+        >
+          <div
+            className="bg-gray-900 border border-red-500/30 rounded-2xl p-6 w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold text-red-500 mb-3">Delete League</h3>
+            <p className="text-gray-300 text-sm mb-1">
+              Are you sure you want to permanently delete{" "}
+              <strong>&ldquo;{deleteConfirm.name}&rdquo;</strong>?
+            </p>
+            <p className="text-gray-500 text-xs mb-5">This action cannot be undone.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg font-medium text-sm border border-white/10 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-medium text-sm transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

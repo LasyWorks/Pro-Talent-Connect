@@ -98,6 +98,26 @@ const playerSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    youtubeVideoUrl: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    videoThumbnail: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    videoTitle: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    videoDescription: {
+      type: String,
+      trim: true,
+      default: "",
+    },
 
     // ─── Scout Friendly Report™ Fields ───
     // CRS / PL ID for AIFF verification

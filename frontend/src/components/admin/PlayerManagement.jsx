@@ -43,7 +43,8 @@ const emptyForm = {
   playerId: "", dateOfBirth: "", nationality: "Indian", weight: "", height: "",
   gender: "Male", jersey_no: "", size: "M", state: "", address: "",
   mobileNumber: "", email: "", profileImage: "", scouting_notes: "",
-  career_history: "", plId: "", currentLeague: "", stateLeague: "", clubTier: "",
+  career_history: "", youtubeVideoUrl: "", videoThumbnail: "", videoTitle: "", videoDescription: "",
+  plId: "", currentLeague: "", stateLeague: "", clubTier: "",
   sprint30m: "", sprint50m: "", mentalityScore: 0, featured: false,
   competitions: [], clubsPlayed: [],
 };
@@ -59,6 +60,7 @@ const PlayerManagement = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({});
   const [posFilter, setPosFilter] = useState("");
@@ -75,19 +77,36 @@ const PlayerManagement = () => {
   const fetchPlayers = useCallback(async () => {
     try {
       setLoading(true);
-      const params = { page, limit: 10 };
+      const params = { page, limit: 18 };
       if (posFilter) params.playingPosition = posFilter;
-      if (search) params.name = search;
+      if (debouncedSearch) params.name = debouncedSearch;
       const res = await api.getPlayers(params);
       const data = res.data;
       setPlayers(data.players || data || []);
-      setPagination(data.pagination || {});
+      // Backend returns pagination fields at top level (totalPages, currentPage, etc.)
+      setPagination({
+        totalPages: data.totalPages || data.pagination?.totalPages || 1,
+        currentPage: data.currentPage || data.pagination?.currentPage || page,
+        totalResults: data.totalResults || data.pagination?.totalResults || 0,
+        hasNextPage: data.hasNextPage ?? data.pagination?.hasNextPage ?? false,
+        hasPrevPage: data.hasPrevPage ?? data.pagination?.hasPrevPage ?? false,
+      });
     } catch (err) {
       console.error("Error fetching players:", err);
     } finally {
       setLoading(false);
     }
-  }, [page, posFilter, search]);
+  }, [page, posFilter, debouncedSearch]);
+
+  // Debounce player search to avoid request spam while typing.
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setPage(1);
+      setDebouncedSearch(search.trim());
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [search]);
 
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
 
@@ -102,7 +121,7 @@ const PlayerManagement = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
-    fetchPlayers();
+    setDebouncedSearch(search.trim());
   };
 
   const openCreate = () => {
@@ -137,6 +156,10 @@ const PlayerManagement = () => {
       profileImage: player.profileImage || "",
       scouting_notes: player.scouting_notes || "",
       career_history: player.career_history || "",
+      youtubeVideoUrl: player.youtubeVideoUrl || "",
+      videoThumbnail: player.videoThumbnail || "",
+      videoTitle: player.videoTitle || "",
+      videoDescription: player.videoDescription || "",
       plId: player.plId || "",
       currentLeague: player.currentLeague || "",
       stateLeague: player.stateLeague || "",
@@ -452,6 +475,16 @@ const PlayerManagement = () => {
                   ))}
                 </div>
               )}
+              {(viewPlayer.youtubeVideoUrl || viewPlayer.videoTitle || viewPlayer.videoDescription || viewPlayer.videoThumbnail) && (
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                  <p className="text-gray-400 mb-2 font-medium">Profile Video</p>
+                  {viewPlayer.videoTitle && <p className="text-white text-sm font-semibold">{viewPlayer.videoTitle}</p>}
+                  {viewPlayer.videoDescription && <p className="text-gray-300 text-xs mt-1">{viewPlayer.videoDescription}</p>}
+                  {viewPlayer.youtubeVideoUrl && (
+                    <p className="text-gray-400 text-xs mt-2 break-all">{viewPlayer.youtubeVideoUrl}</p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -704,6 +737,50 @@ const PlayerManagement = () => {
                   <Field label="Career History">
                     <textarea rows={2} value={formData.career_history} onChange={e => setFormData(p => ({ ...p, career_history: e.target.value }))} className={inputCls} />
                   </Field>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 sm:p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+                      Player Highlight Video
+                    </p>
+                    <p className="text-[11px] text-gray-500 mb-3">
+                      Mobile-first setup: keep title short, use a clear thumbnail, and add a YouTube link.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <Field label="YouTube Video URL (Watch/Share/Embed)">
+                        <input
+                          value={formData.youtubeVideoUrl}
+                          onChange={e => setFormData(p => ({ ...p, youtubeVideoUrl: e.target.value }))}
+                          className={inputCls}
+                          placeholder="https://youtube.com/watch?v=..."
+                        />
+                      </Field>
+                      <Field label="Thumbnail URL">
+                        <input
+                          value={formData.videoThumbnail}
+                          onChange={e => setFormData(p => ({ ...p, videoThumbnail: e.target.value }))}
+                          className={inputCls}
+                          placeholder="https://images.unsplash.com/..."
+                        />
+                      </Field>
+                      <Field label="Video Title">
+                        <input
+                          value={formData.videoTitle}
+                          onChange={e => setFormData(p => ({ ...p, videoTitle: e.target.value }))}
+                          className={inputCls}
+                          maxLength={120}
+                          placeholder="Player Highlight Reel"
+                        />
+                      </Field>
+                      <Field label="Video Description">
+                        <input
+                          value={formData.videoDescription}
+                          onChange={e => setFormData(p => ({ ...p, videoDescription: e.target.value }))}
+                          className={inputCls}
+                          maxLength={300}
+                          placeholder="Short summary for profile view"
+                        />
+                      </Field>
+                    </div>
+                  </div>
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={formData.featured} onChange={e => setFormData(p => ({ ...p, featured: e.target.checked }))} className="w-4 h-4 rounded bg-white/5 border-white/10 text-red-500" />
                     <span className="text-gray-300">Featured Player</span>

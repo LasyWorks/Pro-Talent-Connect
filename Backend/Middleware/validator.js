@@ -51,6 +51,10 @@ const createPlayerSchema = Joi.object({
   scouting_notes: Joi.string().max(2000).allow('', null).trim(),
   career_history: Joi.string().max(2000).allow('', null).trim(),
   media_links: Joi.array().items(Joi.string().uri()),
+  youtubeVideoUrl: Joi.string().uri().allow('', null).trim(),
+  videoThumbnail: Joi.string().uri().allow('', null).trim(),
+  videoTitle: Joi.string().max(120).allow('', null).trim(),
+  videoDescription: Joi.string().max(300).allow('', null).trim(),
   plId: Joi.string().allow('', null).trim(),
   competitions: Joi.array().items(
     Joi.object({
@@ -100,6 +104,10 @@ const updatePlayerSchema = Joi.object({
   scouting_notes: Joi.string().max(2000).allow('', null).trim(),
   career_history: Joi.string().max(2000).allow('', null).trim(),
   media_links: Joi.array().items(Joi.string().uri()),
+  youtubeVideoUrl: Joi.string().uri().allow('', null).trim(),
+  videoThumbnail: Joi.string().uri().allow('', null).trim(),
+  videoTitle: Joi.string().max(120).allow('', null).trim(),
+  videoDescription: Joi.string().max(300).allow('', null).trim(),
   plId: Joi.string().allow('', null).trim(),
   competitions: Joi.array().items(
     Joi.object({

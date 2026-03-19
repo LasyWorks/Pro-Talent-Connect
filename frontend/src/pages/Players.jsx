@@ -68,6 +68,8 @@ const POSITION_COLORS = {
   },
 };
 
+const PLAYERS_PER_PAGE = 18;
+
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=400";
 
@@ -1226,6 +1228,7 @@ const Players = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const mobileSearchRef = useRef(null);
 
   const [filters, setFilters] = useState({
@@ -1311,6 +1314,7 @@ const Players = () => {
         return (a.playingPosition || "").localeCompare(b.playingPosition || "");
       return 0;
     });
+    setCurrentPage(1);
     setFilteredPlayers(result);
   }, [filters, players, sortBy]);
 
@@ -1362,6 +1366,12 @@ const Players = () => {
       set("heightMax", "");
     } else set(key, "");
   };
+
+  const totalPages = Math.ceil(filteredPlayers.length / PLAYERS_PER_PAGE);
+  const pagedPlayers = filteredPlayers.slice(
+    (currentPage - 1) * PLAYERS_PER_PAGE,
+    currentPage * PLAYERS_PER_PAGE,
+  );
 
   const inputStyle = {
     width: "100%",
@@ -1606,13 +1616,50 @@ const Players = () => {
           ) : filteredPlayers.length === 0 ? (
             <NoResults onReset={clearFilters} />
           ) : (
-            filteredPlayers.map((player) => (
-              <MobilePlayerCard
-                key={player._id}
-                player={player}
-                onViewProfile={handleViewProfile}
-              />
-            ))
+            <>
+              {pagedPlayers.map((player) => (
+                <MobilePlayerCard
+                  key={player._id}
+                  player={player}
+                  onViewProfile={handleViewProfile}
+                />
+              ))}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-3 pt-2 pb-2">
+                  <button
+                    onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0 }); }}
+                    disabled={currentPage === 1}
+                    style={{
+                      height: "40px", padding: "0 14px",
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "10px", fontSize: "13px",
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                      color: currentPage === 1 ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.6)",
+                    }}
+                  >
+                    ← Prev
+                  </button>
+                  <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)" }}>
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0 }); }}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      height: "40px", padding: "0 14px",
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "10px", fontSize: "13px",
+                      cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                      color: currentPage === totalPages ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.6)",
+                    }}
+                  >
+                    Next →
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -2072,26 +2119,65 @@ const Players = () => {
                   </div>
                 ) : filteredPlayers.length === 0 ? (
                   <NoResults onReset={clearFilters} />
-                ) : viewMode === "grid" ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {filteredPlayers.map((player) => (
-                      <PlayerCardGrid
-                        key={player._id}
-                        player={player}
-                        onViewProfile={handleViewProfile}
-                      />
-                    ))}
-                  </div>
                 ) : (
-                  <div className="space-y-3">
-                    {filteredPlayers.map((player) => (
-                      <PlayerCardList
-                        key={player._id}
-                        player={player}
-                        onViewProfile={handleViewProfile}
-                      />
-                    ))}
-                  </div>
+                  <>
+                    {viewMode === "grid" ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {pagedPlayers.map((player) => (
+                          <PlayerCardGrid
+                            key={player._id}
+                            player={player}
+                            onViewProfile={handleViewProfile}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {pagedPlayers.map((player) => (
+                          <PlayerCardList
+                            key={player._id}
+                            player={player}
+                            onViewProfile={handleViewProfile}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-center gap-3 mt-10">
+                        <button
+                          onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0 }); }}
+                          disabled={currentPage === 1}
+                          style={{
+                            height: "44px", padding: "0 20px",
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            borderRadius: "12px", fontSize: "14px",
+                            cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                            color: currentPage === 1 ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.6)",
+                          }}
+                        >
+                          ← Previous
+                        </button>
+                        <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.4)" }}>
+                          Page {currentPage} of {totalPages}
+                        </span>
+                        <button
+                          onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0 }); }}
+                          disabled={currentPage === totalPages}
+                          style={{
+                            height: "44px", padding: "0 20px",
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            borderRadius: "12px", fontSize: "14px",
+                            cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                            color: currentPage === totalPages ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.6)",
+                          }}
+                        >
+                          Next →
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </main>
             </div>

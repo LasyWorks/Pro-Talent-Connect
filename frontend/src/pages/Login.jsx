@@ -7,6 +7,7 @@ import {
   EyeIcon,
   EyeSlashIcon,
   ShieldCheckIcon,
+  ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import FloatingShapes from "../components/common/FloatingShapes";
 
@@ -81,6 +82,14 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-950 text-white flex items-center justify-center px-4 py-20">
+      {/* Back to Home */}
+      <Link
+        to="/"
+        className="absolute top-6 left-6 z-20 flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors group"
+      >
+        <ArrowLeftIcon className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+        Back to Home
+      </Link>
       <FloatingShapes />
 
       <div className="relative z-10 w-full max-w-md">

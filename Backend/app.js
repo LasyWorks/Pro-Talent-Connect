@@ -102,6 +102,11 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Ping route — lightweight keep-alive endpoint
+app.get("/ping", (req, res) => {
+  res.status(200).json({ success: true, message: "pong", timestamp: new Date().toISOString() });
+});
+
 // Basic Route
 app.get("/", (req, res) => {
   res.json({

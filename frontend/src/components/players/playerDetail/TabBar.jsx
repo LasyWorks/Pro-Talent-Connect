@@ -7,7 +7,7 @@ const TABS = [
 ];
 
 const TabBar = ({ active, setActive }) => (
-  <nav className="flex overflow-x-auto gap-0 scrollbar-none">
+  <nav className="flex overflow-x-auto gap-0 no-scrollbar">
     {TABS.map((t) => (
       <button
         key={t.id}

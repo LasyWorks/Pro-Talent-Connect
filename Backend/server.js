@@ -26,7 +26,7 @@ connectDB().then(async () => {
   // Start 24-hour MongoDB keep-alive background worker
   keepAliveWorker.start();
 
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 5001;
 
   const server = app.listen(PORT, () => {
     logger.info(

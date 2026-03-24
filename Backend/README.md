@@ -2,719 +2,673 @@
 
 <div align="center">
 
-**Professional Football Talent Management API**  
-RESTful Backend • JWT Authentication • Role-Based Access Control • Comprehensive Audit Logging
+![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5.2.1-000000?logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-7.x-47A248?logo=mongodb&logoColor=white)
+![Mongoose](https://img.shields.io/badge/Mongoose-9.x-880000)
+![JWT](https://img.shields.io/badge/Auth-JWT-000000)
+![Joi](https://img.shields.io/badge/Validation-Joi-00599C)
+![Rate Limit](https://img.shields.io/badge/Rate%20Limit-Enabled-2EA043)
 
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-5.x-000000?logo=express)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb)](https://www.mongodb.com/)
-[![JWT](https://img.shields.io/badge/JWT-Auth-000000?logo=jsonwebtokens)](https://jwt.io/)
+<img src="../frontend/src/assets/Logo@pro_talent_connect.png" alt="Pro Talent Connect" width="140" />
+
+High-trust API for player data, admin control workflows, and public content delivery.
 
 </div>
 
----
-
 ## Table of Contents
 
-- [About](#about)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Installation](#installation)
-- [API Documentation](#api-documentation)
-- [Security & Non-Functional Requirements](#security--non-functional-requirements)
-- [Testing](#testing)
-- [Deployment](#deployment)
-- [Project Structure](#project-structure)
+1. [Executive Summary](#executive-summary)
+2. [Architecture](#architecture)
+3. [Project Layout](#project-layout)
+4. [Runtime and Environment](#runtime-and-environment)
+5. [Security Controls](#security-controls)
+6. [Authentication and Authorization](#authentication-and-authorization)
+7. [Rate Limiting and Cache Policy](#rate-limiting-and-cache-policy)
+8. [API Versioning and Base URLs](#api-versioning-and-base-urls)
+9. [Module Access Matrix](#module-access-matrix)
+10. [Endpoint Catalog](#endpoint-catalog)
+11. [API Example Usage](#api-example-usage)
+12. [Error Behavior and Response Contract](#error-behavior-and-response-contract)
+13. [Data Model Overview](#data-model-overview)
+14. [Validation Coverage](#validation-coverage)
+15. [Testing and Quality](#testing-and-quality)
+16. [Operational Runbook](#operational-runbook)
+17. [Production Checklist](#production-checklist)
+18. [Route and Sub-Route Screenshots](#route-and-sub-route-screenshots)
+19. [Troubleshooting](#troubleshooting)
 
----
+## Executive Summary
 
-## About
+This service powers both public and admin experiences. It is designed with role boundaries, defensive middleware, and operational observability.
 
-**Pro-Talent-Connect Backend API** is a comprehensive RESTful API for managing football/soccer talent, providing secure authentication, role-based access control, player management, blog/article publishing, and comprehensive audit logging for compliance and security.
+Business responsibilities:
 
-### Key Highlights
+- Public data retrieval for players, blogs, services, and about content.
+- Admin operations for data management and content lifecycle.
+- Auditable privileged changes and security-first request handling.
 
-- JWT-based authentication with bcrypt password hashing
-- Role-based access control (Super Admin / Admin)
-- Complete CRUD operations for players, blogs, and admin accounts
-- Comprehensive audit logging for all critical operations
-- RESTful API design with extensive documentation
-- Cloud database with MongoDB Atlas
-- CORS security with environment-based origin restrictions
-- Singleton pattern for organization profile management
+## Architecture
 
----
-
-## Features
-
-### Authentication & Authorization System
-
-- **JWT Authentication** - Token-based auth with 7-day expiry
-- **Two Roles** - Super Admin (full access) and Admin (restricted access)
-- **Password Security** - bcrypt hashing with 10 salt rounds
-- **Protected Routes** - Middleware verification on all sensitive endpoints
-- **Token Refresh** - Extended sessions with token refresh mechanism
-- **Account Management** - Active/inactive status, last login tracking
-
-### Player Management
-
-- Complete CRUD operations for player profiles
-- Soft delete functionality (isDeleted flag)
-- Advanced filtering (name, position, gender, age group, city)
-- Multi-criteria search functionality
-- Pagination support for large datasets
-- Profile images and detailed attributes
-- Career history and scouting notes
-
-### Blog & Articles Management
-
-- Create, update, and publish blog posts
-- Draft/Published/Archived status workflow
-- Slug-based URL friendly identifiers
-- Rich text content support (HTML)
-- Cover images and tagging system
-- Author tracking and attribution
-- Public access for published content
-
-### About / Organisation Profile
-
-- Singleton document pattern
-- Mission, history, credentials management
-- Contact information and social links
-- Image gallery for organization
-- Public access endpoint
-
-### Admin Management (Super Admin Only)
-
-- Create and manage admin accounts
-- Role promotion/demotion
-- Account activation/deactivation
-- Password reset functionality
-- Self-protection (cannot modify own account)
-- Last Super Admin protection
-
-### Audit Logging System
-
-- Automatic logging of all CUD operations
-- Login/logout tracking with IP and user agent
-- Password change and role change audit trail
-- Failed login attempts recorded
-- Comprehensive filtering and search
-- Super Admin only access
-
-### Security Features
-
-- CORS with environment-based origin restrictions
-- JWT token validation on protected routes
-- Password complexity requirements
-- Non-blocking audit logging
-- Appropriate HTTP status codes
-
----
-
-## Tech Stack
-
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Node.js | 18+ | JavaScript runtime |
-| Express.js | 5.x | Web framework |
-| MongoDB Atlas | Latest | Cloud database |
-| Mongoose | 9.x | MongoDB ODM |
-| JWT | 9.x | Authentication |
-| Bcrypt | 6.x | Password hashing |
-| CORS | 2.x | Cross-origin requests |
-| Dotenv | 17.x | Environment variables |
-| Nodemon | 3.x | Development auto-reload |
-| Jest | Latest | Testing framework |
-| Supertest | Latest | API testing |
-
----
-
-## Installation
-
-### Prerequisites
-
-- Node.js 18.x or higher
-- npm 7.x or higher
-- MongoDB Atlas account
-- Git
-
-### Setup Instructions
-
-**1. Clone Repository**
-
-```bash
-git clone <repository-url>
-cd Pro-Talent-Connect/Backend
+```mermaid
+flowchart LR
+    C[Client] --> A[Express App]
+    A --> S[Security Middleware]
+    S --> R[Route Modules]
+    R --> H[Controller Services]
+    H --> M[(MongoDB)]
+    H --> E[Email Service]
+    A --> G[Global Error Handler]
+    A --> L[Winston Logger]
 ```
 
-**2. Install Dependencies**
+### Request Processing Sequence
 
-```bash
-npm install
+```mermaid
+sequenceDiagram
+    participant Client
+    participant App as Express App
+    participant Mid as Middleware
+    participant Route as Routes
+    participant Ctrl as Controllers
+    participant DB as MongoDB
+
+    Client->>App: HTTP request
+    App->>Mid: Helmet/CORS/Sanitize/Limiter
+    Mid->>Route: Route match
+    Route->>Ctrl: Guarded and validated request
+    Ctrl->>DB: Query or mutation
+    DB-->>Ctrl: Result
+    Ctrl-->>Client: JSON response
 ```
 
-**3. Configure Environment Variables**
+## Project Layout
 
-Create a `.env` file in the `Backend` folder:
+```text
+Backend/
+|- app.js
+|- server.js
+|- package.json
+|- jest.config.js
+|- config/
+|  |- DB.js
+|  |- logger.js
+|  |- validateEnv.js
+|- Middleware/
+|  |- authMiddleware.js
+|  |- cache.js
+|  |- errorHandler.js
+|  |- mongoSanitize.js
+|  |- rateLimiter.js
+|  |- validator.js
+|- Models/
+|  |- About.js
+|  |- Admin.js
+|  |- AuditLog.js
+|  |- Blog.js
+|  |- Enquiry.js
+|  |- HowItWork.js
+|  |- League.js
+|  |- Otp.js
+|  |- Players.js
+|  |- ProfileRequest.js
+|  |- Service.js
+|- Routes/
+|  |- aboutRoutes.js
+|  |- adminRoutes.js
+|  |- auditLogRoutes.js
+|  |- authRoutes.js
+|  |- blogRoutes.js
+|  |- contactRoutes.js
+|  |- dashboardRoutes.js
+|  |- leagueRoutes.js
+|  |- otpRoutes.js
+|  |- playerRoutes.js
+|  |- serviceRoutes.js
+|- services/
+|  |- aboutController.js
+|  |- adminController.js
+|  |- auditLogController.js
+|  |- authController.js
+|  |- blogController.js
+|  |- contactController.js
+|  |- dashboardController.js
+|  |- emailService.js
+|  |- generateToken.js
+|  |- keepAliveWorker.js
+|  |- leagueController.js
+|  |- otpController.js
+|  |- playerController.js
+|  |- scoutReportCalculator.js
+|  |- serviceController.js
+|- tests/
+|  |- auth.test.js
+|  |- dashboard.test.js
+|  |- players.test.js
+|  |- setup.js
+|- import-players-csv.js
+|- migrate-data.js
+|- generate-report.js
+|- README.md
+```
+
+## Runtime and Environment
+
+Required environment variables (from .env.example baseline):
 
 ```env
 PORT=5001
 NODE_ENV=development
-
-# MongoDB Connection
-MONGO_URI=mongodb+srv://<username>:<password>@cluster.xxxxx.mongodb.net/protalent?retryWrites=true&w=majority
-
-# JWT Configuration
-JWT_SECRET=your_super_secret_jwt_key_here
-JWT_EXPIRE=7d
-
-# CORS Configuration (comma-separated list of allowed origins)
+MONGO_URI=mongodb://localhost:27017/pro-talent-connect
+JWT_SECRET=<strong-secret>
+JWT_EXPIRE=1d
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
-
-# Default Super Admin (used by seedSuperAdmin.js)
-SUPER_ADMIN_EMAIL=charannaikcharan734@gmail.com
-SUPER_ADMIN_PASSWORD=YourSecurePassword@123
+SUPER_ADMIN_EMAIL=<local-admin-email>
+SUPER_ADMIN_PASSWORD=<local-admin-password>
 ```
 
-**MongoDB Atlas Setup:**
+Configuration notes:
 
-1. Create cluster at [MongoDB Atlas](https://cloud.mongodb.com)
-2. Database Access → Create user with read/write permissions
-3. Network Access → Add IP (0.0.0.0/0 for development)
-4. Connect → Connect your application → Copy connection string
-5. Replace `<username>`, `<password>`, and database name in MONGO_URI
+- The service defaults to port 5001 when PORT is absent.
+- ALLOWED_ORIGINS is comma-separated.
+- Production mode denies requests missing Origin.
 
-**Generate JWT Secret:**
+## Security Controls
+
+Implemented controls:
+
+- Helmet with CSP and HSTS behavior.
+- CORS allowlist enforcement.
+- NoSQL sanitization middleware.
+- API-wide and route-specific rate limits.
+- Joi schema validation with unknown-key stripping.
+- Centralized error shaping for secure responses.
+- Request logging through Winston.
+
+## Authentication and Authorization
+
+### Authentication
+
+- Login issues JWT.
+- Protected routes require `Authorization: Bearer <token>`.
+- protect middleware resolves current admin on request.
+
+### Authorization
+
+- authorize middleware enforces role list per endpoint.
+- Roles:
+  - Admin
+  - Super Admin
+
+## Rate Limiting and Cache Policy
+
+### Rate Limiting
+
+| Limiter | Window | Max | Usage |
+|---|---:|---:|---|
+| apiLimiter | 15 min | 1000/IP | All /api routes |
+| authLimiter | 15 min | 5/IP | Login endpoint |
+| createLimiter | 60 min | 200/IP | Create-heavy and OTP send routes |
+
+### Caching
+
+| Module | Typical TTL |
+|---|---:|
+| Players list/search | 30s |
+| Player detail | 60s |
+| Blogs list/detail | 60s to 120s |
+| About/services/how-it-works | 300s |
+| Leagues list | 120s |
+
+Write routes invalidate relevant cache prefixes.
+
+## API Versioning and Base URLs
+
+Both route families are active:
+
+- Preferred: `/api/v1/...`
+- Compatibility: `/api/...`
+
+Core probes:
+
+- `GET /`
+- `GET /health`
+- `GET /ping`
+
+## Module Access Matrix
+
+| Module | Public | Admin | Super Admin |
+|---|---|---|---|
+| Auth | Login only | Yes | Yes |
+| Admins | No | No | Yes |
+| Players | Read only | Create/Update | Full |
+| Dashboard | No | Yes | Yes |
+| Blogs | Published read only | Create/Update/Publish | Full |
+| About | Read only | No | Update |
+| Services + How-It-Works | Read only | Write | Write |
+| Contact | Submit only | Review/Update | Review/Update |
+| OTP | No | Yes | Yes |
+| Leagues | Read only | Write | Write |
+| Audit Logs | No | No | Yes |
+
+## Endpoint Catalog
+
+### Auth
+
+| Method | Endpoint | Access | Validation |
+|---|---|---|---|
+| POST | /auth/login | Public | loginSchema |
+| POST | /auth/logout | Authenticated | N/A |
+| POST | /auth/refresh | Authenticated | N/A |
+| POST | /auth/register | Super Admin | registerAdminSchema |
+| GET | /auth/profile | Authenticated | N/A |
+| PUT | /auth/change-password | Authenticated | N/A |
+| PUT | /auth/admin/:id/role | Super Admin | Controller checks |
+
+### Admins
+
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | /admins | Super Admin |
+| POST | /admins | Super Admin |
+| GET | /admins/:id | Super Admin |
+| PUT | /admins/:id | Super Admin |
+| PATCH | /admins/:id/demote | Super Admin |
+| DELETE | /admins/:id | Super Admin |
+
+### Players
+
+| Method | Endpoint | Access | Validation |
+|---|---|---|---|
+| GET | /players | Public | N/A |
+| GET | /players/search | Public | Query/controller checks |
+| GET | /players/:id | Public | ObjectId/controller checks |
+| POST | /players | Admin, Super Admin | createPlayerSchema |
+| PUT | /players/:id | Admin, Super Admin | updatePlayerSchema |
+| DELETE | /players/:id | Super Admin | Controller checks |
+
+### Dashboard
+
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | /dashboard/stats | Admin, Super Admin |
+
+### Blogs
+
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | /blogs | Public |
+| GET | /blogs/:identifier | Public |
+| GET | /blogs/all | Admin, Super Admin |
+| POST | /blogs | Admin, Super Admin |
+| PUT | /blogs/:id | Admin, Super Admin |
+| PATCH | /blogs/:id/publish | Admin, Super Admin |
+| DELETE | /blogs/:id | Super Admin |
+
+### About
+
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | /about | Public |
+| PUT | /about | Super Admin |
+| POST | /about/images | Super Admin |
+
+### Services and How-It-Works
+
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | /services | Public |
+| GET | /services/:id | Public |
+| POST | /services | Authenticated |
+| PUT | /services/:id | Authenticated |
+| DELETE | /services/:id | Authenticated |
+| GET | /how-it-works | Public |
+| GET | /how-it-works/:id | Public |
+| POST | /how-it-works | Authenticated |
+| PUT | /how-it-works/:id | Authenticated |
+| DELETE | /how-it-works/:id | Authenticated |
+
+### Contact
+
+| Method | Endpoint | Access |
+|---|---|---|
+| POST | /contact/enquiry | Public |
+| POST | /contact/profile-request | Public |
+| GET | /contact/enquiries | Authenticated |
+| GET | /contact/profile-requests | Authenticated |
+| PUT | /contact/enquiries/:id | Authenticated |
+| PUT | /contact/profile-requests/:id | Authenticated |
+
+### OTP
+
+| Method | Endpoint | Access |
+|---|---|---|
+| POST | /otp/send-player-otp | Admin, Super Admin |
+| POST | /otp/verify-player-otp | Admin, Super Admin |
+| POST | /otp/send-password-otp | Authenticated |
+| POST | /otp/verify-password-otp | Authenticated |
+
+### Leagues
+
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | /leagues | Public |
+| POST | /leagues | Admin, Super Admin |
+| PUT | /leagues/:id | Admin, Super Admin |
+| DELETE | /leagues/:id | Admin, Super Admin |
+
+### Audit Logs
+
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | /audit-logs | Super Admin |
+
+## API Example Usage
+
+All examples use versioned URLs.
+
+### 1) Login
 
 ```bash
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'));"
+curl -X POST http://localhost:5001/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"Admin@123"}'
 ```
 
-**4. Seed Super Admin (First Time Only)**
+### 2) Public players list
 
 ```bash
-cd services
-node seedSuperAdmin.js
+curl http://localhost:5001/api/v1/players
 ```
 
-**5. Start Development Server**
+### 3) Create player
 
 ```bash
-npm run dev
+curl -X POST http://localhost:5001/api/v1/players \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name":"Sample Player",
+    "age_group":"U19",
+    "playingPosition":"Midfielder",
+    "preferredFoot":"Right",
+    "playerId":"PTC-001",
+    "dateOfBirth":"2007-09-15",
+    "nationality":"Indian",
+    "gender":"Male",
+    "mobileNumber":"9876543210",
+    "email":"sample.player@example.com"
+  }'
 ```
 
-Server runs at `http://localhost:5001`
-
-**6. Verify Installation**
+### 4) Update player
 
 ```bash
-curl http://localhost:5001/
+curl -X PUT http://localhost:5001/api/v1/players/<PLAYER_ID> \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"preferredFoot":"Both","state":"Karnataka"}'
 ```
 
-Expected response:
+### 5) Dashboard stats
+
+```bash
+curl http://localhost:5001/api/v1/dashboard/stats \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+### 6) Submit enquiry
+
+```bash
+curl -X POST http://localhost:5001/api/v1/contact/enquiry \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name":"John Doe",
+    "email":"john@example.com",
+    "subject":"Trial Request",
+    "message":"Please share upcoming trial details."
+  }'
+```
+
+### 7) Create blog
+
+```bash
+curl -X POST http://localhost:5001/api/v1/blogs \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title":"Academy Prospect Update",
+    "slug":"academy-prospect-update",
+    "excerpt":"Short excerpt for the blog post.",
+    "content":"Detailed blog content goes here.",
+    "author":"Editorial Team",
+    "category":"Scouting"
+  }'
+```
+
+### 8) Send password OTP
+
+```bash
+curl -X POST http://localhost:5001/api/v1/otp/send-password-otp \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+### 9) List leagues
+
+```bash
+curl http://localhost:5001/api/v1/leagues
+```
+
+### 10) Read audit logs
+
+```bash
+curl http://localhost:5001/api/v1/audit-logs \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+## Error Behavior and Response Contract
+
+### Status Code Guide
+
+| Status | Meaning | Typical Reason |
+|---|---|---|
+| 400 | Bad Request | Validation failure, duplicate data, invalid id |
+| 401 | Unauthorized | Missing, invalid, or expired token |
+| 403 | Forbidden | Role lacks route permissions |
+| 404 | Not Found | Unknown route or resource missing |
+| 413 | Payload Too Large | Request body too large |
+| 429 | Too Many Requests | Rate limit hit |
+| 500 | Internal Error | Unexpected server fault |
+
+### Common Error Payloads
+
+#### Validation Error
 
 ```json
 {
-  "message": "Pro-Talent-Connect API is running!",
-  "status": "ok"
-}
-```
-
----
-
-## API Documentation
-
-### Base URL
-
-```
-http://localhost:5001/api
-```
-
-### User Roles & Permissions
-
-| Role | Description | Permissions |
-|------|-------------|-------------|
-| **Super Admin** | Full system access | Full CRUD on all resources, admin management, delete access |
-| **Admin** | Operational access | Create, Read, Update only (no delete, no admin management) |
-
-### Quick Reference
-
-| Module | Endpoints | Super Admin | Admin | Public |
-|--------|-----------|-------------|-------|--------|
-| Authentication | 7 endpoints | ✅ | ✅ | login only |
-| Admin Management | 6 endpoints | ✅ | ❌ | ❌ |
-| Player Management | 6 endpoints | ✅ Full | ✅ CRU only | ❌ |
-| Blog Management | 7 endpoints | ✅ Full | ✅ CRU only | published only |
-| About/Organisation | 3 endpoints | ✅ | ❌ | view only |
-| Dashboard | 1 endpoint | ✅ | ✅ | ❌ |
-| Audit Logs | 1 endpoint | ✅ | ❌ | ❌ |
-
----
-
-### Authentication APIs
-
-All authentication endpoints are prefixed with `/api/auth`
-
-| Method | Endpoint | Description | Access |
-|--------|----------|-------------|--------|
-| POST | `/api/auth/login` | Admin login | Public |
-| POST | `/api/auth/logout` | Admin logout | Protected |
-| POST | `/api/auth/register` | Register new admin | Super Admin |
-| POST | `/api/auth/refresh` | Refresh JWT token | Protected |
-| GET | `/api/auth/profile` | Get current admin profile | Protected |
-| PUT | `/api/auth/change-password` | Change password | Protected |
-| PUT | `/api/auth/admin/:id/role` | Update admin role | Super Admin |
-
-#### Example: Login
-
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "charannaikcharan734@gmail.com",
-  "password": "YourPassword@123"
-}
-```
-
-**Response (200):**
-
-```json
-{
-  "_id": "65f9abc1234567890abcdef1",
-  "name": "Admin Name",
-  "email": "charannaikcharan734@gmail.com",
-  "role": "Super Admin",
-  "profile_image": "",
-  "is_active": true,
-  "last_login": "2026-02-17T10:30:00.000Z",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-#### Authentication Headers
-
-For all protected endpoints:
-
-```http
-Authorization: Bearer <your_jwt_token>
-Content-Type: application/json
-```
-
----
-
-### Admin Management APIs
-
-All admin management endpoints are prefixed with `/api/admins` and require **Super Admin** access.
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admins` | List all admins (with pagination & filters) |
-| POST | `/api/admins` | Create new admin account |
-| GET | `/api/admins/:id` | Get admin by ID |
-| PUT | `/api/admins/:id` | Update admin details |
-| PATCH | `/api/admins/:id/demote` | Demote admin / deactivate |
-| DELETE | `/api/admins/:id` | Delete admin account |
-
-**Key Features:**
-- Self-protection: Cannot modify your own account
-- Last Super Admin protection: Cannot demote/delete last Super Admin
-- Role management: Promote/demote between Admin and Super Admin
-- Account deactivation: `is_active` flag prevents login
-
----
-
-### Player Management APIs
-
-All player endpoints are prefixed with `/api/players`
-
-| Method | Endpoint | Description | Access |
-|--------|----------|-------------|--------|
-| GET | `/api/players` | List all players (with pagination & filters) | Admin + Super Admin |
-| POST | `/api/players` | Create new player | Admin + Super Admin |
-| GET | `/api/players/search` | Search players by multiple criteria | Admin + Super Admin |
-| GET | `/api/players/:id` | Get player by ID | Admin + Super Admin |
-| PUT | `/api/players/:id` | Update player | Admin + Super Admin |
-| DELETE | `/api/players/:id` | Delete player (soft delete) | Super Admin Only |
-
-**Player Schema Fields:**
-- name, age, age_group, playingPosition, alternativePosition
-- preferredFoot, transferMarketLink, playerId, dateOfBirth
-- nationality, weight, height, gender, jersey_no, size
-- city, address, mobileNumber, email, profileImage
-- scouting_notes, career_history, media_links, clubsPlayed
-
-**Query Parameters:**
-- `page`, `limit` - Pagination
-- `name`, `city`, `position`, `age_group`, `gender` - Filters
-
----
-
-### Blog Management APIs
-
-All blog endpoints are prefixed with `/api/blogs`
-
-| Method | Endpoint | Description | Access |
-|--------|----------|-------------|--------|
-| GET | `/api/blogs` | List published blogs | Public |
-| GET | `/api/blogs/all` | List all blogs (including drafts) | Admin + Super Admin |
-| POST | `/api/blogs` | Create new blog | Admin + Super Admin |
-| GET | `/api/blogs/:id` | Get blog by ID or slug | Public |
-| PUT | `/api/blogs/:id` | Update blog | Admin + Super Admin |
-| PATCH | `/api/blogs/:id/publish` | Publish blog | Admin + Super Admin |
-| DELETE | `/api/blogs/:id` | Delete blog (soft delete) | Super Admin Only |
-
-**Blog Schema:**
-- title, slug, content, excerpt, cover_image
-- tags (array), status (DRAFT/PUBLISHED/ARCHIVED)
-- author_id, published_at, createdAt, updatedAt
-
----
-
-### About / Organisation APIs
-
-All about endpoints are prefixed with `/api/about`
-
-| Method | Endpoint | Description | Access |
-|--------|----------|-------------|--------|
-| GET | `/api/about` | Get organisation profile | Public |
-| PUT | `/api/about` | Update organisation profile | Super Admin |
-| POST | `/api/about/images` | Add images to gallery | Super Admin |
-
-**Singleton Pattern:** Only one organization profile document exists.
-
----
-
-### Dashboard APIs
-
-| Method | Endpoint | Description | Access |
-|--------|----------|-------------|--------|
-| GET | `/api/dashboard/stats` | Get dashboard statistics | Admin + Super Admin |
-
-**Returns:**
-- Total players, admins, super admins count
-- Recent players (last 30 days)
-- Players by position and gender distribution
-
----
-
-### Audit Log APIs
-
-| Method | Endpoint | Description | Access |
-|--------|----------|-------------|--------|
-| GET | `/api/audit-logs` | Get audit logs with filtering | Super Admin Only |
-
-**Query Parameters:**
-- `page`, `limit` - Pagination (default: 50 per page)
-- `user_id` - Filter by user
-- `action` - Filter by action type (CREATE, UPDATE, DELETE, LOGIN, etc.)
-- `resource_type` - Filter by resource (Admin, Player, Blog, About, Auth)
-- `resource_id` - Filter by specific resource
-- `start_date`, `end_date` - Date range filter
-
-**Audit Log Fields:**
-- user details (ID, name, email, role)
-- action, resource_type, resource_id
-- description, ip_address, user_agent
-- changes (object), status (SUCCESS/FAILURE)
-- createdAt (timestamp)
-
----
-
-## Security & Non-Functional Requirements
-
-### 1. Authentication & Authorization
-
-#### JWT Token-Based Authentication
-- **Token Generation**: JWT tokens generated upon successful login
-- **Token Expiry**: Default 7 days (configurable via `JWT_EXPIRE`)
-- **Token Structure**: Contains user ID and role for authorization
-- **Token Storage**: Client-side storage (localStorage/sessionStorage)
-
-#### Role-Based Access Control (RBAC)
-- **Middleware**: `protect` middleware verifies JWT on protected routes
-- **Authorization**: `authorize(...roles)` middleware restricts by role
-- **Granular Permissions**:
-  - Super Admin: Full CRUD + delete access on all resources
-  - Admin: Create, Read, Update only (no delete, no admin management)
-
-### 2. Password Security
-
-- **Hashing Algorithm**: bcryptjs with 10 salt rounds
-- **Pre-Save Hook**: Passwords automatically hashed before saving
-- **Password Validation**: Custom `matchPassword()` method compares hashed passwords
-- **Password Change**: Requires current password verification
-- **Secure Storage**: Plain-text passwords never stored
-
-### 3. CORS (Cross-Origin Resource Sharing)
-
-**Configuration**: Environment-based origin restrictions
-
-```javascript
-// app.js
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
-corsOptions: {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+  "success": false,
+  "message": "Validation error",
+  "errors": [
+    {
+      "field": "email",
+      "message": "\"email\" must be a valid email"
     }
-  },
-  credentials: true
+  ]
 }
 ```
 
-**Environment Variable:**
-```
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,https://yourfrontend.com
-```
+#### Missing Token
 
-### 4. Data Validation & Sanitization
-
-- Required field validation
-- Unique constraints on emails, player IDs, blog slugs
-- Mongoose schema-level validation
-- Comprehensive error responses
-
-### 5. Audit Logging & Compliance
-
-**Comprehensive Action Tracking:**
-- All CREATE, UPDATE, DELETE operations logged automatically
-- User authentication events (LOGIN, LOGOUT) tracked
-- Sensitive operations (PASSWORD_CHANGE, ROLE_CHANGE) audited
-- Failed login attempts recorded for security monitoring
-
-**Log Details:**
-- User identification (ID, name, email, role)
-- Timestamp (ISO-8601 format)
-- IP address and user agent
-- Resource affected (type and ID)
-- Changes made (before/after values)
-- Operation status (SUCCESS/FAILURE)
-
-**Access**: Super Admin only via `GET /api/audit-logs`
-
-### 6. HTTPS/TLS Requirements
-
-**Production Deployment:**
-- ✅ **HTTPS Required**: All production traffic must use TLS encryption
-- ✅ **Certificate Management**: Use Let's Encrypt, AWS Certificate Manager, or platform SSL
-- ✅ **HSTS Recommended**: HTTP Strict Transport Security header
-- ⚠️ **Development**: HTTP acceptable for localhost only
-
-### 7. Performance & Scalability
-
-**Database Optimization:**
-- Indexed fields: `email`, `playerId`, `slug`, `user_id`, `createdAt`
-- Pagination on all list endpoints
-- Soft deletes with `isDeleted` flag
-- Lean queries exclude unnecessary fields
-
-**Capacity:**
-- Target: 60-100 concurrent users
-- Recommended: Horizontal scaling with load balancing for >100 users
-- Database: MongoDB Atlas M10+ cluster for production
-
-### 8. Backup & Recovery
-
-**Recommended Strategy:**
-- **MongoDB Atlas**: Automated daily backups with point-in-time recovery
-- **Self-Hosted**: `mongodump` scheduled via cron jobs
-- **Retention**: Minimum 7-day backup retention
-- **Disaster Recovery**: Test restore procedures quarterly
-
-**Backup Command:**
-```bash
-mongodump --uri="mongodb+srv://..." --out=/backup/$(date +%Y%m%d)
+```json
+{
+  "message": "Not authorized, no token"
+}
 ```
 
-### 9. Error Handling & Logging
+#### Invalid or Expired Token
 
-- Console logging of all errors with context
-- User-friendly error messages
-- Appropriate HTTP status codes (400, 401, 403, 404, 500)
-- Non-blocking audit logging
+```json
+{
+  "success": false,
+  "message": "Your token has expired. Please log in again."
+}
+```
 
-### 10. Environment Configuration
+#### Forbidden Role
 
-**Required Variables** (see `.env.example`):
-- `PORT` - Server port (default: 5001)
-- `NODE_ENV` - Environment (development/production)
-- `MONGO_URI` - MongoDB connection string
-- `JWT_SECRET` - Secret key for JWT signing (use strong random string)
-- `JWT_EXPIRE` - Token expiry duration
-- `ALLOWED_ORIGINS` - Comma-separated list of allowed CORS origins
-- `SUPER_ADMIN_EMAIL` - Default super admin email
-- `SUPER_ADMIN_PASSWORD` - Default super admin password
+```json
+{
+  "message": "Role 'Admin' is not authorized to access this resource"
+}
+```
 
-**Security Best Practices:**
-- Never commit `.env` to version control
-- Use environment-specific `.env` files
-- Rotate secrets regularly in production
-- Use secret management services (AWS Secrets Manager, Azure Key Vault)
+#### Rate-Limit Rejection
 
----
+```json
+{
+  "success": false,
+  "message": "Too many login attempts from this IP, please try again after 15 minutes"
+}
+```
 
-## Testing
+#### Unknown Route
 
-### Run Tests
+```json
+{
+  "success": false,
+  "message": "Route /api/v1/unknown not found"
+}
+```
+
+### Dev vs Prod Error Detail
+
+- Development mode may include error object and stack.
+- Production mode returns operational messages and hides internals.
+
+## Data Model Overview
+
+| Model | Purpose |
+|---|---|
+| Admin | Identity, role, and account status |
+| Players | Player profile, metrics, clubs, competitions |
+| League | League definitions and tier references |
+| Blog | Public content publication |
+| About | Organization profile singleton content |
+| Service | Service cards/content |
+| HowItWork | Process steps content |
+| Enquiry | Contact intake records |
+| ProfileRequest | Player onboarding request records |
+| Otp | One-time verification records |
+| AuditLog | Sensitive action traceability |
+
+## Validation Coverage
+
+Validation middleware currently guards:
+
+- Login payload.
+- Admin registration payload.
+- Player create payload.
+- Player update payload.
+- Contact and profile-request payload structures.
+- Blog payload structure.
+
+## Testing and Quality
+
+Stack:
+
+- Jest
+- Supertest
+- mongodb-memory-server
+
+Commands:
 
 ```bash
-# Run all tests
 npm test
-
-# Run with coverage
-npm run test:coverage
-
-# Generate HTML report
+npm run test:json
 npm run report
 ```
 
-### Test Coverage
+Primary suites:
 
-| Test Suite | Tests | Status |
-|------------|-------|--------|
-| Authentication API | 11 | ✅ Pass |
-| Dashboard API | 5 | ✅ Pass |
-| Player API | 15 | ✅ Pass |
-| **Total** | **31** | **✅ 100%** |
+- tests/auth.test.js
+- tests/players.test.js
+- tests/dashboard.test.js
 
-### Test Categories
+## Operational Runbook
 
-- **Model Tests**: Schema validation, UUID generation, password hashing
-- **API Tests**: CRUD operations, authentication, authorization
-- **Integration Tests**: End-to-end workflows
+### Startup Procedure
 
-**View HTML Report:**
-After running `npm run report`, open `test-report.html` in your browser.
+1. Validate env values.
+2. Connect MongoDB.
+3. Seed leagues if needed.
+4. Start keep-alive worker.
+5. Start HTTP listener.
 
----
+### Health Procedure
 
-## Deployment
+- Probe `/health` and `/ping`.
+- Confirm logs and DB connectivity.
 
-### Environment Configuration for Production
+### Incident Procedure
 
-```env
-NODE_ENV=production
-PORT=5001
-MONGO_URI=<production_mongodb_uri>
-JWT_SECRET=<strong_64_character_secret>
-JWT_EXPIRE=7d
-ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
-SUPER_ADMIN_EMAIL=admin@yourdomain.com
-SUPER_ADMIN_PASSWORD=<strong_password>
-```
+1. Identify failing endpoint and status code.
+2. Inspect logs for route and error context.
+3. Validate auth token and role path.
+4. Validate request payload against Joi schema.
+5. Confirm external dependencies (DB/email).
 
-### Deployment Checklist
+## Production Checklist
 
-- [x] Set NODE_ENV=production
-- [x] Use strong JWT secret (64+ characters)
-- [ ] Configure MongoDB Atlas IP whitelist for production
-- [ ] Set up automated database backups
-- [ ] Configure CORS for production frontend domain
-- [x] Enable audit logging
-- [ ] Set up error monitoring (Sentry/LogRocket)
-- [ ] Configure CDN for static assets
-- [ ] Set up CI/CD pipeline
-- [ ] Configure SSL/TLS certificates
+- Strong JWT secret configured.
+- CORS restricted to approved frontend origins.
+- HTTPS enforced at edge.
+- Monitoring and alerting active.
+- Backup and restore process verified.
+- Role and privilege boundaries verified.
+- Smoke tests executed post deploy.
 
-### Recommended Platforms
+## Route and Sub-Route Screenshots
 
-- **Backend**: Heroku, AWS EC2, DigitalOcean, Render, Railway
-- **Database**: MongoDB Atlas (M10+ cluster for production)
-- **Monitoring**: Datadog, New Relic, AWS CloudWatch
+These UI captures provide operational evidence for frontend routes backed by this API and are stored in `../frontend/public/readme-images/routes/`.
 
----
+### Public Route Coverage
 
-## Project Structure
+| Route | Screenshot |
+|---|---|
+| `/` | ![Home Route](../frontend/public/readme-images/routes/home.png) |
+| `/about` | ![About Route](../frontend/public/readme-images/routes/about.png) |
+| `/players` | ![Players Route](../frontend/public/readme-images/routes/players.png) |
+| `/blog` | ![Blog Route](../frontend/public/readme-images/routes/blog.png) |
+| `/blog/:id` | ![Blog Detail Route](../frontend/public/readme-images/routes/blog-detail.png) |
+| `/services` | ![Services Route](../frontend/public/readme-images/routes/services.png) |
+| `/contact` | ![Contact Route](../frontend/public/readme-images/routes/contact.png) |
+| `/login` | ![Login Route](../frontend/public/readme-images/routes/login.png) |
+| `*` (not found) | ![Not Found Route](../frontend/public/readme-images/routes/not-found.png) |
 
-```
-Backend/
-├── config/
-│   └── DB.js                    # MongoDB connection
-├── Middleware/
-│   ├── authMiddleware.js        # JWT verification & RBAC
-│   └── auditLogger.js           # Audit logging utilities
-├── Models/
-│   ├── About.js                 # Organization profile schema
-│   ├── Admin.js                 # Admin user schema
-│   ├── AuditLog.js              # Audit trail schema
-│   ├── Blog.js                  # Blog/article schema
-│   └── Players.js               # Player profile schema
-├── Routes/
-│   ├── aboutRoutes.js           # Organization endpoints
-│   ├── adminRoutes.js           # Admin management
-│   ├── auditLogRoutes.js        # Audit log endpoints
-│   ├── authRoutes.js            # Authentication
-│   ├── blogRoutes.js            # Blog/article endpoints
-│   ├── dashboardRoutes.js       # Dashboard statistics
-│   └── playerRoutes.js          # Player CRUD
-├── services/
-│   ├── aboutController.js       # Organization business logic
-│   ├── adminController.js       # Admin management logic
-│   ├── auditLogController.js    # Audit log queries
-│   ├── authController.js        # Authentication logic
-│   ├── blogController.js        # Blog management logic
-│   ├── dashboardController.js   # Dashboard calculations
-│   ├── generateToken.js         # JWT token generation
-│   ├── playerController.js      # Player management logic
-│   └── seedSuperAdmin.js        # Initial setup
-├── tests/
-│   ├── auth.test.js             # Authentication tests
-│   ├── dashboard.test.js        # Dashboard tests
-│   ├── players.test.js          # Player CRUD tests
-│   └── setup.js                 # Test configuration
-├── .env.example                 # Environment template
-├── app.js                       # Express app configuration
-├── jest.config.js               # Jest configuration
-├── package.json                 # Dependencies
-├── README.md                    # This file
-└── server.js                    # Server entry point
-```
+### Admin Route and Sub-Route Coverage
 
----
+| Route/Section | Screenshot |
+|---|---|
+| `/admin` (entry state) | ![Admin Dashboard Route](../frontend/public/readme-images/routes/admin-dashboard.png) |
+| Overview | ![Admin Overview](../frontend/public/readme-images/routes/admin-overview.png) |
+| Players | ![Admin Players](../frontend/public/readme-images/routes/admin-players.png) |
+| Leagues | ![Admin Leagues](../frontend/public/readme-images/routes/admin-leagues.png) |
+| Enquiries | ![Admin Enquiries](../frontend/public/readme-images/routes/admin-enquiries.png) |
+| Profile Requests | ![Admin Profile Requests](../frontend/public/readme-images/routes/admin-profile-requests.png) |
+| Blogs | ![Admin Blogs](../frontend/public/readme-images/routes/admin-blogs.png) |
+| Services | ![Admin Services](../frontend/public/readme-images/routes/admin-services.png) |
+| About | ![Admin About](../frontend/public/readme-images/routes/admin-about.png) |
+| Partners | ![Admin Partners](../frontend/public/readme-images/routes/admin-partners.png) |
+| Admin Management | ![Admin Admins](../frontend/public/readme-images/routes/admin-admins.png) |
+| Settings | ![Admin Settings](../frontend/public/readme-images/routes/admin-settings.png) |
 
-## API Testing with Postman/Thunder Client
+## Troubleshooting
 
-1. **Login** first to get the JWT token
-2. **Save the token** as an environment variable
-3. **Add token** to Authorization header for protected routes
-
-Example Authorization header:
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
-
----
-
-## License
-
-This project is proprietary and confidential.
-
----
-
-## Support
-
-For support, email: charannaikcharan734@gmail.com
-
----
-
-**Version**: 3.0.0  
-**Last Updated**: February 17, 2026  
-**Status**: Production Ready - Backend Complete with Comprehensive Security & Audit Logging
-
-Made with ⚽ for sports talent management worldwide
-
-[Back to Top](#pro-talent-connect-backend-api)
+| Symptom | Likely Cause | Action |
+|---|---|---|
+| 401 on protected route | Missing/invalid token | Verify auth header and token lifetime |
+| 403 on admin route | Role mismatch | Verify requester role and route policy |
+| 429 responses | Burst traffic exceeded limits | Retry after window, reduce call burst |
+| CORS failure in browser | Origin not allowlisted | Update ALLOWED_ORIGINS and restart |
+| Startup failure | Env or DB misconfiguration | Validate .env and DB connectivity |
+| Stale list data | Cache entry not invalidated | Verify write route invalidation path |

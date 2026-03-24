@@ -1,312 +1,376 @@
 # Pro-Talent-Connect
 
-## 1. Project Overview
-Pro-Talent-Connect is a recruitment and management platform for athletes and sports talent. It features an Express-based REST API for managing player profiles, administrative access, and dashboard statistics. The project uses MongoDB with Mongoose for data persistence and JWT for secure authentication.
+<div align="center">
 
-## 2. Testing Strategy
-Our testing strategy focuses on high-coverage unit and integration tests for the backend API.
-- **Framework**: [Jest](https://jestjs.io/)
-- **Integration Library**: [Supertest](https://github.com/ladjs/supertest)
-- **Database**: [mongodb-memory-server](https://github.com/nodkz/mongodb-memory-server) for isolated, fast, and deterministic tests.
-- **CI/CD**: GitHub Actions for automated testing on every push and pull request.
+## Full Stack Football Talent Platform
 
-## 3. Unit Testing Scenarios
+![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5.2.1-000000?logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-7.x-47A248?logo=mongodb&logoColor=white)
+![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?logo=vite&logoColor=white)
+![API Routes](https://img.shields.io/badge/API%20Routes-55+-007ACC)
+![Models](https://img.shields.io/badge/Models-11-6E40C9)
 
-### Auth API (`tests/auth.test.js`)
-- **POST /api/auth/register**:
-  - *Happy Path*: Super Admin can register new Admins.
-  - *Invalid Input*: Registration fails without name, email, or password.
-  - *Unauthorized*: Registration fails without a valid token.
-  - *Edge Case*: Regular Admins cannot register other admins (403 Forbidden).
-- **POST /api/auth/login**:
-  - *Happy Path*: Successful login with valid credentials returns a JWT.
-  - *Invalid Input*: Fails with incorrect email or password.
+<img src="frontend/src/assets/Logo@pro_talent_connect.png" alt="Pro Talent Connect" width="170" />
 
-### Players API (`tests/players.test.js`)
-- **POST /api/players**:
-  - *Happy Path*: Super Admin can create player profiles (including `profileImage`).
-  - *Edge Case*: Fails if `playerId` or `email` already exists.
-  - *Boundary Conditions*: Fails if required fields (name, position, DOB) are missing.
-  - *Unauthorized*: Regular Admins are restricted from creating players.
-- **GET /api/players**:
-  - *Happy Path*: Authenticated admins can retrieve a paginated list of players.
-  - *Edge Case*: Soft-deleted players are excluded from the list.
-- **PUT /api/players/:id**:
-  - *Happy Path*: Admins can update player details, including their `profileImage`.
+Production-ready player discovery and talent operations platform with secured admin workflows and scalable content/data services.
 
-### Dashboard API (`tests/dashboard.test.js`)
-- **GET /api/dashboard/stats**:
-  - *Happy Path*: Returns correct counts for total players, active players, and admins.
+</div>
 
-## 4. Debugging Summary
+## Table of Contents
 
-| Bug Found | Fix Applied |
-|-----------|-------------|
-| `Admin` model `pre-save` hook was calling `next()` in an `async` function. | Removed `next()` and used `return` or implicit promise resolution for Mongoose middleware compatibility. |
-| `createPlayer` controller did not handle MongoDB duplicate key errors (11000). | Added a `try-catch` block handling `error.code === 11000` to return a 400 status instead of 500. |
-| `server.js` was directly listening, making it hard to test with Supertest. | Refactored app logic into `app.js` and exported it, keeping `server.js` as the entry point. |
-| Missing `JWT_SECRET` in test environment. | Configured `tests/setup.js` to initialize environment variables for the test runner. |
-| Players missing image field. | Added `profileImage` to `Players` model and updated controller/tests. |
+1. [Product Vision](#product-vision)
+2. [Core Capabilities](#core-capabilities)
+3. [Personas and Access](#personas-and-access)
+4. [System Architecture](#system-architecture)
+5. [Repository Layout](#repository-layout)
+6. [Backend at a Glance](#backend-at-a-glance)
+7. [Frontend at a Glance](#frontend-at-a-glance)
+8. [Data Domains](#data-domains)
+9. [Security and Compliance Posture](#security-and-compliance-posture)
+10. [Environment and Configuration](#environment-and-configuration)
+11. [Developer Quick Start](#developer-quick-start)
+12. [Runbooks](#runbooks)
+13. [Quality and Testing Strategy](#quality-and-testing-strategy)
+14. [Performance and Reliability](#performance-and-reliability)
+15. [Release and Deployment Notes](#release-and-deployment-notes)
+16. [Route and Sub-Route Screenshots](#route-and-sub-route-screenshots)
+17. [Canonical README Policy](#canonical-readme-policy)
 
-## 5. Test Execution
+## Product Vision
 
-### Automated (CI)
-Tests run automatically on GitHub Actions for every push to `main`.
-- See [.github/workflows/ci.yml](.github/workflows/ci.yml)
+Pro-Talent-Connect is built to bridge football talent and structured opportunities using a modern web stack and a secure administrative control plane.
 
-### Locally
-1. Navigate to the backend directory:
-   ```bash
-   cd Backend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Run all tests:
-   ```bash
-   npm test
-   ```
-4. Generate HTML report:
-   ```bash
-   npm run report
-   ```
-   *View the report at `Backend/test-report.html`.*
+Business goals:
 
-## 6. Test Results Summary (Local Run)
-- **Total Tests**: 11
-- **Passed**: 11
-- **Failed**: 0
-- **Testing Score**: 100%
-- **Status**: PASS
+- Centralize player profiles, scouting insights, and career context.
+- Provide public-facing discovery and trust-building content.
+- Enable administrators to operate data workflows quickly and safely.
+- Maintain auditability and operational discipline for sensitive changes.
 
----
+## Core Capabilities
 
-## 7. Security & Code Quality 🔒
+### Public Experience
 
-### 🎉 Grade: A++ (Production-Ready)
+- Landing page with hero messaging, featured players, and impact metrics.
+- Searchable player catalogue and profile detail pages.
+- Blog publishing surface for updates and storytelling.
+- Services and how-it-works content for onboarding clarity.
+- Contact forms for enquiry and profile request submission.
 
-The application has undergone comprehensive security hardening and code quality improvements:
+### Admin Experience
 
-#### Security Features:
-- ✅ **Rate Limiting** - Protection against brute force and DDoS attacks
-- ✅ **Input Validation** - Joi schemas preventing injection attacks
-- ✅ **Security Headers** - Helmet.js with CSP, HSTS, XSS protection
-- ✅ **Password Security** - Strong requirements, 12 bcrypt rounds
-- ✅ **NoSQL Injection Protection** - Sanitization middleware
-- ✅ **CORS Configuration** - Environment-aware origin restrictions
-- ✅ **Request Size Limits** - 10kb payload limit
+- Secure login and token-based session model.
+- Admin dashboard for operational visibility.
+- Full data operations across players, blogs, about, services, and leagues.
+- OTP-assisted sensitive actions.
+- Audit log access for privileged roles.
 
-#### Architecture:
-- ✅ **Global Error Handler** - Centralized, consistent error responses
-- ✅ **Structured Logging** - Winston with file rotation
-- ✅ **Environment Validation** - Startup checks for required variables
-- ✅ **API Versioning** - /api/v1/ routes with backward compatibility
-- ✅ **Database Indexes** - Optimized queries with proper indexing
-- ✅ **Graceful Shutdown** - Proper cleanup on termination
+### Platform Operations
 
-#### Frontend:
-- ✅ **Error Boundaries** - Prevents full app crashes
-- ✅ **Centralized API** - Axios interceptors with auto-retry
-- ✅ **Memory Leak Fixes** - Proper useEffect cleanup
-- ✅ **Loading States** - Better UX with skeletons
+- Input validation and sanitization.
+- Fine-grained route authorization.
+- Request caching for read-heavy surfaces.
+- Structured logging and resilient error handling.
 
-📚 **Detailed Documentation**: See [CODE_QUALITY_IMPROVEMENTS.md](docs/CODE_QUALITY_IMPROVEMENTS.md)
+## Personas and Access
 
----
+| Persona | Main Goals | Access Level |
+|---|---|---|
+| Public Visitor | Discover players, read blogs, submit enquiry/profile request | Public endpoints only |
+| Admin | Operate day-to-day player/content workflows | Authenticated admin routes |
+| Super Admin | Govern accounts, high-trust controls, audit visibility | Full privileged routes |
 
-## 8. Environment Setup
+## System Architecture
 
-### Backend Environment Variables
-
-Create a `.env` file in the `Backend/` directory:
-
-```bash
-# Required Variables
-NODE_ENV=development
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_super_secret_jwt_key_min_32_characters
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
-
-# Optional
-LOG_LEVEL=info
+```mermaid
+flowchart TB
+    U[Public User] --> F[Frontend App]
+    A[Admin User] --> F
+    F --> B[Backend API]
+    B --> M[(MongoDB)]
+    B --> E[Email Service]
+    B --> L[Log Pipeline]
+    B --> C[Cache Middleware]
 ```
 
-**Important**: 
-- JWT_SECRET must be at least 32 characters in production
-- See `Backend/.env.example` for full configuration
+### Request Flow
 
-### Frontend Environment Variables
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Frontend
+    participant Backend
+    participant DB
 
-Create a `.env` file in the `frontend/` directory:
-
-```bash
-VITE_API_URL=http://localhost:5000
+    Client->>Frontend: Navigate and interact
+    Frontend->>Backend: API request
+    Backend->>Backend: Security + validation + auth
+    Backend->>DB: Query or mutation
+    DB-->>Backend: Data
+    Backend-->>Frontend: JSON response
+    Frontend-->>Client: Rendered UI state
 ```
 
----
+## Repository Layout
 
-## 9. Getting Started
-
-### Prerequisites
-- Node.js >= 18.x
-- MongoDB >= 6.x
-- npm or yarn
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repo-url>
-   cd Pro-Talent-Connect
-   ```
-
-2. **Backend Setup**
-   ```bash
-   cd Backend
-   npm install
-   cp .env.example .env
-   # Edit .env with your configuration
-   npm run dev
-   ```
-
-3. **Frontend Setup**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
-4. **Access the Application**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:5000
-   - API Health: http://localhost:5000/health
-
----
-
-## 10. API Routes
-
-### Public Routes
-- `GET /` - API info
-- `GET /health` - Health check
-- `POST /api/auth/login` - Admin login
-- `GET /api/players` - List players (paginated)
-- `GET /api/players/:id` - Get player details
-- `GET /api/blogs` - List blogs
-- `GET /api/services` - List services
-
-### Protected Routes (Requires Authentication)
-- `POST /api/players` - Create player (Admin/Super Admin)
-- `PUT /api/players/:id` - Update player (Admin/Super Admin)
-- `DELETE /api/players/:id` - Delete player (Super Admin only)
-- `GET /api/dashboard/stats` - Dashboard statistics
-- `POST /api/auth/register` - Register new admin (Super Admin only)
-
-### API Versioning
-All routes available at `/api/v1/...` for future-proof versioning.
-
----
-
-## 11. Project Structure
-
-```
+```text
 Pro-Talent-Connect/
-├── Backend/
-│   ├── config/
-│   │   ├── DB.js              - Database connection
-│   │   ├── logger.js          - Winston logger config
-│   │   └── validateEnv.js     - Environment validation
-│   ├── Middleware/
-│   │   ├── authMiddleware.js  - JWT authentication
-│   │   ├── errorHandler.js    - Global error handler
-│   │   ├── rateLimiter.js     - Rate limiting
-│   │   └── validator.js       - Input validation schemas
-│   ├── Models/                - Mongoose models
-│   ├── Routes/                - Express routes
-│   ├── services/              - Business logic controllers
-│   ├── tests/                 - Jest test suites
-│   ├── logs/                  - Application logs
-│   ├── app.js                 - Express app configuration
-│   └── server.js              - Server entry point
-├── frontend/
-│   ├── src/
-│   │   ├── components/        - React components
-│   │   ├── pages/             - Page components
-│   │   ├── services/
-│   │   │   └── api.js         - Centralized API client
-│   │   ├── App.jsx            - Main app component
-│   │   └── main.jsx           - Entry point
-│   └── public/                - Static assets
-└── docs/                      - Documentation
+|- Backend/
+|  |- app.js
+|  |- server.js
+|  |- config/
+|  |- Middleware/
+|  |- Models/
+|  |- Routes/
+|  |- services/
+|  |- tests/
+|  |- README.md
+|- frontend/
+|  |- src/
+|  |  |- assets/
+|  |  |- components/
+|  |  |- pages/
+|  |  |- services/
+|  |  |- tests/
+|  |- public/
+|  |- README.md
+|- docs/
+|- README.md
 ```
 
----
+## Backend at a Glance
 
-## 12. Scripts
+The backend is an Express 5 API with:
+
+- Versioned and compatibility route prefixes.
+- Role-based middleware gates.
+- Joi validation for critical write/auth flows.
+- Global and route-specific rate limiters.
+- Mongoose data layer and service-oriented controllers.
+
+Detailed technical documentation:
+
+- [Backend/README.md](Backend/README.md)
+
+## Frontend at a Glance
+
+The frontend is a React 19 SPA with:
+
+- Route-level lazy loading.
+- Shared layout components and feature folders.
+- Centralized Axios client with token handling.
+- Client-side cache and request deduplication helpers.
+
+Detailed technical documentation:
+
+- [frontend/README.md](frontend/README.md)
+
+## Data Domains
+
+Main entities:
+
+- Admin
+- Players
+- League
+- Blog
+- About
+- Service
+- HowItWork
+- Enquiry
+- ProfileRequest
+- Otp
+- AuditLog
+
+These domains support public read surfaces and admin mutation workflows with validation and auditability.
+
+## Security and Compliance Posture
+
+Implemented controls include:
+
+- Helmet headers including CSP/HSTS behavior.
+- CORS allowlisting through environment configuration.
+- JWT authentication and role authorization.
+- NoSQL sanitization middleware.
+- Rate limiting for API, auth, and create-heavy routes.
+- Centralized error shaping.
+- Structured request logging.
+
+Credential policy:
+
+- Never commit real credentials to repository documentation.
+- Use environment variables for local and deployed secrets.
+- Rotate any shared local credentials before production use.
+
+## Environment and Configuration
 
 ### Backend
-```bash
-npm run dev          # Start development server with nodemon
-npm start            # Start production server
-npm test             # Run test suite
-npm run test:json    # Generate JSON test results
-npm run report       # Generate HTML test report
+
+```env
+NODE_ENV=development
+PORT=5001
+MONGO_URI=<mongodb-uri>
+JWT_SECRET=<minimum-32-character-secret>
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+SUPER_ADMIN_EMAIL=<local-seed-admin-email>
+SUPER_ADMIN_PASSWORD=<local-seed-admin-password>
 ```
 
 ### Frontend
-```bash
-npm run dev          # Start Vite dev server
-npm run build        # Build for production
-npm run preview      # Preview production build
-npm run lint         # Run ESLint
+
+```env
+VITE_API_URL=http://localhost:5001
 ```
 
----
+## Developer Quick Start
 
-## 13. Deployment
+### Prerequisites
 
-Before deploying to production:
+- Node.js 18+
+- npm
+- MongoDB (Atlas or local)
 
-1. ☑️ Set strong JWT_SECRET (32+ characters)
-2. ☑️ Configure proper ALLOWED_ORIGINS
-3. ☑️ Set NODE_ENV=production
-4. ☑️ Enable HTTPS/TLS
-5. ☑️ Configure firewall rules
-6. ☑️ Set up log aggregation
-7. ☑️ Configure monitoring/alerting
-8. ☑️ Run security audit (`npm audit`)
-9. ☑️ Backup database
-10. ☑️ Set up CI/CD pipeline
+### Install
 
-📋 **Full Checklist**: See [CODE_QUALITY_IMPROVEMENTS.md](docs/CODE_QUALITY_IMPROVEMENTS.md#-deployment-checklist)
+Backend:
 
----
+```bash
+cd Backend
+npm install
+```
 
-## 14. Contributing
+Frontend:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+```bash
+cd frontend
+npm install
+```
 
----
+### Run
 
-## 15. License
+Backend:
 
-[Add your license here]
+```bash
+cd Backend
+npm run dev
+```
 
----
+Frontend:
 
-## 16. Support
+```bash
+cd frontend
+npm run dev
+```
 
-For issues and questions:
-- Open an issue on GitHub
-- Check [CODE_QUALITY_IMPROVEMENTS.md](docs/CODE_QUALITY_IMPROVEMENTS.md)
-- Review API documentation (coming soon)
+### Smoke Test
 
----
+- Backend health: `http://localhost:5001/health`
+- Frontend app: `http://localhost:5173`
 
-**Built with ❤️ for talent connection**
+## Runbooks
 
+### New Developer Onboarding
+
+1. Clone repository and install dependencies.
+2. Create backend and frontend env files.
+3. Start backend, then frontend.
+4. Verify login and player listing endpoints.
+
+### Common Data Operations
+
+- Bulk import players: `Backend/import-players-csv.js`
+- Data migration routines: `Backend/migrate-data.js`
+- HTML test report generation: `Backend/generate-report.js`
+
+### Incident Triage
+
+1. Check backend logs for stack traces and route context.
+2. Confirm DB connection status and env correctness.
+3. Reproduce via API calls and verify auth/role conditions.
+4. Validate rate-limit state and payload schema conformance.
+
+## Quality and Testing Strategy
+
+### Backend
+
+- Jest + Supertest + mongodb-memory-server.
+- Current suites cover auth, players, and dashboard flows.
+
+### Frontend
+
+- Vitest + Testing Library + jsdom.
+- Component and behavior-level tests under `frontend/src/tests`.
+
+### Suggested Quality Gates
+
+- Lint and test pass required before merge.
+- Validate protected routes with role matrix checks.
+- Run smoke tests for public and admin journeys.
+
+## Performance and Reliability
+
+Performance controls:
+
+- Response compression.
+- Read-path caching with invalidation on writes.
+- Request deduplication in frontend API client.
+
+Reliability controls:
+
+- Global error middleware.
+- Startup env validation.
+- Graceful shutdown hooks.
+- Keep-alive worker after DB connection.
+
+## Release and Deployment Notes
+
+Minimum release checks:
+
+- Validate env values and secret strength.
+- Confirm CORS domains and HTTPS setup.
+- Verify login, players read, admin write, and dashboard stats.
+- Confirm monitoring and log ingestion in target environment.
+
+## Route and Sub-Route Screenshots
+
+All captures below are generated from the running application and stored in `frontend/public/readme-images/routes/`.
+
+### Public Routes
+
+| Route | Screenshot |
+|---|---|
+| `/` | ![Home Route](frontend/public/readme-images/routes/home.png) |
+| `/about` | ![About Route](frontend/public/readme-images/routes/about.png) |
+| `/players` | ![Players Route](frontend/public/readme-images/routes/players.png) |
+| `/blog` | ![Blog Route](frontend/public/readme-images/routes/blog.png) |
+| `/blog/:id` | ![Blog Detail Route](frontend/public/readme-images/routes/blog-detail.png) |
+| `/services` | ![Services Route](frontend/public/readme-images/routes/services.png) |
+| `/contact` | ![Contact Route](frontend/public/readme-images/routes/contact.png) |
+| `/login` | ![Login Route](frontend/public/readme-images/routes/login.png) |
+| `*` (not found) | ![Not Found Route](frontend/public/readme-images/routes/not-found.png) |
+
+### Admin Routes and Sub-Routes
+
+| Route/Section | Screenshot |
+|---|---|
+| `/admin` (entry state) | ![Admin Dashboard Route](frontend/public/readme-images/routes/admin-dashboard.png) |
+| Overview | ![Admin Overview](frontend/public/readme-images/routes/admin-overview.png) |
+| Players | ![Admin Players](frontend/public/readme-images/routes/admin-players.png) |
+| Leagues | ![Admin Leagues](frontend/public/readme-images/routes/admin-leagues.png) |
+| Enquiries | ![Admin Enquiries](frontend/public/readme-images/routes/admin-enquiries.png) |
+| Profile Requests | ![Admin Profile Requests](frontend/public/readme-images/routes/admin-profile-requests.png) |
+| Blogs | ![Admin Blogs](frontend/public/readme-images/routes/admin-blogs.png) |
+| Services | ![Admin Services](frontend/public/readme-images/routes/admin-services.png) |
+| About | ![Admin About](frontend/public/readme-images/routes/admin-about.png) |
+| Partners | ![Admin Partners](frontend/public/readme-images/routes/admin-partners.png) |
+| Admin Management | ![Admin Admins](frontend/public/readme-images/routes/admin-admins.png) |
+| Settings | ![Admin Settings](frontend/public/readme-images/routes/admin-settings.png) |
+
+## Canonical README Policy
+
+This repository intentionally maintains exactly three Markdown README documents:
+
+- Global: [README.md](README.md)
+- Backend: [Backend/README.md](Backend/README.md)
+- Frontend: [frontend/README.md](frontend/README.md)
